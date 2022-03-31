@@ -13,18 +13,24 @@ the system test cases you've defined.
 System test cases are written YAML and define any initial seed data; the inputs to feed into the system; and the
 expected output or final state of the system.
 
+## Defining system tests
+
+System tests are defined in YAML files. Read more on [defining system tests](model).
+
+## Running system tests
+
+There is a [gradle plugin][1] for running system tests as part of a Gradle build.
+
+Happy to take contributions for a [Maven plugin](https://github.com/creek-service/creek-system-test/issues/2).
+
+## Extending system tests
+
+Creek is designed to be extendable. See how to [extend system tests](extension).
+
 ## Modules
 
 * **[executor](executor):** functionality for executing system tests.
+* **[extension](extension):** defines types required to implement extensions to the system tests.
+* **[model](model):** system test model
 
-### Gradle commands
-
-* `./gradlew format` will format the code using [Spotless][1].
-* `./gradlew static` will run static code analysis, i.e. [Spotbugs][2] and [Checkstyle][3].
-* `./gradlew check` will run all checks and tests.
-* `./gradlew coverage` will generate a cross-module [Jacoco][4] coverage report.
-
-[1]: https://github.com/diffplug/spotless
-[2]: https://spotbugs.github.io/
-[3]: https://checkstyle.sourceforge.io/
-[4]: https://www.jacoco.org/jacoco/trunk/doc/
+[1]: https://github.com/creek-service/creek-system-test-gradle-plugin

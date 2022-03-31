@@ -1,0 +1,17 @@
+--add-modules
+  org.junitpioneer,org.hamcrest,creek.test.util
+
+--add-exports
+  creek.system.test.parser/org.creek.system.test.parser.internal=com.fasterxml.jackson.databind
+
+--add-reads
+  creek.system.test.parser=org.junitpioneer,org.hamcrest,creek.test.util
+
+--add-opens
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
+
+--add-opens
+  java.base/java.lang=org.junitpioneer
+
+--add-opens
+  java.base/java.util=org.junitpioneer

@@ -1,5 +1,8 @@
 rootProject.name = "creek-system-test"
 
 include(
-    "executor"
+    "executor",
+    "extension",
+    "model",
+    "parser"
 )
