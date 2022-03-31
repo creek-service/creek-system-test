@@ -2,7 +2,7 @@
   org.junitpioneer,org.hamcrest
 
 --add-reads
-  creek.template.module.multi=org.junitpioneer,org.hamcrest
+  creek.system.test.executor=org.junitpioneer,org.hamcrest
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
