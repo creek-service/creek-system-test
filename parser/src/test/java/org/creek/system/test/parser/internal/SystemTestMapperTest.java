@@ -19,6 +19,7 @@ package org.creek.system.test.parser.internal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,6 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.creek.api.test.TestPaths;
+import org.creek.system.test.extension.api.model.Expectation;
+import org.creek.system.test.extension.api.model.Input;
+import org.creek.system.test.extension.api.model.ModelType;
+import org.creek.system.test.extension.api.model.Seed;
 import org.creek.system.test.model.api.LocationAware;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -44,7 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 @SuppressWarnings({"unused", "checkstyle:RedundantModifier"})
 class SystemTestMapperTest {
 
-    private static final ObjectMapper MAPPER = SystemTestMapper.create();
+    private static final ObjectMapper MAPPER = SystemTestMapper.create(List.of());
 
     @TempDir private Path tempDir;
 
@@ -162,6 +167,51 @@ class SystemTestMapperTest {
         assertThat(yaml, is("---\nnonEmpty: value\n"));
     }
 
+    @Test
+    void shouldDeserializeSeedSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(List.of(ModelType.seed(TestSeed.class)));
+
+        final String yaml = "---\n" + "'@type': test\n";
+
+        // When:
+        final Seed result = mapper.readValue(yaml, Seed.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestSeed.class)));
+    }
+
+    @Test
+    void shouldDeserializeInputSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(List.of(ModelType.input(TestInput.class)));
+
+        final String yaml = "---\n" + "'@type': test\n";
+
+        // When:
+        final Input result = mapper.readValue(yaml, Input.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestInput.class)));
+    }
+
+    @Test
+    void shouldDeserializeExpectationSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(List.of(ModelType.expectation(TestExpectation.class)));
+
+        final String yaml = "---\n" + "'@type': test\n";
+
+        // When:
+        final Expectation result = mapper.readValue(yaml, Expectation.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestExpectation.class)));
+    }
+
     public static final class TestType implements LocationAware<TestType> {
 
         private final String name;
@@ -224,4 +274,10 @@ class SystemTestMapperTest {
     public static final class WithPoly {
         public WithPoly(@JsonProperty("poly") final BaseType poly) {}
     }
+
+    public static final class TestSeed implements Seed {}
+
+    public static final class TestInput implements Input {}
+
+    public static final class TestExpectation implements Expectation {}
 }

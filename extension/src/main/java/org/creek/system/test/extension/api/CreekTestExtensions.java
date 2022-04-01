@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.system.test.extension.api;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
 
-dependencies {
-    api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
-    implementation("org.creek:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+public final class CreekTestExtensions {
 
-    testImplementation(project(":parser"))
+    private CreekTestExtensions() {}
 
+    /** Instantiate any test extensions available at runtime. */
+    public static List<CreekTestExtension> load() {
+        return ServiceLoader.load(CreekTestExtension.class).stream()
+                .map(ServiceLoader.Provider::get)
+                .collect(Collectors.toUnmodifiableList());
+    }
 }

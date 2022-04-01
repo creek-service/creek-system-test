@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.system.test.extension.api;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 
-dependencies {
-    api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+import org.junit.jupiter.api.Test;
 
-    implementation("org.creek:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+class CreekTestExtensionsTest {
 
-    testImplementation(project(":parser"))
-
+    @Test
+    void shouldFindNoExtensionsByDefault() {
+        assertThat(CreekTestExtensions.load(), is(empty()));
+    }
 }

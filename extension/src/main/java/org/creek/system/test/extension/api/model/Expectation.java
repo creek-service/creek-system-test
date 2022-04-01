@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-package org.creek.system.test.extension.api;
+package org.creek.system.test.extension.api.model;
 
-public final class ComingSoon {}
+/** An expectation to be met once all test input has been sent. */
+public interface Expectation {}

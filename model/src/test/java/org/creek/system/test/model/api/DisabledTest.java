@@ -26,13 +26,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.EqualsTester;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import org.creek.system.test.parser.internal.SystemTestMapper;
 import org.junit.jupiter.api.Test;
 
 class DisabledTest {
 
-    private static final ObjectMapper MAPPER = SystemTestMapper.create();
+    private static final ObjectMapper MAPPER = SystemTestMapper.create(List.of());
 
     @Test
     void shouldImplementHashCodeAndEquals() {

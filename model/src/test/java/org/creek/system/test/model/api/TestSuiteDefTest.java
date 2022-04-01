@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 class TestSuiteDefTest {
 
-    private static final ObjectMapper MAPPER = SystemTestMapper.create();
+    private static final ObjectMapper MAPPER = SystemTestMapper.create(List.of());
 
     private static final String TEST_CASE_YAML =
             " name: test one\n" + "    description: test description\n";

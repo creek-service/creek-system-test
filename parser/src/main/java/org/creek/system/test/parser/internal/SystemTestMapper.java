@@ -27,17 +27,23 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import java.util.Collection;
+import org.creek.system.test.extension.api.model.Expectation;
+import org.creek.system.test.extension.api.model.Input;
+import org.creek.system.test.extension.api.model.ModelType;
+import org.creek.system.test.extension.api.model.Seed;
 import org.creek.system.test.model.api.LocationAware;
 
 public final class SystemTestMapper {
 
     private SystemTestMapper() {}
 
-    public static ObjectMapper create() {
+    public static ObjectMapper create(final Collection<ModelType<?>> modelTypes) {
         final SimpleModule modelModule = new SimpleModule();
         modelModule.setDeserializerModifier(new LocationAwareDeserializerModifier());
 
@@ -54,7 +60,21 @@ public final class SystemTestMapper {
                         .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                         .serializationInclusion(JsonInclude.Include.NON_EMPTY);
 
+        registerModelTypes(builder, modelTypes);
+
         return builder.build();
+    }
+
+    private static void registerModelTypes(
+            final JsonMapper.Builder builder, final Collection<ModelType<?>> modelTypes) {
+
+        builder.addMixIn(Seed.class, ModelMixin.class);
+        builder.addMixIn(Input.class, ModelMixin.class);
+        builder.addMixIn(Expectation.class, ModelMixin.class);
+
+        modelTypes.stream()
+                .map(modelType -> new NamedType(modelType.type(), modelType.name()))
+                .forEach(builder::registerSubtypes);
     }
 
     private static final class LocationAwareDeserializerModifier extends BeanDeserializerModifier {

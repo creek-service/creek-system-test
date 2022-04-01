@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest
+  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util
 
 --add-reads
-  creek.system.test.extension=org.junitpioneer,org.hamcrest
+  creek.system.test.extension=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
