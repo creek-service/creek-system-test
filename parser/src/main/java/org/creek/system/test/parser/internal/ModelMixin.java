@@ -19,5 +19,8 @@ package org.creek.system.test.parser.internal;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ * Avoids the need for the {@code extension} model to depend on Jackson annotations.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 public interface ModelMixin {}

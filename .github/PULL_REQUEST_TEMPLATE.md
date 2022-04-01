@@ -10,6 +10,5 @@ _Describe the testing strategy. Unit and integration tests are expected for any 
 - Public types are well-designed:
     - [ ] no public constructors.
     - [ ] prefer interface or impl.
-- [ ] Ensure there are relevant tests
 - [ ] Ensure relevant issues are linked (description should include text like "Fixes #<issue number>")
 - [ ] Ensure any appropriate documentation has been added or amended
