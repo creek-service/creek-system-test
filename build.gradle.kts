@@ -72,6 +72,7 @@ subprojects {
     dependencies {
         testImplementation("org.creek:creek-test-hamcrest:$creekVersion")
         testImplementation("org.creek:creek-test-util:$creekVersion")
+        testImplementation("org.creek:creek-test-conformity:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")
