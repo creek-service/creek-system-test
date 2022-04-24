@@ -37,7 +37,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.creek.api.test.TestPaths;
+import org.creek.api.test.util.TestPaths;
 import org.creek.system.test.extension.api.model.Expectation;
 import org.creek.system.test.extension.api.model.Input;
 import org.creek.system.test.extension.api.model.ModelType;
