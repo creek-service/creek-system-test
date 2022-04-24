@@ -1,11 +1,11 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,creek.test.util
+  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util
 
 --add-exports
-  creek.system.test.parser/org.creek.system.test.parser.internal=com.fasterxml.jackson.databind
+  creek.system.test.parser/org.creek.internal.system.test.parser=com.fasterxml.jackson.databind
 
 --add-reads
-  creek.system.test.parser=org.junitpioneer,org.hamcrest,creek.test.util
+  creek.system.test.parser=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons

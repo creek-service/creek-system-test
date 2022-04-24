@@ -14,21 +14,7 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.api.system.test.extension.model;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
-
-dependencies {
-    api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
-
-    implementation("org.creek:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-
-    testImplementation(project(":parser"))
-
-}
+/** A test input */
+public interface Input {}
