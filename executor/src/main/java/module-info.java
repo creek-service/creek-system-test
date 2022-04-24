@@ -1,1 +1,3 @@
-module creek.system.test.executor {}
+module creek.system.test.executor {
+    exports org.creek.api.example;
+}
