@@ -2,7 +2,7 @@
   org.junitpioneer,org.hamcrest,org.mockito,guava.testlib,creek.test.util,creek.system.test.parser
 
 --add-exports
-  creek.system.test.parser/org.creek.system.test.parser.internal=creek.system.test.model
+  creek.system.test.parser/org.creek.internal.system.test.parser=creek.system.test.model
 
 --add-reads
   creek.system.test.model=org.junitpioneer,org.hamcrest,org.mockito,guava.testlib,creek.test.util,creek.system.test.parser

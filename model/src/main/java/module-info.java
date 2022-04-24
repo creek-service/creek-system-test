@@ -5,5 +5,5 @@ module creek.system.test.model {
     requires com.fasterxml.jackson.databind;
     requires creek.base.type;
 
-    exports org.creek.system.test.model.api;
+    exports org.creek.api.system.test.model;
 }
