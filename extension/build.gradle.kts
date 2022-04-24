@@ -17,3 +17,7 @@
 plugins {
     `java-library`
 }
+
+dependencies {
+    // Dependency free
+}

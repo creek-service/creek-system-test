@@ -4,5 +4,5 @@ module creek.system.test.parser {
     requires com.fasterxml.jackson.dataformat.yaml;
     requires com.fasterxml.jackson.datatype.jdk8;
 
-    exports org.creek.system.test.parser.api;
+    exports org.creek.api.system.test.parser;
 }

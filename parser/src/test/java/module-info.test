@@ -2,13 +2,13 @@
   org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
 
 --add-reads
-  creek.system.test.parser=org.junitpioneer,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
+  creek.system.test.parser=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity
 
 --add-exports
-  creek.system.test.parser/org.creek.system.test.parser.internal=com.fasterxml.jackson.databind
+  creek.system.test.parser/org.creek.internal.system.test.parser=com.fasterxml.jackson.databind
 
 --add-opens
-  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
+  org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons,
 
 --add-opens
   java.base/java.lang=org.junitpioneer

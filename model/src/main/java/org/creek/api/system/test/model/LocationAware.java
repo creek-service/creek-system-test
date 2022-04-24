@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.api.system.test.model;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
 
-dependencies {
-    api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+import java.net.URI;
 
-    implementation("org.creek:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+public interface LocationAware<T extends LocationAware<T>> {
 
-    testImplementation(project(":parser"))
+    URI UNKNOWN_LOCATION = URI.create("file://unknown");
 
+    /** @return the location */
+    URI location();
+
+    /**
+     * @param location the location
+     * @return a new instance with the location set.
+     */
+    T withLocation(URI location);
 }
