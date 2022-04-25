@@ -77,6 +77,6 @@ public final class Disabled {
 
     @Override
     public String toString() {
-        return "Disabled{" + "reason='" + reason + '\'' + ", issue=" + issue + '}';
+        return "Disabled{reason='" + reason + '\'' + ", issue=" + issue + '}';
     }
 }

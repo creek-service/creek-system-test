@@ -34,8 +34,11 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.util.Collection;
 import org.creek.api.system.test.extension.model.Expectation;
+import org.creek.api.system.test.extension.model.ExpectationRef;
 import org.creek.api.system.test.extension.model.Input;
+import org.creek.api.system.test.extension.model.InputRef;
 import org.creek.api.system.test.extension.model.ModelType;
+import org.creek.api.system.test.extension.model.Ref;
 import org.creek.api.system.test.extension.model.Seed;
 import org.creek.api.system.test.model.LocationAware;
 
@@ -71,6 +74,9 @@ public final class SystemTestMapper {
         builder.addMixIn(Seed.class, ModelMixin.class);
         builder.addMixIn(Input.class, ModelMixin.class);
         builder.addMixIn(Expectation.class, ModelMixin.class);
+        builder.addMixIn(Ref.class, RefMixin.class);
+        builder.addMixIn(InputRef.class, RefMixin.class);
+        builder.addMixIn(ExpectationRef.class, RefMixin.class);
 
         modelTypes.stream()
                 .map(modelType -> new NamedType(modelType.type(), modelType.name()))

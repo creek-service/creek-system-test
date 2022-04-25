@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 
 class ModelTypeTest {
@@ -31,9 +32,73 @@ class ModelTypeTest {
         new EqualsTester()
                 .addEqualityGroup(
                         ModelType.seed(TestSeed.class), ModelType.seed(TestSeed.class, "test"))
+                .addEqualityGroup(ModelType.input(mock(TestInput.class).getClass()))
                 .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass()))
                 .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass(), "diff"))
                 .testEquals();
+    }
+
+    @Test
+    void shouldCreateRefWithDerivedNaming() {
+        // When:
+        final ModelType<TestRef> result = ModelType.ref(TestRef.class);
+
+        // Then:
+        assertThat(result.name(), is("test"));
+        assertThat(result.type(), is(TestRef.class));
+    }
+
+    @Test
+    void shouldCreateRefWithExplicitNaming() {
+        // When:
+        final ModelType<TestRef> result = ModelType.ref(TestRef.class, "explicit_name");
+
+        // Then:
+        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.type(), is(TestRef.class));
+    }
+
+    @Test
+    void shouldCreateInputRefWithDerivedNaming() {
+        // When:
+        final ModelType<TestInputRef> result = ModelType.inputRef(TestInputRef.class);
+
+        // Then:
+        assertThat(result.name(), is("test"));
+        assertThat(result.type(), is(TestInputRef.class));
+    }
+
+    @Test
+    void shouldCreateInputRefWithExplicitNaming() {
+        // When:
+        final ModelType<TestInputRef> result =
+                ModelType.inputRef(TestInputRef.class, "explicit_name");
+
+        // Then:
+        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.type(), is(TestInputRef.class));
+    }
+
+    @Test
+    void shouldCreateExpectationRefWithDerivedNaming() {
+        // When:
+        final ModelType<TestExpectationRef> result =
+                ModelType.expectationRef(TestExpectationRef.class);
+
+        // Then:
+        assertThat(result.name(), is("test"));
+        assertThat(result.type(), is(TestExpectationRef.class));
+    }
+
+    @Test
+    void shouldCreateExpectationRefWithExplicitNaming() {
+        // When:
+        final ModelType<TestExpectationRef> result =
+                ModelType.expectationRef(TestExpectationRef.class, "explicit_name");
+
+        // Then:
+        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.type(), is(TestExpectationRef.class));
     }
 
     @Test
@@ -141,6 +206,45 @@ class ModelTypeTest {
         // Then:
         assertThat(result.name(), is("more_complex"));
     }
+
+    @Test
+    void shouldThrowOnAnonymousTypes() {
+        // Given:
+        final Input anonymousType = new Input() {};
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> ModelType.input(anonymousType.getClass()));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("Anonymous/synthetic types are not supported: " + anonymousType.getClass()));
+    }
+
+    @Test
+    void shouldThrowOnSyntheticTypes() {
+        // Given:
+        final Ref lambda = () -> Paths.get("some location");
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalArgumentException.class, () -> ModelType.ref(lambda.getClass()));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("Anonymous/synthetic types are not supported: " + lambda.getClass()));
+    }
+
+    private interface TestRef extends Ref {}
+
+    private interface TestInputRef extends InputRef {}
+
+    private interface TestExpectationRef extends ExpectationRef {}
 
     private interface TestSeed extends Seed {}
 

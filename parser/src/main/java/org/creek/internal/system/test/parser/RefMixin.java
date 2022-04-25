@@ -18,12 +18,14 @@ package org.creek.internal.system.test.parser;
 
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.creek.api.system.test.model.SimpleRef;
 
 /**
- * Annotate model types as being polymorphic.
+ * {@link org.creek.api.system.test.extension.model.Ref} model types as being polymorphic, with
+ * {@link SimpleRef} as its default impl.
  *
- * <p>The use of mixins avoids the need for the {@code extension} module to depend on Jackson
+ * <p>The use of mixins avoids the need for the {@code extension} model to depend on Jackson
  * annotations.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
-public interface ModelMixin {}
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, defaultImpl = SimpleRef.class)
+public interface RefMixin extends ModelMixin {}

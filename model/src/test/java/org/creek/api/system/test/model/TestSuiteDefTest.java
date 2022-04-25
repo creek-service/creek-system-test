@@ -16,8 +16,8 @@
 
 package org.creek.api.system.test.model;
 
-import static org.creek.api.system.test.model.Disabled.disabled;
 import static org.creek.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
+import static org.creek.api.system.test.model.SimpleRef.simpleRef;
 import static org.creek.api.system.test.model.TestCaseDef.testCase;
 import static org.creek.api.system.test.model.TestSuiteDef.testSuite;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,10 +41,18 @@ class TestSuiteDefTest {
     private static final ObjectMapper MAPPER = SystemTestMapper.create(List.of());
 
     private static final String TEST_CASE_YAML =
-            " name: test one\n" + "    description: test description\n";
+            "name: test one\n"
+                    + "   description: test description\n"
+                    + "   expectations:\n"
+                    + "    - an_expectation\n";
 
     private static final TestCaseDef TEST_CASE_NO_LOCATION =
-            testCase("test one", Optional.of("test description"), Optional.empty());
+            testCase(
+                    "test one",
+                    Optional.of("test description"),
+                    Optional.empty(),
+                    Optional.empty(),
+                    List.of(simpleRef("an_expectation")));
 
     @Test
     void shouldImplementHashCodeAndEquals() {

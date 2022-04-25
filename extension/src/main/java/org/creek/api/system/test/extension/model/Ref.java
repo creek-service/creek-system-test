@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package org.creek.internal.system.test.parser;
-
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+package org.creek.api.system.test.extension.model;
 
 /**
- * Annotate model types as being polymorphic.
+ * A reference to a model file.
  *
- * <p>The use of mixins avoids the need for the {@code extension} module to depend on Jackson
- * annotations.
+ * <p>Creek test extensions can define additional reference types. Common reference types can derive
+ * from this interface. More specialized reference types can derive from either {@link InputRef} or
+ * {@link ExpectationRef}.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
-public interface ModelMixin {}
+public interface Ref extends InputRef, ExpectationRef {}

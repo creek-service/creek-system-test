@@ -24,8 +24,11 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.creek.api.system.test.extension.model.ExpectationRef;
+import org.creek.api.system.test.extension.model.InputRef;
 
 /** Definition of a test case. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -35,27 +38,40 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     private final String description;
     private final Optional<Disabled> disabled;
     private final URI location;
+    private final List<InputRef> inputs;
+    private final List<ExpectationRef> expectations;
 
     @SuppressWarnings("unused") // Invoked via reflection by Jackson
     @JsonCreator
     public static TestCaseDef testCase(
             @JsonProperty(value = "name", required = true) final String name,
             @JsonProperty("description") final Optional<String> description,
-            @JsonProperty("disabled") final Optional<Disabled> disabled) {
-        return new TestCaseDef(name, description.orElse(""), disabled, UNKNOWN_LOCATION);
+            @JsonProperty("disabled") final Optional<Disabled> disabled,
+            @JsonProperty("inputs") final Optional<? extends List<? extends InputRef>> maybeInputs,
+            @JsonProperty(value = "expectations", required = true)
+                    final List<? extends ExpectationRef> expectations) {
+        final List<? extends InputRef> inputs =
+                maybeInputs.isPresent() ? maybeInputs.get() : List.of();
+        return new TestCaseDef(
+                name, description.orElse(""), disabled, UNKNOWN_LOCATION, inputs, expectations);
     }
 
     private TestCaseDef(
             final String name,
             final String description,
             final Optional<Disabled> disabled,
-            final URI location) {
+            final URI location,
+            final List<? extends InputRef> inputs,
+            final List<? extends ExpectationRef> expectations) {
         this.name = requireNonNull(name, "name");
         this.description = requireNonNull(description, "description");
         this.disabled = requireNonNull(disabled, "disabled");
         this.location = requireNonNull(location, "location");
+        this.inputs = List.copyOf(requireNonNull(inputs, "inputs"));
+        this.expectations = List.copyOf(requireNonNull(expectations, "expectations"));
 
         requireNonEmpty(name, "empty");
+        requireNonEmpty(expectations, "expectations");
     }
 
     @JsonGetter("name")
@@ -71,9 +87,22 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     }
 
     @JsonGetter("disabled")
-    @JsonPropertyDescription("Optionally disables the test")
+    @JsonPropertyDescription("(Optional) if present, the test is disabled")
     public Optional<Disabled> disabled() {
         return disabled;
+    }
+
+    @JsonGetter("inputs")
+    @JsonPropertyDescription(
+            "(Optional) list of inputs to feed into the system before asserting expectations")
+    public List<InputRef> inputs() {
+        return List.copyOf(inputs);
+    }
+
+    @JsonGetter("expectations")
+    @JsonPropertyDescription("List of expectations to assert once inputs are processed")
+    public List<ExpectationRef> expectations() {
+        return List.copyOf(expectations);
     }
 
     public URI location() {
@@ -81,7 +110,7 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     }
 
     public TestCaseDef withLocation(final URI location) {
-        return new TestCaseDef(name, description, disabled, location);
+        return new TestCaseDef(name, description, disabled, location, inputs, expectations);
     }
 
     @Override
@@ -96,12 +125,14 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
         return Objects.equals(name, testCase.name)
                 && Objects.equals(description, testCase.description)
                 && Objects.equals(disabled, testCase.disabled)
+                && Objects.equals(inputs, testCase.inputs)
+                && Objects.equals(expectations, testCase.expectations)
                 && Objects.equals(location, testCase.location);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, disabled, location);
+        return Objects.hash(name, description, disabled, inputs, expectations, location);
     }
 
     @Override
@@ -117,6 +148,10 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
                 + disabled
                 + ", location="
                 + location
+                + ", inputs="
+                + inputs
+                + ", expectations="
+                + expectations
                 + '}';
     }
 }

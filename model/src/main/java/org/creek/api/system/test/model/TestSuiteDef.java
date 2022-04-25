@@ -76,25 +76,28 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     }
 
     @JsonGetter("description")
-    @JsonPropertyDescription("Optional description")
+    @JsonPropertyDescription("(Optional) description")
     public String description() {
         return description;
     }
 
     @JsonGetter("disabled")
-    @JsonPropertyDescription("Optionally disables the suite")
+    @JsonPropertyDescription("(Optional) if present, the test is disabled")
     public Optional<Disabled> disabled() {
         return disabled;
     }
 
     @JsonGetter("services")
-    @JsonPropertyDescription("List of services to start when running the suite")
+    @JsonPropertyDescription(
+            "List of services to start when running the suite. "
+                    + "Services are started in the order defined.")
     public List<String> services() {
         return List.copyOf(services);
     }
 
     @JsonGetter("tests")
-    @JsonPropertyDescription("List of test cases the suite contains")
+    @JsonPropertyDescription(
+            "List of test cases the suite contains. Tests are run in the order defined.")
     public List<TestCaseDef> tests() {
         return List.copyOf(tests);
     }
