@@ -372,15 +372,21 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("tests/suite-1.yml"), VALID_TEST_YAML);
 
         // When:
-        final Exception e = assertThrows(InvalidTestFileException.class, () -> loader.load(root, path -> true));
+        final Exception e =
+                assertThrows(InvalidTestFileException.class, () -> loader.load(root, path -> true));
 
         // Then:
-        assertThat(e.getMessage(), startsWith("Error in suite 'suite name':'test 1': " +
-                "Failed to load Expectation from " + locationPrefix + "expectations/expectation-1.yml"
-                + System.lineSeparator()
-                + "Please check the file is valid."
-                + System.lineSeparator()
-                + "Could not resolve subtype of"));
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Error in suite 'suite name':'test 1': "
+                                + "Failed to load Expectation from "
+                                + locationPrefix
+                                + "expectations/expectation-1.yml"
+                                + System.lineSeparator()
+                                + "Please check the file is valid."
+                                + System.lineSeparator()
+                                + "Could not resolve subtype of"));
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")

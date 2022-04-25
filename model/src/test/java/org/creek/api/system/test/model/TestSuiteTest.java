@@ -63,7 +63,8 @@ class TestSuiteTest {
                         TestSuite.testSuite(testCases, def(testCases))
                                 .build(mock(TestPackage.class)))
                 .addEqualityGroup(TestSuite.testSuite(List.of(), def(List.of())).build(pkg))
-                .addEqualityGroup(TestSuite.testSuite(List.of(), mock(TestSuiteDef.class)).build(pkg))
+                .addEqualityGroup(
+                        TestSuite.testSuite(List.of(), mock(TestSuiteDef.class)).build(pkg))
                 .testEquals();
     }
 

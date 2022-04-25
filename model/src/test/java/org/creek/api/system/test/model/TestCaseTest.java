@@ -70,11 +70,9 @@ class TestCaseTest {
                         testCase(inputs, diffExpectations, def(inputs, diffExpectations))
                                 .build(suite))
                 .addEqualityGroup(
-                        testCase(List.of(), List.of(), def(List.of(), List.of()))
-                                .build(suite))
+                        testCase(List.of(), List.of(), def(List.of(), List.of())).build(suite))
                 .addEqualityGroup(
-                        testCase(List.of(), List.of(), mock(TestCaseDef.class))
-                                .build(suite))
+                        testCase(List.of(), List.of(), mock(TestCaseDef.class)).build(suite))
                 .testEquals();
     }
 
