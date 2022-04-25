@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 
 class ModelTypeTest {
@@ -227,7 +226,7 @@ class ModelTypeTest {
     @Test
     void shouldThrowOnSyntheticTypes() {
         // Given:
-        final Ref lambda = () -> Paths.get("some location");
+        final Ref lambda = () -> "some location";
 
         // When:
         final Exception e =

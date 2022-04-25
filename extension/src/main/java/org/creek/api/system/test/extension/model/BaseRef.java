@@ -16,25 +16,22 @@
 
 package org.creek.api.system.test.extension.model;
 
-
-import java.nio.file.Path;
-
-interface BaseRef {
+public interface BaseRef {
 
     /**
-     * The location of the model file.
+     * The id of the file being referenced
      *
-     * <p>If the returned path is relative, it is relative to the type's directory, e.g. for an
-     * {@link InputRef input ref} the path is relative to the {@code inputs} directory, and for an
-     * {@link ExpectationRef} it is relative to the {@code expectations} directory.
+     * <p>The name of the file within the type's directory, e.g. for an {@link InputRef input ref}
+     * the path is relative to the {@code inputs} directory, and for an {@link ExpectationRef} it is
+     * relative to the {@code expectations} directory.
      *
      * <p>The {@code .yml} or {@code .yaml} file extension is optional
      *
      * <p>For example, a {@link Input} file called {@code some_input.yml} within the test package's
-     * {@code input} directory can be referenced with the location {@code "some_input"} or {@code
+     * {@code input} directory can be referenced with the id {@code "some_input"} or {@code
      * "some_input.yml"}.
      *
-     * @return the location of the model file.
+     * @return the id of the model file.
      */
-    Path location();
+    String id();
 }

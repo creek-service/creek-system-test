@@ -28,16 +28,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Definition of a test suite. */
+/** Serialisable definition of a test suite. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
 
     private final String name;
     private final String description;
     private final Optional<Disabled> disabled;
-    private final URI location;
     private final List<String> services;
     private final List<TestCaseDef> tests;
+    private final URI location;
 
     @JsonCreator
     public static TestSuiteDef testSuite(
@@ -119,17 +119,19 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
             return false;
         }
         final TestSuiteDef testSuiteDef = (TestSuiteDef) o;
+
+        // Note: location intentionally excluded:
         return Objects.equals(name, testSuiteDef.name)
                 && Objects.equals(description, testSuiteDef.description)
                 && Objects.equals(disabled, testSuiteDef.disabled)
                 && Objects.equals(services, testSuiteDef.services)
-                && Objects.equals(tests, testSuiteDef.tests)
-                && Objects.equals(location, testSuiteDef.location);
+                && Objects.equals(tests, testSuiteDef.tests);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, disabled, services, tests, location);
+        // Note: location intentionally excluded:
+        return Objects.hash(name, description, disabled, services, tests);
     }
 
     @Override

@@ -30,16 +30,16 @@ import java.util.Optional;
 import org.creek.api.system.test.extension.model.ExpectationRef;
 import org.creek.api.system.test.extension.model.InputRef;
 
-/** Definition of a test case. */
+/** Serialisable definition of a test case. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TestCaseDef implements LocationAware<TestCaseDef> {
 
     private final String name;
     private final String description;
     private final Optional<Disabled> disabled;
-    private final URI location;
     private final List<InputRef> inputs;
     private final List<ExpectationRef> expectations;
+    private final URI location;
 
     @SuppressWarnings("unused") // Invoked via reflection by Jackson
     @JsonCreator
@@ -122,17 +122,19 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
             return false;
         }
         final TestCaseDef testCase = (TestCaseDef) o;
+
+        // Note: location intentionally excluded:
         return Objects.equals(name, testCase.name)
                 && Objects.equals(description, testCase.description)
                 && Objects.equals(disabled, testCase.disabled)
                 && Objects.equals(inputs, testCase.inputs)
-                && Objects.equals(expectations, testCase.expectations)
-                && Objects.equals(location, testCase.location);
+                && Objects.equals(expectations, testCase.expectations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, disabled, inputs, expectations, location);
+        // Note: location intentionally excluded:
+        return Objects.hash(name, description, disabled, inputs, expectations);
     }
 
     @Override

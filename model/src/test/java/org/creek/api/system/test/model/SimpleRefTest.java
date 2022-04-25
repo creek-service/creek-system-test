@@ -16,12 +16,14 @@
 
 package org.creek.api.system.test.model;
 
+import static org.creek.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
 import static org.creek.api.system.test.model.SimpleRef.simpleRef;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.EqualsTester;
+import java.net.URI;
 import java.util.List;
 import org.creek.api.system.test.extension.model.ExpectationRef;
 import org.creek.api.system.test.extension.model.InputRef;
@@ -74,5 +76,23 @@ class SimpleRefTest {
 
         // Then:
         assertThat(result, is(simpleRef("some/file")));
+    }
+
+    @Test
+    void shouldDefaultToNoLocation() {
+        assertThat(simpleRef("some_file").location(), is(UNKNOWN_LOCATION));
+    }
+
+    @Test
+    void shouldSetLocation() {
+        // Given:
+        final URI location = URI.create("file:///some.location");
+        final SimpleRef ref = simpleRef("some_file");
+
+        // When:
+        final SimpleRef result = ref.withLocation(location);
+
+        // Then:
+        assertThat(result.location(), is(location));
     }
 }

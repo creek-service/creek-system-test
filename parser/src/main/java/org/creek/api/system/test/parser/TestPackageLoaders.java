@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.api.system.test.parser;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
-val spotBugsVersion : String by extra
 
-dependencies {
-    api(project(":model"))
+import java.util.Collection;
+import org.creek.api.system.test.extension.model.ModelType;
+import org.creek.internal.system.test.parser.YamlTestPackageLoader;
 
-    implementation("org.creek:creek-base-type:${creekVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+/** Factory class for test package loaders. */
+public final class TestPackageLoaders {
+
+    private TestPackageLoaders() {}
+
+    public static TestPackageLoader yamlLoader(
+            final Collection<ModelType<?>> modelExtensions,
+            final TestPackageLoader.Observer observer) {
+        return new YamlTestPackageLoader(modelExtensions, observer);
+    }
 }

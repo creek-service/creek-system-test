@@ -325,21 +325,21 @@ class SystemTestMapperTest {
 
     public static final class TestInputRef implements InputRef {
         @Override
-        public Path location() {
+        public String id() {
             return null;
         }
     }
 
     public static final class TestExpectationRef implements ExpectationRef {
         @Override
-        public Path location() {
+        public String id() {
             return null;
         }
     }
 
     public static final class TestRef implements Ref {
         @Override
-        public Path location() {
+        public String id() {
             return null;
         }
     }
