@@ -51,7 +51,7 @@ class DisabledTest {
     @Test
     void shouldReadValid() throws Exception {
         // Given:
-        final String yaml = "---\n" + "reason: reason\n" + "issue: http://jira/issue/4\n";
+        final String yaml = "---\nreason: reason\nissue: http://jira/issue/4\n";
 
         // When:
         final Disabled result = parse(yaml);
@@ -64,7 +64,7 @@ class DisabledTest {
     @Test
     void shouldRequireReason() {
         // Given:
-        final String yaml = "---\n" + "issue: http://jira/issue/4\n";
+        final String yaml = "---\nissue: http://jira/issue/4\n";
 
         // When:
         final Exception e = assertThrows(JsonProcessingException.class, () -> parse(yaml));
@@ -76,7 +76,7 @@ class DisabledTest {
     @Test
     void shouldNotRequireIssue() throws Exception {
         // Given:
-        final String yaml = "---\n" + "reason: reason\n";
+        final String yaml = "---\nreason: reason\n";
 
         // When:
         final Disabled result = parse(yaml);

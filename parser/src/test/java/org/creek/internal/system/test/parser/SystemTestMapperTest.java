@@ -38,8 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.creek.api.system.test.extension.model.Expectation;
+import org.creek.api.system.test.extension.model.ExpectationRef;
 import org.creek.api.system.test.extension.model.Input;
+import org.creek.api.system.test.extension.model.InputRef;
 import org.creek.api.system.test.extension.model.ModelType;
+import org.creek.api.system.test.extension.model.Ref;
 import org.creek.api.system.test.extension.model.Seed;
 import org.creek.api.system.test.model.LocationAware;
 import org.creek.api.test.util.TestPaths;
@@ -56,7 +59,7 @@ class SystemTestMapperTest {
     @Test
     void shouldSetLocationOnLocationAwareTypes() throws Exception {
         // Given:
-        final String yaml = "---\n" + "name: some name\n";
+        final String yaml = "---\nname: some name\n";
 
         final Path file = tempDir.resolve("a dir").resolve("a file.yml");
         TestPaths.write(file, yaml);
@@ -74,7 +77,7 @@ class SystemTestMapperTest {
     @Test
     void shouldFailOnUnknownProperty() {
         // Given:
-        final String yaml = "---\n" + "name: some name\n" + "unknown_prop: some value\n";
+        final String yaml = "---\nname: some name\nunknown_prop: some value\n";
 
         // When:
         final Exception e =
@@ -88,7 +91,7 @@ class SystemTestMapperTest {
     @Test
     void shouldDeserialiseFloatsAsDecimal() throws Exception {
         // Given:
-        final String yaml = "---\n" + "value: 1.34\n";
+        final String yaml = "---\nvalue: 1.34";
 
         // When:
         final Map<?, ?> result = MAPPER.readValue(yaml, Map.class);
@@ -100,7 +103,7 @@ class SystemTestMapperTest {
     @Test
     void shouldFailOnNullPrimitives() {
         // Given:
-        final String yaml = "---\n" + "primitive:";
+        final String yaml = "---\nprimitive:";
 
         // When:
         final Exception e =
@@ -115,7 +118,7 @@ class SystemTestMapperTest {
     @Test
     void shouldFailOnNulls() {
         // Given:
-        final String yaml = "---\n" + "name:";
+        final String yaml = "---\nname:";
 
         // When:
         final Exception e =
@@ -132,7 +135,7 @@ class SystemTestMapperTest {
         // Given:
         MAPPER.registerSubtypes(new NamedType(SubType.class, "sub"));
 
-        final String yaml = "---\n" + "poly:\n" + "  '@type': unknown_sub\n";
+        final String yaml = "---\npoly:\n  '@type': unknown_sub\n";
 
         // When:
         final Exception e =
@@ -147,7 +150,7 @@ class SystemTestMapperTest {
     @Test
     void shouldFailOnDuplicateFieldNames() {
         // Given:
-        final String yaml = "---\n" + "name: name1\n" + "name: name2\n";
+        final String yaml = "---\nname: name1\nname: name2\n";
 
         // When:
         final Exception e =
@@ -168,12 +171,57 @@ class SystemTestMapperTest {
     }
 
     @Test
+    void shouldDeserializeInputRefSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(List.of(ModelType.inputRef(TestInputRef.class)));
+
+        final String yaml = "---\n'@type': test\n";
+
+        // When:
+        final InputRef result = mapper.readValue(yaml, InputRef.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestInputRef.class)));
+    }
+
+    @Test
+    void shouldDeserializeExpectationRefSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(
+                        List.of(ModelType.expectationRef(TestExpectationRef.class)));
+
+        final String yaml = "---\n'@type': test\n";
+
+        // When:
+        final ExpectationRef result = mapper.readValue(yaml, ExpectationRef.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestExpectationRef.class)));
+    }
+
+    @Test
+    void shouldDeserializeCommonRefSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper = SystemTestMapper.create(List.of(ModelType.ref(TestRef.class)));
+
+        final String yaml = "---\n'@type': test\n";
+
+        // When:
+        final Ref result = mapper.readValue(yaml, Ref.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestRef.class)));
+    }
+
+    @Test
     void shouldDeserializeSeedSubTypes() throws Exception {
         // Given:
         final ObjectMapper mapper =
                 SystemTestMapper.create(List.of(ModelType.seed(TestSeed.class)));
 
-        final String yaml = "---\n" + "'@type': test\n";
+        final String yaml = "---\n'@type': test\n";
 
         // When:
         final Seed result = mapper.readValue(yaml, Seed.class);
@@ -188,7 +236,7 @@ class SystemTestMapperTest {
         final ObjectMapper mapper =
                 SystemTestMapper.create(List.of(ModelType.input(TestInput.class)));
 
-        final String yaml = "---\n" + "'@type': test\n";
+        final String yaml = "---\n'@type': test\n";
 
         // When:
         final Input result = mapper.readValue(yaml, Input.class);
@@ -203,7 +251,7 @@ class SystemTestMapperTest {
         final ObjectMapper mapper =
                 SystemTestMapper.create(List.of(ModelType.expectation(TestExpectation.class)));
 
-        final String yaml = "---\n" + "'@type': test\n";
+        final String yaml = "---\n'@type': test\n";
 
         // When:
         final Expectation result = mapper.readValue(yaml, Expectation.class);
@@ -273,6 +321,27 @@ class SystemTestMapperTest {
 
     public static final class WithPoly {
         public WithPoly(@JsonProperty("poly") final BaseType poly) {}
+    }
+
+    public static final class TestInputRef implements InputRef {
+        @Override
+        public Path location() {
+            return null;
+        }
+    }
+
+    public static final class TestExpectationRef implements ExpectationRef {
+        @Override
+        public Path location() {
+            return null;
+        }
+    }
+
+    public static final class TestRef implements Ref {
+        @Override
+        public Path location() {
+            return null;
+        }
     }
 
     public static final class TestSeed implements Seed {}

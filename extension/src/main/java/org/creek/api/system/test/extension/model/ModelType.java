@@ -57,6 +57,86 @@ public final class ModelType<T> {
     }
 
     /**
+     * Create metadata about a {@link Ref} subtype, with an implicit name.
+     *
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
+     * #deriveTypeName} for details.
+     *
+     * @param type the subtype
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends Ref> ModelType<T> ref(final Class<T> type) {
+        return ref(type, deriveTypeName(type, Ref.class));
+    }
+
+    /**
+     * Create metadata about a {@link Ref} subtype, with an explicit name.
+     *
+     * @param type the subtype
+     * @param name the name of the subtype.
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends Ref> ModelType<T> ref(final Class<T> type, final String name) {
+        return modelType(type, name, Ref.class);
+    }
+
+    /**
+     * Create metadata about a {@link InputRef} subtype, with an implicit name.
+     *
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
+     * #deriveTypeName} for details.
+     *
+     * @param type the subtype
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends InputRef> ModelType<T> inputRef(final Class<T> type) {
+        return inputRef(type, deriveTypeName(type, InputRef.class));
+    }
+
+    /**
+     * Create metadata about a {@link InputRef} subtype, with an explicit name.
+     *
+     * @param type the subtype
+     * @param name the name of the subtype.
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends InputRef> ModelType<T> inputRef(
+            final Class<T> type, final String name) {
+        return modelType(type, name, InputRef.class);
+    }
+
+    /**
+     * Create metadata about a {@link ExpectationRef} subtype, with an implicit name.
+     *
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
+     * #deriveTypeName} for details.
+     *
+     * @param type the subtype
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends ExpectationRef> ModelType<T> expectationRef(final Class<T> type) {
+        return expectationRef(type, deriveTypeName(type, ExpectationRef.class));
+    }
+
+    /**
+     * Create metadata about a {@link ExpectationRef} subtype, with an explicit name.
+     *
+     * @param type the subtype
+     * @param name the name of the subtype.
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends ExpectationRef> ModelType<T> expectationRef(
+            final Class<T> type, final String name) {
+        return modelType(type, name, ExpectationRef.class);
+    }
+
+    /**
      * Create metadata about a {@link Input} subtype, with an implicit name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@link
@@ -97,7 +177,7 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link Input} subtype, with an explicit name.
+     * Create metadata about a {@link Expectation} subtype, with an explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -112,8 +192,8 @@ public final class ModelType<T> {
     /**
      * The model name.
      *
-     * <p>This is the name that users will use system test YAML file's in the top level {@code
-     * '@type'} propeerty to indicate the file should be deserialized as {@link #type}.
+     * <p>This is the name that users will use in system test YAML files in the top level {@code
+     * '@type'} property to indicate the file should be deserialized into {@link #type}.
      *
      * @return the model name.
      */
@@ -153,7 +233,7 @@ public final class ModelType<T> {
 
     @Override
     public String toString() {
-        return "ModelType{" + "name=" + name + ", type='" + type + '\'' + '}';
+        return "ModelType{name=" + name + ", type='" + type + '\'' + '}';
     }
 
     /**
@@ -172,6 +252,11 @@ public final class ModelType<T> {
      */
     private static <T> String deriveTypeName(
             final Class<? extends T> subType, final Class<T> baseType) {
+        if (subType.isAnonymousClass() || subType.isSynthetic()) {
+            throw new IllegalArgumentException(
+                    "Anonymous/synthetic types are not supported: " + subType);
+        }
+
         final String base = baseType.getSimpleName();
         final String sub = subType.getSimpleName();
         final String prefix =
