@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.internal.system.test.parser;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
-val spotBugsVersion : String by extra
 
-dependencies {
-    api(project(":model"))
+import org.creek.api.system.test.extension.model.BaseRef;
+import org.creek.api.system.test.model.LocationAware;
 
-    implementation("org.creek:creek-base-type:${creekVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+public class MissingDependencyException extends TestLoadFailedException {
+
+    public MissingDependencyException(final BaseRef ref) {
+        super("Missing dependency: " + ref.id() + maybeLocation(ref));
+    }
+
+    private static String maybeLocation(final BaseRef ref) {
+        if (ref instanceof LocationAware) {
+            return ", referenced: " + ((LocationAware<?>) ref).location();
+        }
+        return "";
+    }
 }

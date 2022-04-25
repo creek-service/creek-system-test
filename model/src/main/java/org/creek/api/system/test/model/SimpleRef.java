@@ -17,33 +17,44 @@
 package org.creek.api.system.test.model;
 
 import static java.util.Objects.requireNonNull;
+import static org.creek.api.base.type.Preconditions.requireNonBlank;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.nio.file.Path;
+import java.net.URI;
 import java.util.Objects;
 import org.creek.api.system.test.extension.model.Ref;
 
 /** A simple reference that holds only the location as the value in the yaml. */
-public final class SimpleRef implements Ref {
+public final class SimpleRef implements Ref, LocationAware<SimpleRef> {
 
-    private final Path location;
+    private final String id;
+    private final URI location;
 
     @JsonCreator
     public static SimpleRef simpleRef(final String location) {
-        return new SimpleRef(Path.of(location));
+        return new SimpleRef(location, UNKNOWN_LOCATION);
     }
 
-    private SimpleRef(final Path location) {
+    private SimpleRef(final String id, final URI location) {
+        this.id = requireNonBlank(id, "id");
         this.location = requireNonNull(location, "location");
-        if (location.toString().isBlank()) {
-            throw new IllegalArgumentException("location can not be blank");
-        }
+    }
+
+    @JsonValue
+    @Override
+    public String id() {
+        return id;
     }
 
     @Override
-    public Path location() {
+    public URI location() {
         return location;
+    }
+
+    @Override
+    public SimpleRef withLocation(final URI location) {
+        return new SimpleRef(id, location);
     }
 
     @Override
@@ -55,17 +66,18 @@ public final class SimpleRef implements Ref {
             return false;
         }
         final SimpleRef simpleRef = (SimpleRef) o;
-        return Objects.equals(location, simpleRef.location);
+        // location intentionally excluded:
+        return Objects.equals(id, simpleRef.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(location);
+        // location intentionally excluded:
+        return Objects.hash(id);
     }
 
-    @JsonValue
     @Override
     public String toString() {
-        return location.toString();
+        return id;
     }
 }

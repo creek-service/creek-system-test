@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-package org.creek.api.system.test.parser;
+package org.creek.internal.system.test.parser;
 
-public final class SuiteParser {}
+public final class InvalidTestFileException extends TestLoadFailedException {
+
+    public InvalidTestFileException(final String msg, final Throwable cause) {
+        super(msg, cause);
+    }
+}

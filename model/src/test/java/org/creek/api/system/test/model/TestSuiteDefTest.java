@@ -72,7 +72,14 @@ class TestSuiteDefTest {
                                 Optional.of("description"),
                                 Optional.of(disabled),
                                 List.of("service"),
-                                List.of(testCase)))
+                                List.of(testCase)),
+                        testSuite(
+                                        "name",
+                                        Optional.of("description"),
+                                        Optional.of(disabled),
+                                        List.of("service"),
+                                        List.of(testCase))
+                                .withLocation(mock(URI.class)))
                 .addEqualityGroup(
                         testSuite(
                                 "diff",
@@ -108,14 +115,6 @@ class TestSuiteDefTest {
                                 Optional.of(disabled),
                                 List.of("service"),
                                 List.of(testCase, testCase)))
-                .addEqualityGroup(
-                        testSuite(
-                                        "name",
-                                        Optional.of("description"),
-                                        Optional.of(disabled),
-                                        List.of("service"),
-                                        List.of(testCase))
-                                .withLocation(mock(URI.class)))
                 .testEquals();
     }
 

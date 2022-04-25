@@ -37,7 +37,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.EqualsTester;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import org.creek.api.system.test.extension.model.ExpectationRef;
@@ -74,7 +73,14 @@ class TestCaseDefTest {
                                 Optional.of("description"),
                                 Optional.of(disabled),
                                 inputs,
-                                expectations))
+                                expectations),
+                        testCase(
+                                        "name",
+                                        Optional.of("description"),
+                                        Optional.of(disabled),
+                                        inputs,
+                                        expectations)
+                                .withLocation(mock(URI.class)))
                 .addEqualityGroup(
                         testCase(
                                 "diff",
@@ -110,14 +116,6 @@ class TestCaseDefTest {
                                 Optional.of(disabled),
                                 inputs,
                                 List.of(expectations.get(0), expectations.get(0))))
-                .addEqualityGroup(
-                        testCase(
-                                        "name",
-                                        Optional.of("description"),
-                                        Optional.of(disabled),
-                                        inputs,
-                                        expectations)
-                                .withLocation(mock(URI.class)))
                 .testEquals();
     }
 
@@ -285,7 +283,7 @@ class TestCaseDefTest {
 
         // Then:
         assertThat(result.inputs(), contains(instanceOf(CustomInputRef.class)));
-        assertThat(result.inputs().get(0).location(), is(Path.of("location")));
+        assertThat(result.inputs().get(0).id(), is("location"));
     }
 
     @Test
@@ -308,7 +306,7 @@ class TestCaseDefTest {
 
         // Then:
         assertThat(result.expectations(), contains(instanceOf(CustomExpectationRef.class)));
-        assertThat(result.expectations().get(0).location(), is(Path.of("location")));
+        assertThat(result.expectations().get(0).id(), is("location"));
     }
 
     @Test
@@ -332,9 +330,9 @@ class TestCaseDefTest {
 
         // Then:
         assertThat(result.inputs(), contains(instanceOf(CustomRef.class)));
-        assertThat(result.inputs().get(0).location(), is(Path.of("input")));
+        assertThat(result.inputs().get(0).id(), is("input"));
         assertThat(result.expectations(), contains(instanceOf(CustomRef.class)));
-        assertThat(result.expectations().get(0).location(), is(Path.of("expectation")));
+        assertThat(result.expectations().get(0).id(), is("expectation"));
     }
 
     private static TestCaseDef parse(final String yaml) throws Exception {
@@ -343,14 +341,14 @@ class TestCaseDefTest {
 
     private static class BaseCustomRef {
 
-        private final Path location;
+        private final String id;
 
-        BaseCustomRef(final String location) {
-            this.location = Path.of(location);
+        BaseCustomRef(final String id) {
+            this.id = id;
         }
 
-        public Path location() {
-            return location;
+        public String id() {
+            return id;
         }
     }
 

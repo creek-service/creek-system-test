@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creek.internal.system.test.parser;
 
-val creekVersion : String by extra
-val jacksonVersion : String by extra
-val spotBugsVersion : String by extra
+public class TestLoadFailedException extends RuntimeException {
 
-dependencies {
-    api(project(":model"))
+    public TestLoadFailedException(final String msg) {
+        super(msg);
+    }
 
-    implementation("org.creek:creek-base-type:${creekVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    public TestLoadFailedException(final String msg, final Throwable cause) {
+        super(msg, cause);
+    }
 }
