@@ -1,3 +1,3 @@
 # Creek system test model
 
-The module used for defining system tests.
+The base types used when deserializing system test packages.

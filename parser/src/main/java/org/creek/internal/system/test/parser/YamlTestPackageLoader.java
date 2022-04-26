@@ -60,8 +60,9 @@ import org.creek.api.system.test.parser.TestPackageLoader;
  *   |--seed
  *   |--inputs
  *   |--expectations
- *   |--tests
  * </pre>
+ *
+ * <p>...with test suites defined in the root directory.
  */
 public final class YamlTestPackageLoader implements TestPackageLoader {
 
@@ -85,18 +86,20 @@ public final class YamlTestPackageLoader implements TestPackageLoader {
     @Override
     public Optional<TestPackage> load(final Path path, final Predicate<Path> predicate) {
         final List<Seed> seedData =
-                loadDir(path, SEED, Seed.class).map(LazyFile::content).collect(Collectors.toList());
+                loadDir(path.resolve(SEED), Seed.class)
+                        .map(LazyFile::content)
+                        .collect(Collectors.toList());
 
         final Map<String, LazyFile<Input>> inputs =
-                loadDir(path, INPUTS, Input.class)
+                loadDir(path.resolve(INPUTS), Input.class)
                         .collect(Collectors.toMap(LazyFile::id, Function.identity()));
 
         final Map<String, LazyFile<Expectation>> expectations =
-                loadDir(path, EXPECTATIONS, Expectation.class)
+                loadDir(path.resolve(EXPECTATIONS), Expectation.class)
                         .collect(Collectors.toMap(LazyFile::id, Function.identity()));
 
         final List<TestSuite.Builder> suites =
-                loadDir(path, SUITES, TestSuiteDef.class)
+                loadDir(path, TestSuiteDef.class)
                         .filter(f -> predicate.test(f.path()))
                         .map(f -> testSuiteBuilder(f.content(), inputs, expectations))
                         .collect(Collectors.toUnmodifiableList());
@@ -110,8 +113,8 @@ public final class YamlTestPackageLoader implements TestPackageLoader {
         return Optional.of(testPackage(path, seedData, suites));
     }
 
-    private <T> Stream<LazyFile<T>> loadDir(final Path root, final Path dir, final Class<T> type) {
-        return ymlFilesInDir(root.resolve(dir)).stream()
+    private <T> Stream<LazyFile<T>> loadDir(final Path dir, final Class<T> type) {
+        return ymlFilesInDir(dir).stream()
                 .map(path -> new LazyFile<>(id(path), path, () -> parse(path, type)));
     }
 
