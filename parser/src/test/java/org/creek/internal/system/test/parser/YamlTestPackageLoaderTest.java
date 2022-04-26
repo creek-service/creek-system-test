@@ -109,11 +109,10 @@ class YamlTestPackageLoaderTest {
     }
 
     @Test
-    void shouldReturnEmptyIfNotAValidTestPackageDirectory() throws Exception {
+    void shouldReturnEmptyIfNotAValidTestPackageDirectory() {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        Files.createDirectories(root.resolve("tests"));
         // Note: no test suites
 
         // When:
@@ -128,7 +127,7 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Optional<TestPackage> result = loader.load(root, path -> true);
@@ -157,7 +156,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("seed/seed-1.yml"), VALID_SEED_YAML);
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Optional<TestPackage> result = loader.load(root, path -> true);
@@ -172,7 +171,7 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yaml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yaml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yaml"), VALID_TEST_YAML);
 
         // When:
         final Optional<TestPackage> result = loader.load(root, path -> true);
@@ -186,7 +185,7 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Optional<TestPackage> result = loader.load(root, path -> true);
@@ -196,13 +195,13 @@ class YamlTestPackageLoaderTest {
 
         assertThat(
                 pkg.suites().get(0).def().location().toString(),
-                is(locationPrefix + "tests/suite.yml:2"));
+                is(locationPrefix + "suite.yml:2"));
         assertThat(
                 pkg.suites().get(0).tests().get(0).def().location().toString(),
-                is(locationPrefix + "tests/suite.yml:6"));
+                is(locationPrefix + "suite.yml:6"));
         assertThat(
                 pkg.suites().get(0).def().tests().get(0).location().toString(),
-                is(locationPrefix + "tests/suite.yml:6"));
+                is(locationPrefix + "suite.yml:6"));
     }
 
     @Test
@@ -210,7 +209,7 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Optional<TestPackage> result = loader.load(root, path -> true);
@@ -227,7 +226,7 @@ class YamlTestPackageLoaderTest {
     void shouldThrowOnMissingInput() {
         // Given:
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Exception e =
@@ -241,14 +240,14 @@ class YamlTestPackageLoaderTest {
                                 + "Missing dependency: input-1, "
                                 + "referenced: "
                                 + locationPrefix
-                                + "tests/suite.yml:8"));
+                                + "suite.yml:8"));
     }
 
     @Test
     void shouldThrowOnMissingExpectation() {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         final Exception e =
@@ -262,7 +261,7 @@ class YamlTestPackageLoaderTest {
                                 + "Missing dependency: expectation-1, "
                                 + "referenced: "
                                 + locationPrefix
-                                + "tests/suite.yml:10"));
+                                + "suite.yml:10"));
     }
 
     @Test
@@ -271,7 +270,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("inputs/unused-input.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         loader.load(root, path -> true);
@@ -286,7 +285,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
         givenFile(root.resolve("expectations/unused-expectation.yml"), VALID_INPUTS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         loader.load(root, path -> true);
@@ -303,7 +302,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("inputs/invalid-input.yml"), INVALID_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         loader.load(root, path -> true);
@@ -317,7 +316,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
         givenFile(root.resolve("expectations/invalid-expectations.yml"), INVALID_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         loader.load(root, path -> true);
@@ -333,7 +332,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("inputs/ignore.not-yml"), INVALID_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
         givenFile(root.resolve("expectations/ignore.not-yaml"), INVALID_YAML);
-        givenFile(root.resolve("tests/suite.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
         loader.load(root, path -> true);
@@ -346,12 +345,11 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        givenFile(root.resolve("tests/suite-1.yml"), INVALID_YAML);
-        givenFile(root.resolve("tests/suite-2.yml"), VALID_TEST_YAML);
-        givenFile(root.resolve("tests/suite-3.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite-1.yml"), INVALID_YAML);
+        givenFile(root.resolve("suite-2.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite-3.yml"), VALID_TEST_YAML);
 
-        final Predicate<Path> suitePredicate =
-                path -> path.endsWith(Paths.get("tests/suite-2.yml"));
+        final Predicate<Path> suitePredicate = path -> path.endsWith(Paths.get("suite-2.yml"));
 
         // When:
         final Optional<TestPackage> result = loader.load(root, suitePredicate);
@@ -361,7 +359,7 @@ class YamlTestPackageLoaderTest {
         assertThat(result.get().suites(), hasSize(1));
         assertThat(
                 result.get().suites().get(0).def().location().toString(),
-                containsString("tests/suite-2.yml"));
+                containsString("suite-2.yml"));
     }
 
     @Test
@@ -369,7 +367,7 @@ class YamlTestPackageLoaderTest {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), INVALID_YAML);
-        givenFile(root.resolve("tests/suite-1.yml"), VALID_TEST_YAML);
+        givenFile(root.resolve("suite-1.yml"), VALID_TEST_YAML);
 
         // When:
         final Exception e =
