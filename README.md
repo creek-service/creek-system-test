@@ -22,6 +22,7 @@ expected output or final state of the system.
     * [System test directory structure](#system-test-directory-structure)
     * [Example system test package](#example-system-test-package)
     * [Testing multiple services](#testing-multiple-services)
+    * [Disabling tests](#disabling-tests)
 * [Running system tests](#running-system-tests) 
 * [Debugging system test](#debugging-system-test)
 
@@ -267,6 +268,50 @@ The test package directory for the above example would look like:
 Testing multiple services together is straight forward. Simply list all the services that should be started in the test
 suite, in the order they should be started, and then define _seed_, _inputs_ and _expectations_ as normal. The system
 tests will start your services, pump in the inputs and assert the expectations.
+
+### Disabling tests
+
+Test cases and whole test suites can be disabled by adding a `disabled` `reason` and optional associated `issue` url.
+For example:
+
+##### **`suite-with-disabled-test.yml`**
+```yaml
+---
+name: example test suite with disabled tests
+services:
+  - some-service
+tests:
+  - name: disabled test
+    disabled:
+      justification: put your justificiation/notes on why its disabled here.
+      issue: http://link.to.associated.issue.tracking.the.disabled.test
+    inputs:
+      - some_input
+    expectations:
+      - expected_output
+  - name: enabled test
+    inputs:
+      - some_input
+    expectations:
+      - expected_output
+```
+
+##### **`disabled-suite.yml`**
+```yaml
+---
+name: example disabled suite
+services:
+  - some-service
+disabled:
+  justification: put your justificiation/notes on why its disabled here.
+  issue: http://link.to.associated.issue.tracking.the.disabled.test
+tests:
+  - name: test
+    inputs:
+      - some_input
+    expectations:
+      - expected_output
+```
 
 ## Running system tests
 
