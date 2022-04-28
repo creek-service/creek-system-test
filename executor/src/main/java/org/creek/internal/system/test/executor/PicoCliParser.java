@@ -44,12 +44,12 @@ public final class PicoCliParser {
         try {
             parser.parseArgs(args);
 
-            if (options.usageHelpRequested) {
+            if (parser.isUsageHelpRequested()) {
                 LOGGER.info(parser.getUsageMessage());
                 return Optional.empty();
             }
 
-            if (options.versionRequested) {
+            if (parser.isVersionHelpRequested()) {
                 LOGGER.info(
                         "SystemTestExecutor: "
                                 + jarVersion(SystemTestExecutor.class).orElse("unknown"));
@@ -63,20 +63,8 @@ public final class PicoCliParser {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    @CommandLine.Command(name = "SystemTestExecutor")
+    @CommandLine.Command(name = "SystemTestExecutor", mixinStandardHelpOptions = true)
     public static final class Options implements ExecutorOptions {
-        @Option(
-                names = {"-h", "--help"},
-                usageHelp = true,
-                description = "display this help message")
-        private boolean usageHelpRequested;
-
-        @Option(
-                names = {"-V", "--version"},
-                versionHelp = true,
-                description = "display this help message")
-        private boolean versionRequested;
-
         @Option(
                 names = {"-td", "--test-directory"},
                 required = true,

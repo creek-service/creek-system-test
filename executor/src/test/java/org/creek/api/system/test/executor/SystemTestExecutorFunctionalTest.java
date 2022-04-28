@@ -44,7 +44,8 @@ class SystemTestExecutorFunctionalTest {
 
     private static final Path LIB_DIR =
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
-    public static final Pattern VERSION_PATTERN =
+
+    private static final Pattern VERSION_PATTERN =
             Pattern.compile(".*SystemTestExecutor: \\d+\\.\\d+\\.\\d+.*", Pattern.DOTALL);
 
     private Supplier<String> stdErr;
@@ -61,7 +62,8 @@ class SystemTestExecutorFunctionalTest {
         // Then:
         assertThat(stdErr.get(), is(""));
         assertThat(stdOut.get(), startsWith("Usage: SystemTestExecutor"));
-        assertThat(stdOut.get(), containsString("-h, --help      display this help message"));
+        assertThat(
+                stdOut.get(), containsString("-h, --help      Show this help message and exit."));
         assertThat(stdOut.get(), containsString("-td, --test-directory=PATH"));
         assertThat(exitCode, is(0));
     }
@@ -70,20 +72,6 @@ class SystemTestExecutorFunctionalTest {
     void shouldOutputVersion() {
         // Given:
         final String[] args = {"-V"};
-
-        // When:
-        final int exitCode = runExecutor(args);
-
-        // Then:
-        assertThat(stdErr.get(), is(""));
-        assertThat(stdOut.get(), matchesPattern(VERSION_PATTERN));
-        assertThat(exitCode, is(0));
-    }
-
-    @Test
-    void shouldEchoVersion() {
-        // Given:
-        final String[] args = minimalArgs("--echo-only");
 
         // When:
         final int exitCode = runExecutor(args);
@@ -104,6 +92,7 @@ class SystemTestExecutorFunctionalTest {
 
         // Then:
         assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), matchesPattern(VERSION_PATTERN));
         assertThat(stdOut.get(), containsString("--result-directory=result/path"));
         assertThat(stdOut.get(), containsString("--verifier-timeout-seconds=<Not Set>"));
         assertThat(exitCode, is(0));
