@@ -1,3 +1,11 @@
 module creek.system.test.executor {
-    exports org.creek.api.example;
+    requires creek.base.type;
+    requires info.picocli;
+    requires org.apache.logging.log4j;
+    requires java.management;
+
+    exports org.creek.api.system.test.executor;
+
+    opens org.creek.internal.system.test.executor to
+            info.picocli;
 }
