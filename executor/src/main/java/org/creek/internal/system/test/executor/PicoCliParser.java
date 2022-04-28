@@ -17,6 +17,7 @@
 package org.creek.internal.system.test.executor;
 
 import static java.lang.System.lineSeparator;
+import static org.creek.api.base.type.JarVersion.jarVersion;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.creek.api.system.test.executor.ExecutorOptions;
+import org.creek.api.system.test.executor.SystemTestExecutor;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
@@ -47,6 +49,13 @@ public final class PicoCliParser {
                 return Optional.empty();
             }
 
+            if (options.versionRequested) {
+                LOGGER.info(
+                        "SystemTestExecutor: "
+                                + jarVersion(SystemTestExecutor.class).orElse("unknown"));
+                return Optional.empty();
+            }
+
             return Optional.of(options);
         } catch (final Exception e) {
             throw new InvalidArgumentsException(parser.getUsageMessage(), e);
@@ -61,6 +70,12 @@ public final class PicoCliParser {
                 usageHelp = true,
                 description = "display this help message")
         private boolean usageHelpRequested;
+
+        @Option(
+                names = {"-V", "--version"},
+                versionHelp = true,
+                description = "display this help message")
+        private boolean versionRequested;
 
         @Option(
                 names = {"-td", "--test-directory"},

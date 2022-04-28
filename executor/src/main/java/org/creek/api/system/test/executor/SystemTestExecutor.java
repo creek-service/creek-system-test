@@ -16,6 +16,7 @@
 
 package org.creek.api.system.test.executor;
 
+import static org.creek.api.base.type.JarVersion.jarVersion;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,8 @@ public final class SystemTestExecutor {
     }
 
     public static void run(final ExecutorOptions options) {
+        LOGGER.info(
+                "SystemTestExecutor: " + jarVersion(SystemTestExecutor.class).orElse("unknown"));
         if (options.echoOnly()) {
             LOGGER.info(options);
         } else {
