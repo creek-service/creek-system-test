@@ -16,6 +16,8 @@
 
 package org.creek.api.system.test.extension.model;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,8 +31,10 @@ class ModelTypeTest {
     @Test
     void shouldImplementHashCodeAndEquals() {
         new EqualsTester()
+                .addEqualityGroup(ModelType.seed(TestSeed.class), ModelType.seed(TestSeed.class))
                 .addEqualityGroup(
-                        ModelType.seed(TestSeed.class), ModelType.seed(TestSeed.class, "test"))
+                        ModelType.seed(TestSeed.class, "test"),
+                        ModelType.seed(TestSeed.class, "test"))
                 .addEqualityGroup(ModelType.input(mock(TestInput.class).getClass()))
                 .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass()))
                 .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass(), "diff"))
@@ -43,7 +47,7 @@ class ModelTypeTest {
         final ModelType<TestRef> result = ModelType.ref(TestRef.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestRef.class));
     }
 
@@ -53,7 +57,7 @@ class ModelTypeTest {
         final ModelType<TestRef> result = ModelType.ref(TestRef.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestRef.class));
     }
 
@@ -63,7 +67,7 @@ class ModelTypeTest {
         final ModelType<TestInputRef> result = ModelType.inputRef(TestInputRef.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestInputRef.class));
     }
 
@@ -74,7 +78,7 @@ class ModelTypeTest {
                 ModelType.inputRef(TestInputRef.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestInputRef.class));
     }
 
@@ -85,7 +89,7 @@ class ModelTypeTest {
                 ModelType.expectationRef(TestExpectationRef.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestExpectationRef.class));
     }
 
@@ -96,7 +100,7 @@ class ModelTypeTest {
                 ModelType.expectationRef(TestExpectationRef.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestExpectationRef.class));
     }
 
@@ -106,7 +110,7 @@ class ModelTypeTest {
         final ModelType<TestSeed> result = ModelType.seed(TestSeed.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestSeed.class));
     }
 
@@ -116,7 +120,7 @@ class ModelTypeTest {
         final ModelType<TestSeed> result = ModelType.seed(TestSeed.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestSeed.class));
     }
 
@@ -126,7 +130,7 @@ class ModelTypeTest {
         final ModelType<TestInput> result = ModelType.input(TestInput.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestInput.class));
     }
 
@@ -136,7 +140,7 @@ class ModelTypeTest {
         final ModelType<TestInput> result = ModelType.input(TestInput.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestInput.class));
     }
 
@@ -146,7 +150,7 @@ class ModelTypeTest {
         final ModelType<TestExpectation> result = ModelType.expectation(TestExpectation.class);
 
         // Then:
-        assertThat(result.name(), is("test"));
+        assertThat(result.name(), is(empty()));
         assertThat(result.type(), is(TestExpectation.class));
     }
 
@@ -157,7 +161,7 @@ class ModelTypeTest {
                 ModelType.expectation(TestExpectation.class, "explicit_name");
 
         // Then:
-        assertThat(result.name(), is("explicit_name"));
+        assertThat(result.name(), is(of("explicit_name")));
         assertThat(result.type(), is(TestExpectation.class));
     }
 
@@ -177,33 +181,6 @@ class ModelTypeTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> ModelType.expectation(TestExpectation.class, " "));
-    }
-
-    @Test
-    void shouldDeriveNameOfClassStartingWithLowerCaseLetter() {
-        // When:
-        final ModelType<?> result = ModelType.expectation(lowerExpectation.class);
-
-        // Then:
-        assertThat(result.name(), is("lower"));
-    }
-
-    @Test
-    void shouldDeriveNameOfNonPostFixedType() {
-        // When:
-        final ModelType<?> result = ModelType.expectation(Unique.class);
-
-        // Then:
-        assertThat(result.name(), is("unique"));
-    }
-
-    @Test
-    void shouldSplitDerivedNamePartsWithUnderscore() {
-        // When:
-        final ModelType<?> result = ModelType.expectation(MoreComplexExpectation.class);
-
-        // Then:
-        assertThat(result.name(), is("more_complex"));
     }
 
     @Test
@@ -250,11 +227,4 @@ class ModelTypeTest {
     private interface TestInput extends Input {}
 
     private interface TestExpectation extends Expectation {}
-
-    @SuppressWarnings("checkstyle:TypeName")
-    private interface lowerExpectation extends Expectation {}
-
-    private interface MoreComplexExpectation extends Expectation {}
-
-    private interface Unique extends Expectation {}
 }

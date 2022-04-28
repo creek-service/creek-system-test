@@ -19,33 +19,40 @@ package org.creek.api.system.test.extension.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Holds a Creek system test model subtype, and it's metadata.
  *
+ * <p>The methods below come in variants that accept a custom type name and those that don't. Those
+ * that don't, will use that default naming strategy defined in {@code SubTypeNaming.subTypeName} to
+ * determine the type name. {@code SubTypeNaming} can be found in the {@code creek-base-type} jar.
+ *
  * @param <T> the model subtype.
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class ModelType<T> {
 
+    private final Class<? super T> base;
     private final Class<T> type;
-    private final String name;
+    private final Optional<String> name;
 
     /**
-     * Create metadata about a {@link Seed} subtype, with an implicit name.
+     * Create metadata about a {@link Seed} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends Seed> ModelType<T> seed(final Class<T> type) {
-        return seed(type, deriveTypeName(type, Seed.class));
+        return modelType(type, Seed.class);
     }
 
     /**
-     * Create metadata about a {@link Seed} subtype, with an explicit name.
+     * Create metadata about a {@link Seed} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -57,21 +64,21 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link Ref} subtype, with an implicit name.
+     * Create metadata about a {@link Ref} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends Ref> ModelType<T> ref(final Class<T> type) {
-        return ref(type, deriveTypeName(type, Ref.class));
+        return modelType(type, Ref.class);
     }
 
     /**
-     * Create metadata about a {@link Ref} subtype, with an explicit name.
+     * Create metadata about a {@link Ref} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -83,21 +90,21 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link InputRef} subtype, with an implicit name.
+     * Create metadata about a {@link InputRef} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends InputRef> ModelType<T> inputRef(final Class<T> type) {
-        return inputRef(type, deriveTypeName(type, InputRef.class));
+        return modelType(type, InputRef.class);
     }
 
     /**
-     * Create metadata about a {@link InputRef} subtype, with an explicit name.
+     * Create metadata about a {@link InputRef} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -110,21 +117,21 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link ExpectationRef} subtype, with an implicit name.
+     * Create metadata about a {@link ExpectationRef} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends ExpectationRef> ModelType<T> expectationRef(final Class<T> type) {
-        return expectationRef(type, deriveTypeName(type, ExpectationRef.class));
+        return modelType(type, ExpectationRef.class);
     }
 
     /**
-     * Create metadata about a {@link ExpectationRef} subtype, with an explicit name.
+     * Create metadata about a {@link ExpectationRef} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -137,21 +144,21 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link Input} subtype, with an implicit name.
+     * Create metadata about a {@link Input} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends Input> ModelType<T> input(final Class<T> type) {
-        return input(type, deriveTypeName(type, Input.class));
+        return modelType(type, Input.class);
     }
 
     /**
-     * Create metadata about a {@link Input} subtype, with an explicit name.
+     * Create metadata about a {@link Input} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -163,21 +170,21 @@ public final class ModelType<T> {
     }
 
     /**
-     * Create metadata about a {@link Expectation} subtype, with an implicit name.
+     * Create metadata about a {@link Expectation} subtype, with a standard type name.
      *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@link
-     * #deriveTypeName} for details.
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
      * @return the model metadata
      */
     public static <T extends Expectation> ModelType<T> expectation(final Class<T> type) {
-        return expectation(type, deriveTypeName(type, Expectation.class));
+        return modelType(type, Expectation.class);
     }
 
     /**
-     * Create metadata about a {@link Expectation} subtype, with an explicit name.
+     * Create metadata about a {@link Expectation} subtype, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
@@ -190,14 +197,18 @@ public final class ModelType<T> {
     }
 
     /**
-     * The model name.
+     * The explicit type name.
      *
-     * <p>This is the name that users will use in system test YAML files in the top level {@code
-     * '@type'} property to indicate the file should be deserialized into {@link #type}.
+     * <p>This is the name that users will use in system test YAML files for the top-level {@code
+     * '@type'} or {@code <!name> } property to indicate what that a file should be deserialized
+     * into {@link #type}.
      *
-     * @return the model name.
+     * <p>Where no explicit name is provided, the system will use the default naming strategy
+     * defined by {@code SubTypeNaming.subTypeName()}.
+     *
+     * @return any explicit model name.
      */
-    public String name() {
+    public Optional<String> name() {
         return name;
     }
 
@@ -205,11 +216,22 @@ public final class ModelType<T> {
         return type;
     }
 
-    private ModelType(final Class<T> type, final String name) {
-        this.type = requireNonNull(type, "type");
-        this.name = requireNonNull(name, "name").trim();
+    public Class<? super T> base() {
+        return base;
+    }
 
-        if (this.name.isEmpty()) {
+    private ModelType(
+            final Class<? super T> base, final Class<T> type, final Optional<String> name) {
+        this.base = requireNonNull(base, "base");
+        this.type = requireNonNull(type, "type");
+        this.name = requireNonNull(name, "name").map(String::trim);
+
+        if (type.isAnonymousClass() || type.isSynthetic()) {
+            throw new IllegalArgumentException(
+                    "Anonymous/synthetic types are not supported: " + type);
+        }
+
+        if (name.isPresent() && name.get().isBlank()) {
             throw new IllegalArgumentException("name can not be blank");
         }
     }
@@ -236,41 +258,22 @@ public final class ModelType<T> {
         return "ModelType{name=" + name + ", type='" + type + '\'' + '}';
     }
 
-    /**
-     * Get the name that will be used in the {@code '@type'} property of test files for this type.
-     *
-     * <p>Given a subtype {@code MyFirstThing} of base type {@code Thing}, this method returns
-     * {@code my_first}.
-     *
-     * <p>If subtype name does not end with base type name, this method returns the full sub-type
-     * name, for example given a subtype {@code MyFirst} of base type {@code Thing}, this method
-     * returns {@code my_first}.
-     *
-     * @param subType the subtype
-     * @param baseType the base type
-     * @return the type name the subtype will be registered under.
-     */
-    private static <T> String deriveTypeName(
-            final Class<? extends T> subType, final Class<T> baseType) {
-        if (subType.isAnonymousClass() || subType.isSynthetic()) {
-            throw new IllegalArgumentException(
-                    "Anonymous/synthetic types are not supported: " + subType);
-        }
-
-        final String base = baseType.getSimpleName();
-        final String sub = subType.getSimpleName();
-        final String prefix =
-                sub.endsWith(base) ? sub.substring(0, sub.length() - base.length()) : sub;
-        final String name = prefix.replaceAll("([A-Z])", "_$1").toLowerCase();
-        return name.startsWith("_") ? name.substring(1) : name;
+    private static <Base, T extends Base> ModelType<T> modelType(
+            final Class<T> type, final Class<Base> base) {
+        return modelType(type, Optional.empty(), base);
     }
 
     private static <Base, T extends Base> ModelType<T> modelType(
-            final Class<T> type, final String name, final Class<Base> baseType) {
-        if (type.equals(baseType)) {
+            final Class<T> type, final String name, final Class<Base> base) {
+        return modelType(type, Optional.of(name), base);
+    }
+
+    private static <Base, T extends Base> ModelType<T> modelType(
+            final Class<T> type, final Optional<String> name, final Class<Base> base) {
+        if (type.equals(base)) {
             throw new IllegalArgumentException(
-                    "Not a subtype. type: " + type.getName() + ", baseType: " + baseType.getName());
+                    "Not a subtype. type: " + type.getName() + ", base: " + base.getName());
         }
-        return new ModelType<>(type, name);
+        return new ModelType<>(base, type, name);
     }
 }

@@ -26,6 +26,7 @@ dependencies {
     api(project(":model"))
 
     implementation("org.creek:creek-base-type:${creekVersion}")
+    implementation("org.creek:creek-base-schema:${creekVersion}")
     implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
