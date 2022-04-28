@@ -102,9 +102,10 @@ class SystemTestExecutorFunctionalTest {
                                 "--module",
                                 "creek.system.test.executor/org.creek.api.system.test.executor.SystemTestExecutor"));
 
-        cmd.addAll(List.of(args));
-
+        // If running with Jacoco coverage, find the java agent argument and pass to child process:
         findConvergeAgentCmdLineArg().ifPresent(arg -> cmd.add(1, arg));
+
+        cmd.addAll(List.of(args));
 
         try {
             final Process executor = new ProcessBuilder().command(cmd).start();
@@ -132,7 +133,6 @@ class SystemTestExecutorFunctionalTest {
         return args.toArray(String[]::new);
     }
 
-    /** If running with Jacoco coverage, find the java agent argument and pass to child process. */
     private static Optional<String> findConvergeAgentCmdLineArg() {
         final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         return runtimeMXBean.getInputArguments().stream()
