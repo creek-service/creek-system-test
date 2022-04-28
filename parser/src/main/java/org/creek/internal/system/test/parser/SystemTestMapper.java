@@ -16,6 +16,7 @@
 
 package org.creek.internal.system.test.parser;
 
+import static org.creek.api.base.schema.naming.SubTypeNaming.subTypeName;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -78,9 +79,13 @@ public final class SystemTestMapper {
         builder.addMixIn(InputRef.class, RefMixin.class);
         builder.addMixIn(ExpectationRef.class, RefMixin.class);
 
-        modelTypes.stream()
-                .map(modelType -> new NamedType(modelType.type(), modelType.name()))
-                .forEach(builder::registerSubtypes);
+        modelTypes.stream().map(SystemTestMapper::namedType).forEach(builder::registerSubtypes);
+    }
+
+    private static <T> NamedType namedType(final ModelType<T> modelType) {
+        final String name =
+                modelType.name().orElseGet(() -> subTypeName(modelType.type(), modelType.base()));
+        return new NamedType(modelType.type(), name);
     }
 
     private static final class LocationAwareDeserializerModifier extends BeanDeserializerModifier {
