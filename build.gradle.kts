@@ -52,6 +52,7 @@ subprojects {
         set("creekVersion", "0.+")
         set("spotBugsVersion", "4.6.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.13.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+        set("picocliVersion", "4.6.3")          // https://mvnrepository.com/artifact/info.picocli/picocli
 
         set("log4jVersion", "2.17.2")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("guavaVersion", "31.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
