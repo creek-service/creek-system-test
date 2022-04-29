@@ -25,7 +25,9 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.creek.api.base.type.JarVersion;
 import org.creek.api.system.test.executor.ExecutorOptions;
+import org.creek.api.system.test.executor.SystemTestExecutor;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
@@ -42,8 +44,16 @@ public final class PicoCliParser {
         try {
             parser.parseArgs(args);
 
-            if (options.usageHelpRequested) {
+            if (parser.isUsageHelpRequested()) {
                 LOGGER.info(parser.getUsageMessage());
+                return Optional.empty();
+            }
+
+            if (parser.isVersionHelpRequested()) {
+                LOGGER.info(
+                        "SystemTestExecutor: "
+                                + JarVersion.jarVersion(SystemTestExecutor.class)
+                                        .orElse("unknown"));
                 return Optional.empty();
             }
 
@@ -54,14 +64,8 @@ public final class PicoCliParser {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    @CommandLine.Command(name = "SystemTestExecutor")
+    @CommandLine.Command(name = "SystemTestExecutor", mixinStandardHelpOptions = true)
     public static final class Options implements ExecutorOptions {
-        @Option(
-                names = {"-h", "--help"},
-                usageHelp = true,
-                description = "display this help message")
-        private boolean usageHelpRequested;
-
         @Option(
                 names = {"-td", "--test-directory"},
                 required = true,

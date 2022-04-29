@@ -24,7 +24,7 @@ val picocliVersion : String by extra
 val log4jVersion : String by extra
 
 dependencies {
-    implementation("org.creek:creek-base-type:$creekVersion")
+    implementation("org.creek:creek-base-type:0.1.31")
 
     implementation("info.picocli:picocli:$picocliVersion")
     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
