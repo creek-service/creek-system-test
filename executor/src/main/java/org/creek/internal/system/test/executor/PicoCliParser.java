@@ -17,7 +17,6 @@
 package org.creek.internal.system.test.executor;
 
 import static java.lang.System.lineSeparator;
-import static org.creek.api.base.type.JarVersion.jarVersion;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.creek.api.base.type.JarVersion;
 import org.creek.api.system.test.executor.ExecutorOptions;
 import org.creek.api.system.test.executor.SystemTestExecutor;
 import picocli.CommandLine;
@@ -52,7 +52,8 @@ public final class PicoCliParser {
             if (parser.isVersionHelpRequested()) {
                 LOGGER.info(
                         "SystemTestExecutor: "
-                                + jarVersion(SystemTestExecutor.class).orElse("unknown"));
+                                + JarVersion.jarVersion(SystemTestExecutor.class)
+                                        .orElse("unknown"));
                 return Optional.empty();
             }
 

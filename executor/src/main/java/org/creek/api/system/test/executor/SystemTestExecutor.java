@@ -16,10 +16,10 @@
 
 package org.creek.api.system.test.executor;
 
-import static org.creek.api.base.type.JarVersion.jarVersion;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.creek.api.base.type.JarVersion;
 import org.creek.internal.system.test.executor.PicoCliParser;
 
 /** Entry point for running system tests */
@@ -39,9 +39,10 @@ public final class SystemTestExecutor {
     }
 
     public static void run(final ExecutorOptions options) {
-        LOGGER.info(
-                "SystemTestExecutor: " + jarVersion(SystemTestExecutor.class).orElse("unknown"));
         if (options.echoOnly()) {
+            LOGGER.info(
+                    "SystemTestExecutor: "
+                            + JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
             LOGGER.info(options);
         } else {
             execute(options);
