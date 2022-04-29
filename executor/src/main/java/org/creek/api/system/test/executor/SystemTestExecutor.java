@@ -44,10 +44,6 @@ public final class SystemTestExecutor {
                     "SystemTestExecutor: "
                             + JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
             LOGGER.info(options);
-        } else {
-            execute(options);
         }
     }
-
-    private static void execute(final ExecutorOptions options) {}
 }
