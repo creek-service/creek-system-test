@@ -21,4 +21,3 @@ updates:
       - creek-github-packages
     schedule:
       interval: weekly
-    versioning-strategy: increase
