@@ -7,5 +7,5 @@ module creek.system.test.parser {
     requires com.fasterxml.jackson.datatype.jdk8;
     requires com.github.spotbugs.annotations;
 
-    exports org.creek.api.system.test.parser;
+    exports org.creekservice.api.system.test.parser;
 }

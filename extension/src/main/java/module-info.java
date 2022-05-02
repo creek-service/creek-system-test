@@ -1,6 +1,6 @@
 module creek.system.test.extension {
-    exports org.creek.api.system.test.extension;
-    exports org.creek.api.system.test.extension.model;
+    exports org.creekservice.api.system.test.extension;
+    exports org.creekservice.api.system.test.extension.model;
 
-    uses org.creek.api.system.test.extension.CreekTestExtension;
+    uses org.creekservice.api.system.test.extension.CreekTestExtension;
 }

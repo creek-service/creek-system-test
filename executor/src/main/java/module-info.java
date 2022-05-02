@@ -4,8 +4,8 @@ module creek.system.test.executor {
     requires org.apache.logging.log4j;
     requires java.management;
 
-    exports org.creek.api.system.test.executor;
+    exports org.creekservice.api.system.test.executor;
 
-    opens org.creek.internal.system.test.executor to
+    opens org.creekservice.internal.system.test.executor to
             info.picocli;
 }
