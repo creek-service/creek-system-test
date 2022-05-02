@@ -12,7 +12,7 @@ However, it can be run directly as a command line tool:
 ```shell
     java \
       --module-path <lib-path> \
-      --module creek.system.test.executor/org.creek.api.system.test.executor.SystemTestExecutor \
+      --module creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor \
       --test-directory path/to/tests \
       --result-directory path/to/results
 ```
@@ -22,4 +22,4 @@ However, it can be run directly as a command line tool:
 ...or you can interact programmatically with the main [SystemTestExecutor][2] class.
 
 [1]: https://github.com/creek-service/creek-system-test-gradle-plugin
-[2]: src/main/java/org/creek/api/system/test/executor/SystemTestExecutor.java
+[2]: src/main/java/org/creekservice/api/system/test/executor/SystemTestExecutor.java

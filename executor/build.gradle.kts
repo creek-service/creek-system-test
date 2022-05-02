@@ -33,7 +33,7 @@ dependencies {
 
 application {
     mainModule.set("creek.system.test.executor")
-    mainClass.set("org.creek.api.system.test.executor.SystemTestExecutor")
+    mainClass.set("org.creekservice.api.system.test.executor.SystemTestExecutor")
 }
 
 tasks.test {
