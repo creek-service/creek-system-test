@@ -48,7 +48,7 @@ import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.api.system.test.model.TestSuiteDef;
-import org.creekservice.api.system.test.parser.TestPackageLoader;
+import org.creekservice.api.system.test.parser.TestPackageParser;
 
 /**
  * Parse test suites from a directory structure of Yaml files.
@@ -64,7 +64,7 @@ import org.creekservice.api.system.test.parser.TestPackageLoader;
  *
  * <p>...with test suites defined in the root directory.
  */
-public final class YamlTestPackageLoader implements TestPackageLoader {
+public final class YamlTestPackageParser implements TestPackageParser {
 
     private static final PathMatcher YAML_MATCHER =
             FileSystems.getDefault().getPathMatcher("regex:.*\\.yml|.*\\.yaml");
@@ -76,14 +76,14 @@ public final class YamlTestPackageLoader implements TestPackageLoader {
     private final ObjectMapper mapper;
     private final Observer observer;
 
-    public YamlTestPackageLoader(
+    public YamlTestPackageParser(
             final Collection<ModelType<?>> modelExtensions, final Observer observer) {
         this.mapper = SystemTestMapper.create(modelExtensions);
         this.observer = requireNonNull(observer, "observer");
     }
 
     @Override
-    public Optional<TestPackage> load(final Path path, final Predicate<Path> predicate) {
+    public Optional<TestPackage> parse(final Path path, final Predicate<Path> predicate) {
         final List<Seed> seedData =
                 loadDir(path.resolve(SEED), Seed.class)
                         .map(LazyFile::content)

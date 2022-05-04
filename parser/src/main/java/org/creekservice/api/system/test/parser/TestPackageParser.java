@@ -24,22 +24,22 @@ import java.util.function.Predicate;
 import org.creekservice.api.system.test.model.TestPackage;
 
 /**
- * Loader of test suites.
+ * Parser of a single test package.
  *
- * <p>See {@link TestPackageLoaders} for factory methods to access a loader instance.
+ * <p>See {@link TestPackageParsers} for factory methods to access a parser instance.
  */
-public interface TestPackageLoader {
+public interface TestPackageParser {
 
     /**
-     * Load test suites for the supplied {@code path} path, filtered by the supplied {@code
+     * Parse a test package from the supplied {@code path} path, filtered by the supplied {@code
      * predicate}.
      *
      * @param path the path to load the test suites from
      * @param predicate called for each test suite found under {@code path} to limit which suites
      *     are returned.
-     * @return the test package if the {@code path} contained one.
+     * @return the test package if the {@code path} contained at least one test suite.
      */
-    Optional<TestPackage> load(Path path, Predicate<Path> predicate);
+    Optional<TestPackage> parse(Path path, Predicate<Path> predicate);
 
     interface Observer {
 
