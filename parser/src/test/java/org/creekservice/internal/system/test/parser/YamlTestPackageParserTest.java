@@ -22,6 +22,7 @@ import static org.creekservice.api.system.test.extension.model.ModelType.seed;
 import static org.creekservice.api.system.test.model.TestCase.testCase;
 import static org.creekservice.api.system.test.model.TestPackage.testPackage;
 import static org.creekservice.api.system.test.model.TestSuite.testSuite;
+import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -109,18 +110,32 @@ class YamlTestPackageParserTest {
 
     @BeforeEach
     void setUp() {
-        parser = TestPackageParsers.yaml(EXTENSIONS, observer);
+        parser = TestPackageParsers.yamlParser(EXTENSIONS, observer);
         locationPrefix = root.toAbsolutePath().toUri().toString();
 
         when(predicate.test(any())).thenReturn(true);
     }
 
     @Test
-    void shouldReturnEmptyIfNotAValidTestPackageDirectory() {
+    void shouldReturnEmptyIfNoExpectationsDirectory() {
+        // Given:
+        givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
+        // not expectation directory
+        givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
+
+        // When:
+        final Optional<TestPackage> result = parser.parse(root, predicate);
+
+        // Then:
+        assertThat(result, is(Optional.empty()));
+    }
+
+    @Test
+    void shouldReturnEmptyIfNoTestSuites() {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
         givenFile(root.resolve("expectations/expectation-1.yml"), VALID_EXPECTATIONS_YAML);
-        // Note: no test suites
+        // no test suites
 
         // When:
         final Optional<TestPackage> result = parser.parse(root, predicate);
@@ -254,6 +269,7 @@ class YamlTestPackageParserTest {
     void shouldThrowOnMissingExpectation() {
         // Given:
         givenFile(root.resolve("inputs/input-1.yml"), VALID_INPUTS_YAML);
+        ensureDirectories(root.resolve("expectations"));
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:

@@ -44,8 +44,9 @@ First, let's define the terminology we'll be using:
 
 * **[executor](executor):** functionality for executing system tests.
 * **[extension](extension):** defines types required to implement extensions to the system tests.
-* **[model](model):** system test model
-* **[parser](parser):** code for parsing system tests
+* **[model](model):** system test model.
+* **[parser](parser):** code for parsing system tests.
+* **[test-extension](test-extension):** a system test extension used internally during testing.
 
 ## Writing system tests
 

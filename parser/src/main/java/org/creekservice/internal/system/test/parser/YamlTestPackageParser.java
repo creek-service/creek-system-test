@@ -84,6 +84,12 @@ public final class YamlTestPackageParser implements TestPackageParser {
 
     @Override
     public Optional<TestPackage> parse(final Path path, final Predicate<Path> predicate) {
+        if (!Files.isDirectory(path.resolve(EXPECTATIONS))) {
+            // Test cases must have at least one expectation.
+            // Therefore, no expectation dir means no test suites:
+            return Optional.empty();
+        }
+
         final List<Seed> seedData =
                 loadDir(path.resolve(SEED), Seed.class)
                         .map(LazyFile::content)

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creekservice.internal.system.test.executor.result;
 
-dependencies {
-    // Non-test dependency free
 
-    testImplementation(project(":test-extension"))
+import java.nio.file.Path;
+
+public final class ResultsWriter {
+    public ResultsWriter(final Path outputDirectory) {}
+
+    public void write(final TestExecutionResult result) {
+        // Coming soon...
+    }
 }

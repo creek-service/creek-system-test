@@ -17,6 +17,7 @@
 package org.creekservice.api.system.test.executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -36,20 +37,37 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.creekservice.api.base.type.Suppliers;
 import org.creekservice.api.test.util.TestPaths;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class SystemTestExecutorFunctionalTest {
 
     private static final Path LIB_DIR =
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
 
+    private static final Path TEST_EXT_LIB_DIR =
+            TestPaths.moduleRoot("test-extension").resolve("build/libs").toAbsolutePath();
+
     private static final Pattern VERSION_PATTERN =
             Pattern.compile(".*SystemTestExecutor: \\d+\\.\\d+\\.\\d+.*", Pattern.DOTALL);
 
+    private static final String VALID_EXPECTATION = "---\n'@type': test\noutput: output stuff";
+
+    @TempDir private Path root;
+    private Path testDir;
+    private Path resultDir;
     private Supplier<String> stdErr;
     private Supplier<String> stdOut;
+
+    @BeforeEach
+    void setUp() {
+        testDir = root.resolve("tests");
+        resultDir = root.resolve("results");
+    }
 
     @Test
     void shouldOutputHelp() {
@@ -93,7 +111,8 @@ class SystemTestExecutorFunctionalTest {
         // Then:
         assertThat(stdErr.get(), is(""));
         assertThat(stdOut.get(), matchesPattern(VERSION_PATTERN));
-        assertThat(stdOut.get(), containsString("--result-directory=result/path"));
+        assertThat(stdOut.get(), containsString("--test-directory=" + testDir));
+        assertThat(stdOut.get(), containsString("--result-directory=" + resultDir));
         assertThat(stdOut.get(), containsString("--verifier-timeout-seconds=<Not Set>"));
         assertThat(exitCode, is(0));
     }
@@ -110,20 +129,115 @@ class SystemTestExecutorFunctionalTest {
         assertThat(stdErr.get(), startsWith("Unknown option: '--unknown'"));
         assertThat(stdErr.get(), containsString("Usage: SystemTestExecutor"));
         assertThat(stdOut.get(), is(""));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldFailIfTestDirectoryIsMissing() {
+        // Given:
+        final String[] args = minimalArgs();
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), startsWith("Not a directory: " + testDir.toUri()));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldFailIfThereWereNoTestPackages() {
+        // Given:
+        final String[] args = minimalArgs();
+        ensureDirectories(testDir);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), startsWith("No tests found under: " + testDir.toUri()));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldReportTestErrors() {
+        // Given:
+        final String[] args = minimalArgs();
+        givenTestCaseCount(1);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(
+                stdErr.get(),
+                is("There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(stdOut.get(), is(""));
         assertThat(exitCode, is(1));
     }
 
+    @Test
+    void shouldReportTestFailures() {
+        // Given:
+        final String[] args = minimalArgs();
+        givenTestCaseCount(2);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(
+                stdErr.get(),
+                is("There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(stdOut.get(), is(""));
+        assertThat(exitCode, is(1));
+    }
+
+    @Test
+    void shouldReportSuccess() {
+        // Given:
+        final String[] args = minimalArgs();
+        givenTestCaseCount(3);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), is(""));
+        assertThat(exitCode, is(0));
+    }
+
+    @Test
+    void shouldLogOnUnusedDependency() {
+        // Given:
+        final String[] args = minimalArgs();
+        givenTestCaseCount(3);
+        final Path unused = testDir.resolve("expectations/unused-expectation.yml");
+        TestPaths.write(unused, VALID_EXPECTATION);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), startsWith("Unused dependencies in test package"));
+        assertThat(stdOut.get(), containsString(unused.toUri().toString()));
+        assertThat(exitCode, is(0));
+    }
+
     private int runExecutor(final String[] args) {
+        final String separator = System.getProperty("path.separator");
+        final String modulePath = LIB_DIR + separator + TEST_EXT_LIB_DIR;
         final List<String> cmd =
                 new ArrayList<>(
                         List.of(
                                 "java",
-                                "--module-path",
-                                LIB_DIR.toString(),
-                                "--module",
-                                "creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"));
+                                "--module-path=" + modulePath,
+                                "--add-modules=creek.system.test.test.extension",
+                                "--add-reads=creek.system.test.extension=creek.system.test.test.extension",
+                                "--module=creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"));
 
-        // If running with Jacoco coverage, find the java agent argument and pass to child process:
         findConvergeAgentCmdLineArg().ifPresent(arg -> cmd.add(1, arg));
 
         cmd.addAll(List.of(args));
@@ -140,18 +254,41 @@ class SystemTestExecutorFunctionalTest {
         }
     }
 
+    private String[] minimalArgs(final String... additional) {
+        final List<String> args =
+                new ArrayList<>(
+                        List.of("--test-directory=" + testDir, "--result-directory=" + resultDir));
+        args.addAll(List.of(additional));
+        return args.toArray(String[]::new);
+    }
+
+    private void givenTestCaseCount(final int numberTestCases) {
+        TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), VALID_EXPECTATION);
+        TestPaths.write(testDir.resolve("suite.yml"), suiteContent(numberTestCases));
+    }
+
+    private String suiteContent(final int numberTestCases) {
+        final String header =
+                "---\n" + "name: suite name\n" + "services:\n" + "  - service_a\n" + "tests:\n";
+
+        final String cases =
+                IntStream.range(0, numberTestCases)
+                        .mapToObj(
+                                i ->
+                                        "  - name: test "
+                                                + i
+                                                + "\n"
+                                                + "    expectations:\n"
+                                                + "      - expectation-1\n")
+                        .collect(Collectors.joining());
+
+        return header + cases;
+    }
+
     private static String readAll(final InputStream stdErr) {
         return new BufferedReader(new InputStreamReader(stdErr, UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
-    }
-
-    private static String[] minimalArgs(final String... additional) {
-        final List<String> args =
-                new ArrayList<>(
-                        List.of("--test-directory=test/path", "--result-directory=result/path"));
-        args.addAll(List.of(additional));
-        return args.toArray(String[]::new);
     }
 
     private static Optional<String> findConvergeAgentCmdLineArg() {
