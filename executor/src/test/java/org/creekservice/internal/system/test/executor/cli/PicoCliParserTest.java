@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor;
+package org.creekservice.internal.system.test.executor.cli;
 
 import static java.lang.System.lineSeparator;
-import static org.creekservice.internal.system.test.executor.PicoCliParser.parse;
+import static org.creekservice.internal.system.test.executor.cli.PicoCliParser.parse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;

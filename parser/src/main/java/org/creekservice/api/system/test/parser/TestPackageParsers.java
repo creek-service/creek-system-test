@@ -33,7 +33,7 @@ public final class TestPackageParsers {
      * @param observer an observer to call with information while parsing.
      * @return the parser.
      */
-    public static TestPackageParser yaml(
+    public static TestPackageParser yamlParser(
             final Collection<ModelType<?>> modelExtensions,
             final TestPackageParser.Observer observer) {
         return new YamlTestPackageParser(modelExtensions, observer);

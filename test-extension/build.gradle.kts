@@ -18,8 +18,9 @@ plugins {
     `java-library`
 }
 
-dependencies {
-    // Non-test dependency free
+val jacksonVersion : String by extra
 
-    testImplementation(project(":test-extension"))
+dependencies {
+    api(project(":extension"))
+    api("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
 }

@@ -17,15 +17,21 @@
 package org.creekservice.api.system.test.extension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class CreekTestExtensionsTest {
 
     @Test
-    void shouldFindNoExtensionsByDefault() {
-        assertThat(CreekTestExtensions.load(), is(empty()));
+    void shouldFindTestExtension() {
+        // When:
+        final List<CreekTestExtension> result = CreekTestExtensions.load();
+
+        // Then:
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).name(), is("test"));
     }
 }

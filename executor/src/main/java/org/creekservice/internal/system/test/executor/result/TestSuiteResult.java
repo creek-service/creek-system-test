@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creekservice.internal.system.test.executor.result;
 
-dependencies {
-    // Non-test dependency free
+public final class TestSuiteResult {
 
-    testImplementation(project(":test-extension"))
+    private final int failed;
+    private final int errors;
+
+    public TestSuiteResult(final int failed, final int errors) {
+        this.failed = failed;
+        this.errors = errors;
+    }
+
+    /** @return number of test cases that failed, i.e. assertions not met */
+    public int failed() {
+        return failed;
+    }
+
+    /** @return number of test cases that failed to execute */
+    public int errors() {
+        return errors;
+    }
 }

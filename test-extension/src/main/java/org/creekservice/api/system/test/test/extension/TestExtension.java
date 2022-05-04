@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creekservice.api.system.test.test.extension;
 
-dependencies {
-    // Non-test dependency free
 
-    testImplementation(project(":test-extension"))
+import java.util.Set;
+import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.model.ModelType;
+
+public final class TestExtension implements CreekTestExtension {
+
+    @Override
+    public String name() {
+        return "test";
+    }
+
+    @Override
+    public Set<ModelType<?>> modelTypes() {
+        return Set.of(ModelType.expectation(TestExpectation.class));
+    }
 }

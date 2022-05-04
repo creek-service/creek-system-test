@@ -46,9 +46,9 @@ public interface TestPackageParser {
         /**
          * One or more inputs or expectations in the test package were not used.
          *
-         * @param path the root path of the package.
+         * @param packagePath the root path of the package.
          * @param unused the list of unused dependency files.
          */
-        void unusedDependencies(Path path, List<Path> unused);
+        default void unusedDependencies(Path packagePath, List<Path> unused) {}
     }
 }

@@ -4,5 +4,6 @@ include(
     "executor",
     "extension",
     "model",
-    "parser"
+    "parser",
+    "test-extension"
 )

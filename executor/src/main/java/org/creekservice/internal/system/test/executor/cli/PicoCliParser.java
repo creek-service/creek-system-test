@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor;
+package org.creekservice.internal.system.test.executor.cli;
 
 import static java.lang.System.lineSeparator;
 
