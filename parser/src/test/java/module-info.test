@@ -15,3 +15,6 @@
 
 --add-opens
   java.base/java.util=org.junitpioneer
+
+--add-opens
+  java.base/java.util.stream=org.mockito

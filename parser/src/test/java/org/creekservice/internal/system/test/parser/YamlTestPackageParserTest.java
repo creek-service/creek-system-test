@@ -30,7 +30,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +41,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,17 +52,20 @@ import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuiteDef;
-import org.creekservice.api.system.test.parser.TestPackageLoader;
-import org.creekservice.api.system.test.parser.TestPackageLoaders;
+import org.creekservice.api.system.test.parser.TestPackageParser;
+import org.creekservice.api.system.test.parser.TestPackageParsers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-class YamlTestPackageLoaderTest {
+@MockitoSettings(strictness = Strictness.LENIENT)
+class YamlTestPackageParserTest {
 
     private static final String INVALID_YAML =
             "I would cause a parsing exception. " + "But I won't as I won't be parsed... right";
@@ -98,14 +102,17 @@ class YamlTestPackageLoaderTest {
     private static final TestCaseDef TEST_CASE_DEF = TEST_SUITE_DEF.tests().get(0);
 
     @TempDir private Path root;
-    @Mock private TestPackageLoader.Observer observer;
-    private TestPackageLoader loader;
+    @Mock private TestPackageParser.Observer observer;
+    @Mock private Predicate<Path> predicate;
+    private TestPackageParser parser;
     private String locationPrefix;
 
     @BeforeEach
     void setUp() {
-        loader = TestPackageLoaders.yamlLoader(EXTENSIONS, observer);
+        parser = TestPackageParsers.yaml(EXTENSIONS, observer);
         locationPrefix = root.toAbsolutePath().toUri().toString();
+
+        when(predicate.test(any())).thenReturn(true);
     }
 
     @Test
@@ -116,7 +123,7 @@ class YamlTestPackageLoaderTest {
         // Note: no test suites
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         // Then:
         assertThat(result, is(Optional.empty()));
@@ -130,7 +137,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         // Then:
         assertThat(
@@ -159,7 +166,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         // Then:
         assertThat(result.isPresent(), is(true));
@@ -174,7 +181,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yaml"), VALID_TEST_YAML);
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         // Then:
         assertThat(result.isPresent(), is(true));
@@ -188,7 +195,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         assertThat(result.isPresent(), is(true));
         final TestPackage pkg = result.get();
@@ -212,7 +219,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, path -> true);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         assertThat(result.isPresent(), is(true));
         final TestPackage pkg = result.get();
@@ -230,7 +237,7 @@ class YamlTestPackageLoaderTest {
 
         // When:
         final Exception e =
-                assertThrows(TestLoadFailedException.class, () -> loader.load(root, path -> true));
+                assertThrows(TestLoadFailedException.class, () -> parser.parse(root, predicate));
 
         // Then:
         assertThat(
@@ -251,7 +258,7 @@ class YamlTestPackageLoaderTest {
 
         // When:
         final Exception e =
-                assertThrows(TestLoadFailedException.class, () -> loader.load(root, path -> true));
+                assertThrows(TestLoadFailedException.class, () -> parser.parse(root, predicate));
 
         // Then:
         assertThat(
@@ -273,7 +280,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        loader.load(root, path -> true);
+        parser.parse(root, predicate);
 
         // Then:
         verify(observer).unusedDependencies(root, List.of(root.resolve("inputs/unused-input.yml")));
@@ -288,7 +295,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        loader.load(root, path -> true);
+        parser.parse(root, predicate);
 
         // Then:
         verify(observer)
@@ -305,7 +312,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        loader.load(root, path -> true);
+        parser.parse(root, predicate);
 
         // Then: did not throw.
     }
@@ -319,7 +326,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        loader.load(root, path -> true);
+        parser.parse(root, predicate);
 
         // Then: did not throw.
     }
@@ -335,7 +342,7 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite.yml"), VALID_TEST_YAML);
 
         // When:
-        loader.load(root, path -> true);
+        parser.parse(root, predicate);
 
         // Then: did not throw.
     }
@@ -349,10 +356,11 @@ class YamlTestPackageLoaderTest {
         givenFile(root.resolve("suite-2.yml"), VALID_TEST_YAML);
         givenFile(root.resolve("suite-3.yml"), VALID_TEST_YAML);
 
-        final Predicate<Path> suitePredicate = path -> path.endsWith(Paths.get("suite-2.yml"));
+        when(predicate.test(any()))
+                .thenAnswer(inv -> inv.<Path>getArgument(0).endsWith("suite-2.yml"));
 
         // When:
-        final Optional<TestPackage> result = loader.load(root, suitePredicate);
+        final Optional<TestPackage> result = parser.parse(root, predicate);
 
         // Then: did not throw.
         assertThat(result.isPresent(), is(true));
@@ -371,7 +379,7 @@ class YamlTestPackageLoaderTest {
 
         // When:
         final Exception e =
-                assertThrows(InvalidTestFileException.class, () -> loader.load(root, path -> true));
+                assertThrows(InvalidTestFileException.class, () -> parser.parse(root, predicate));
 
         // Then:
         assertThat(

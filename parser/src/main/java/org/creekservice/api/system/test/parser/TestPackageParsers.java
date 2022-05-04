@@ -19,16 +19,23 @@ package org.creekservice.api.system.test.parser;
 
 import java.util.Collection;
 import org.creekservice.api.system.test.extension.model.ModelType;
-import org.creekservice.internal.system.test.parser.YamlTestPackageLoader;
+import org.creekservice.internal.system.test.parser.YamlTestPackageParser;
 
-/** Factory class for test package loaders. */
-public final class TestPackageLoaders {
+/** Factory class for test package parsing. */
+public final class TestPackageParsers {
 
-    private TestPackageLoaders() {}
+    private TestPackageParsers() {}
 
-    public static TestPackageLoader yamlLoader(
+    /**
+     * Parser of YAML test packages.
+     *
+     * @param modelExtensions the test model extensions know to the system
+     * @param observer an observer to call with information while parsing.
+     * @return the parser.
+     */
+    public static TestPackageParser yaml(
             final Collection<ModelType<?>> modelExtensions,
-            final TestPackageLoader.Observer observer) {
-        return new YamlTestPackageLoader(modelExtensions, observer);
+            final TestPackageParser.Observer observer) {
+        return new YamlTestPackageParser(modelExtensions, observer);
     }
 }
