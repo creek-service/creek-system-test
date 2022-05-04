@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.creek.api.base.type.Suppliers;
+import org.creekservice.api.base.type.Suppliers;
 import org.creekservice.api.system.test.extension.model.BaseRef;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.Input;

@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.creek.api.base.type.JarVersion;
+import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import picocli.CommandLine;
@@ -92,7 +92,7 @@ public final class PicoCliParser {
 
         @Option(
                 names = {"-is", "--include-suites"},
-                paramLabel = "REG_EX",
+                paramLabel = "REGEX",
                 description =
                         "Set an optional regular expression pattern to limit the test suites to run. "
                                 + "Only test suites whose relative path matches the supplied pattern will be included.")
