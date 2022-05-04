@@ -19,7 +19,7 @@ package org.creekservice.api.system.test.executor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.creek.api.base.type.JarVersion;
+import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.internal.system.test.executor.PicoCliParser;
 
 /** Entry point for running system tests */

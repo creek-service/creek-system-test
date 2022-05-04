@@ -18,17 +18,17 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekBaseVersion : String by extra
 val jacksonVersion : String by extra
 val spotBugsVersion : String by extra
 
 dependencies {
     api(project(":model"))
 
-    implementation("org.creek:creek-base-type:${creekVersion}")
-    implementation("org.creek:creek-base-schema:${creekVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
+    implementation("org.creekservice:creek-base-schema:$creekBaseVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
 }

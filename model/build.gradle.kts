@@ -18,16 +18,16 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
+val creekBaseVersion : String by extra
 val jacksonVersion : String by extra
 
 dependencies {
     api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+    api("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
 
-    implementation("org.creek:creek-base-type:$creekVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
     testImplementation(project(":parser"))
 

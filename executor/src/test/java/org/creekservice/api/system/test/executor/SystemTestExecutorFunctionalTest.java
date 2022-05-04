@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.creek.api.base.type.Suppliers;
-import org.creek.api.test.util.TestPaths;
+import org.creekservice.api.base.type.Suppliers;
+import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 
 class SystemTestExecutorFunctionalTest {

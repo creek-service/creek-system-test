@@ -37,7 +37,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.creek.api.test.util.TestPaths;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.model.Input;
@@ -46,6 +45,7 @@ import org.creekservice.api.system.test.extension.model.ModelType;
 import org.creekservice.api.system.test.extension.model.Ref;
 import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.LocationAware;
+import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
