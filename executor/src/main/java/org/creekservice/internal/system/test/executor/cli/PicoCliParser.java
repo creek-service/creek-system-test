@@ -83,19 +83,21 @@ public final class PicoCliParser {
         @Option(
                 names = {"-vt", "--verifier-timeout-seconds"},
                 paramLabel = "SECONDS",
-                description =
-                        "Set an optional custom verifier timeout. "
-                                + "The verifier timeout is the maximum amount of time the system tests "
-                                + "will wait for a defined expectation to be met. A longer timeout will mean "
-                                + "tests have more time for expectations to be met, but may run slower as a consequence.")
+                description = {
+                    "Set an optional custom verifier timeout.",
+                    "The verifier timeout is the maximum amount of time the system tests "
+                            + "will wait for a defined expectation to be met. A longer timeout will mean "
+                            + "tests have more time for expectations to be met, but may run slower as a consequence."
+                })
         private Optional<Long> verifierTimeout;
 
         @Option(
                 names = {"-is", "--include-suites"},
                 paramLabel = "REGEX",
-                description =
-                        "Set an optional regular expression pattern to limit the test suites to run. "
-                                + "Only test suites whose relative path matches the supplied pattern will be included.")
+                description = {
+                    "Set an optional regular expression pattern to limit the test suites to run.",
+                    "Only test suites whose relative path matches the supplied pattern will be included."
+                })
         private Optional<Pattern> suitePattern;
 
         @Option(

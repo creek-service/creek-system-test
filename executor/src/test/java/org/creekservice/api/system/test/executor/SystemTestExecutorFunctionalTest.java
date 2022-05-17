@@ -18,10 +18,12 @@ package org.creekservice.api.system.test.executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
+import static org.creekservice.api.test.util.debug.RemoteDebug.remoteDebugArguments;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.io.BufferedReader;
@@ -46,11 +48,16 @@ import org.junit.jupiter.api.io.TempDir;
 
 class SystemTestExecutorFunctionalTest {
 
+    // Change this to true locally to debug using attach me plugin:
+    private static final boolean DEBUG = false;
+
     private static final Path LIB_DIR =
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
 
     private static final Path TEST_EXT_LIB_DIR =
             TestPaths.moduleRoot("test-extension").resolve("build/libs").toAbsolutePath();
+
+    private static final String SEPARATOR = System.getProperty("path.separator");
 
     private static final Pattern VERSION_PATTERN =
             Pattern.compile(".*SystemTestExecutor: \\d+\\.\\d+\\.\\d+.*", Pattern.DOTALL);
@@ -114,6 +121,48 @@ class SystemTestExecutorFunctionalTest {
         assertThat(stdOut.get(), containsString("--test-directory=" + testDir));
         assertThat(stdOut.get(), containsString("--result-directory=" + resultDir));
         assertThat(stdOut.get(), containsString("--verifier-timeout-seconds=<Not Set>"));
+        assertThat(exitCode, is(0));
+    }
+
+    @Test
+    void shouldRunFromClassPath() {
+        // Given:
+        final String[] javaArgs = {
+            "-cp",
+            LIB_DIR + "/*",
+            org.creekservice.api.system.test.executor.SystemTestExecutor.class.getName()
+        };
+
+        // When:
+        final int exitCode = runExecutor(javaArgs, minimalArgs("--echo-only"));
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), matchesPattern(VERSION_PATTERN));
+        assertThat(stdOut.get(), containsString("--class-path=" + LIB_DIR));
+        assertThat(stdOut.get(), not(containsString("--module-path")));
+        assertThat(exitCode, is(0));
+    }
+
+    @Test
+    void shouldEchoModulePath() {
+        // Given:
+        final String[] javaArgs = {
+            "-p",
+            "/another/path",
+            "--module-path",
+            LIB_DIR.toString(),
+            "--module=creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"
+        };
+
+        // When:
+        final int exitCode = runExecutor(javaArgs, minimalArgs("--echo-only"));
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), containsString("--module-path=" + LIB_DIR));
+        assertThat(stdOut.get(), containsString("--module-path=/another/path"));
+        assertThat(stdOut.get(), not(containsString("--class-path")));
         assertThat(exitCode, is(0));
     }
 
@@ -226,21 +275,26 @@ class SystemTestExecutorFunctionalTest {
         assertThat(exitCode, is(0));
     }
 
-    private int runExecutor(final String[] args) {
-        final String separator = System.getProperty("path.separator");
-        final String modulePath = LIB_DIR + separator + TEST_EXT_LIB_DIR;
-        final List<String> cmd =
-                new ArrayList<>(
-                        List.of(
-                                "java",
-                                "--module-path=" + modulePath,
-                                "--add-modules=creek.system.test.test.extension",
-                                "--add-reads=creek.system.test.extension=creek.system.test.test.extension",
-                                "--module=creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"));
+    @Test
+    void shouldNotCheckInWithDebuggingEnabled() {
+        assertThat("Do not check in with debugging enabled", !DEBUG);
+    }
 
-        findConvergeAgentCmdLineArg().ifPresent(arg -> cmd.add(1, arg));
+    private int runExecutor(final String[] cmdArgs) {
+        final String modulePath = LIB_DIR + SEPARATOR + TEST_EXT_LIB_DIR;
 
-        cmd.addAll(List.of(args));
+        final String[] javaArgs = {
+            "--module-path",
+            modulePath,
+            "--add-modules=creek.system.test.test.extension",
+            "--add-reads=creek.system.test.extension=creek.system.test.test.extension",
+            "--module=creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"
+        };
+        return runExecutor(javaArgs, cmdArgs);
+    }
+
+    private int runExecutor(final String[] javaArgs, final String[] cmdArgs) {
+        final List<String> cmd = buildCommand(javaArgs, cmdArgs);
 
         try {
             final Process executor = new ProcessBuilder().command(cmd).start();
@@ -252,6 +306,18 @@ class SystemTestExecutorFunctionalTest {
         } catch (final Exception e) {
             throw new AssertionError("Error executing: " + cmd, e);
         }
+    }
+
+    private List<String> buildCommand(final String[] javaArgs, final String[] cmdArgs) {
+        final List<String> cmd = new ArrayList<>(List.of("java"));
+        if (DEBUG) {
+            cmd.addAll(remoteDebugArguments());
+        }
+        findConvergeAgentCmdLineArg().ifPresent(cmd::add);
+
+        cmd.addAll(List.of(javaArgs));
+        cmd.addAll(List.of(cmdArgs));
+        return cmd;
     }
 
     private String[] minimalArgs(final String... additional) {
