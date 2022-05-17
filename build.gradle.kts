@@ -14,7 +14,6 @@ project.version = scmVersion.version
 allprojects {
     apply(plugin = "idea")
     apply(plugin = "java")
-    apply(plugin = "jacoco")
     apply(plugin = "checkstyle")
     apply(plugin = "com.diffplug.spotless")
     apply(plugin = "com.github.spotbugs")
@@ -45,6 +44,10 @@ allprojects {
 subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "org.javamodularity.moduleplugin")
+
+    if (!name.startsWith("test-")) {
+        apply(plugin = "jacoco")
+    }
 
     project.version = project.parent?.version!!
 

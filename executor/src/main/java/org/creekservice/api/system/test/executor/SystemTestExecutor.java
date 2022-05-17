@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.executor;
 import static org.creekservice.api.system.test.parser.TestPackageParsers.yamlParser;
 import static org.creekservice.api.system.test.parser.TestPackagesLoader.testPackagesLoader;
 
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +46,14 @@ public final class SystemTestExecutor {
 
     private SystemTestExecutor() {}
 
+    /**
+     * Run the system tests.
+     *
+     * <p>See {@link org.creekservice.internal.system.test.executor.cli.PicoCliParser} for details
+     * of supported command line parameters.
+     *
+     * @param args the command line parameters.
+     */
     public static void main(final String... args) {
         try {
             final boolean success =
@@ -57,12 +66,14 @@ public final class SystemTestExecutor {
         }
     }
 
+    /**
+     * Run the system tests.
+     *
+     * @param options the options used to customise the test run.
+     */
     public static boolean run(final ExecutorOptions options) {
         if (options.echoOnly()) {
-            LOGGER.info(
-                    "SystemTestExecutor: "
-                            + JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
-            LOGGER.info(options);
+            echo(options);
             return true;
         }
 
@@ -87,6 +98,26 @@ public final class SystemTestExecutor {
         }
 
         return allPassed;
+    }
+
+    private static void echo(final ExecutorOptions options) {
+        LOGGER.info(
+                "SystemTestExecutor: "
+                        + JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
+        LOGGER.info(classPath());
+        LOGGER.info(modulePath());
+        LOGGER.info(options);
+    }
+
+    private static String classPath() {
+        final String classPath = ManagementFactory.getRuntimeMXBean().getClassPath();
+        return classPath.isEmpty() ? "" : "--class-path=" + classPath;
+    }
+
+    private static String modulePath() {
+        return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
+                .filter(arg -> arg.startsWith("--module-path") || arg.startsWith("-p"))
+                .collect(Collectors.joining(" "));
     }
 
     private static List<CreekTestExtension> loadExtensions() {
