@@ -17,4 +17,4 @@
 package org.creekservice.api.system.test.extension.model;
 
 /** A reference to an input file */
-public interface InputRef extends BaseRef {}
+public interface InputRef extends Ref {}

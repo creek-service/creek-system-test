@@ -38,7 +38,8 @@ public final class ModelType<T> {
     private final Optional<String> name;
 
     /**
-     * Create metadata about a {@link Ref} subtype, with a standard type name.
+     * Create metadata about a {@link Ref} subtype that implements both {@link InputRef} and {@link
+     * ExpectationRef}, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
      * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
@@ -47,19 +48,21 @@ public final class ModelType<T> {
      * @param <T> the subtype
      * @return the model metadata
      */
-    public static <T extends Ref> ModelType<T> ref(final Class<T> type) {
+    public static <T extends InputRef & ExpectationRef> ModelType<T> ref(final Class<T> type) {
         return modelType(type, Ref.class);
     }
 
     /**
-     * Create metadata about a {@link Ref} subtype, with a custom explicit name.
+     * Create metadata about a {@link Ref} subtype that implements both {@link InputRef} and {@link
+     * ExpectationRef}, with a custom explicit name.
      *
      * @param type the subtype
      * @param name the name of the subtype.
      * @param <T> the subtype
      * @return the model metadata
      */
-    public static <T extends Ref> ModelType<T> ref(final Class<T> type, final String name) {
+    public static <T extends InputRef & ExpectationRef> ModelType<T> ref(
+            final Class<T> type, final String name) {
         return modelType(type, name, Ref.class);
     }
 

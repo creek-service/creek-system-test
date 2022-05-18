@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import org.creekservice.api.system.test.extension.model.BaseRef;
+import org.creekservice.api.system.test.extension.model.Ref;
 import org.creekservice.api.system.test.model.LocationAware;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,9 +35,9 @@ class MissingDependencyExceptionTest {
     private static final String ID = "some.id";
 
     @Mock(extraInterfaces = LocationAware.class)
-    private BaseRef locationAware;
+    private Ref locationAware;
 
-    @Mock private BaseRef dumbRef;
+    @Mock private Ref dumbRef;
 
     @Test
     void shouldWorkOnLocationAwareRef() {

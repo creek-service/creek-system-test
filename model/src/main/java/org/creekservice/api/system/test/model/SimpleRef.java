@@ -23,10 +23,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.net.URI;
 import java.util.Objects;
-import org.creekservice.api.system.test.extension.model.Ref;
+import org.creekservice.api.system.test.extension.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.model.InputRef;
 
 /** A simple reference that holds only the location as the value in the yaml. */
-public final class SimpleRef implements Ref, LocationAware<SimpleRef> {
+public final class SimpleRef implements InputRef, ExpectationRef, LocationAware<SimpleRef> {
 
     private final String id;
     private final URI location;
