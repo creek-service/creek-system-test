@@ -43,7 +43,6 @@ import org.creekservice.api.system.test.extension.model.Input;
 import org.creekservice.api.system.test.extension.model.InputRef;
 import org.creekservice.api.system.test.extension.model.ModelType;
 import org.creekservice.api.system.test.extension.model.Ref;
-import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.LocationAware;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.Test;
@@ -216,21 +215,6 @@ class SystemTestMapperTest {
     }
 
     @Test
-    void shouldDeserializeSeedSubTypes() throws Exception {
-        // Given:
-        final ObjectMapper mapper =
-                SystemTestMapper.create(List.of(ModelType.seed(TestSeed.class)));
-
-        final String yaml = "---\n'@type': test\n";
-
-        // When:
-        final Seed result = mapper.readValue(yaml, Seed.class);
-
-        // Then:
-        assertThat(result, is(instanceOf(TestSeed.class)));
-    }
-
-    @Test
     void shouldDeserializeInputSubTypes() throws Exception {
         // Given:
         final ObjectMapper mapper =
@@ -343,8 +327,6 @@ class SystemTestMapperTest {
             return null;
         }
     }
-
-    public static final class TestSeed implements Seed {}
 
     public static final class TestInput implements Input {}
 

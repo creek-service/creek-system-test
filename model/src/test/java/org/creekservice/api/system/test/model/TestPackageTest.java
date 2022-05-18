@@ -28,7 +28,7 @@ import com.google.common.testing.EqualsTester;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import org.creekservice.api.system.test.extension.model.Seed;
+import org.creekservice.api.system.test.extension.model.Input;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ import org.mockito.quality.Strictness;
 class TestPackageTest {
 
     @Mock private Path root;
-    @Mock private Seed seed;
+    @Mock private Input seed;
     @Mock private TestSuite.Builder suiteBuilder;
     @Mock private TestSuite suite;
 
@@ -53,7 +53,7 @@ class TestPackageTest {
 
     @Test
     void shouldImplementHashCodeAndEquals() {
-        final Collection<Seed> seedData = List.of(seed);
+        final Collection<Input> seedData = List.of(seed);
         final Collection<TestSuite.Builder> suites = List.of(suiteBuilder);
         new EqualsTester()
                 .addEqualityGroup(

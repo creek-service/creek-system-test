@@ -18,7 +18,6 @@ package org.creekservice.internal.system.test.parser;
 
 import static org.creekservice.api.system.test.extension.model.ModelType.expectation;
 import static org.creekservice.api.system.test.extension.model.ModelType.input;
-import static org.creekservice.api.system.test.extension.model.ModelType.seed;
 import static org.creekservice.api.system.test.model.TestCase.testCase;
 import static org.creekservice.api.system.test.model.TestPackage.testPackage;
 import static org.creekservice.api.system.test.model.TestSuite.testSuite;
@@ -49,7 +48,6 @@ import java.util.function.Predicate;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.Input;
 import org.creekservice.api.system.test.extension.model.ModelType;
-import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuiteDef;
@@ -70,7 +68,7 @@ class YamlTestPackageParserTest {
 
     private static final String INVALID_YAML =
             "I would cause a parsing exception. " + "But I won't as I won't be parsed... right";
-    private static final String VALID_SEED_YAML = "---\n'@type': test\nseed: seed stuff";
+    private static final String VALID_SEED_YAML = "---\n'@type': test_seed\nseed: seed stuff";
     private static final String VALID_INPUTS_YAML = "---\n'@type': test\ninput: input stuff";
     private static final String VALID_EXPECTATIONS_YAML =
             "---\n'@type': test\noutput: output stuff";
@@ -89,13 +87,13 @@ class YamlTestPackageParserTest {
 
     public static final List<ModelType<?>> EXTENSIONS =
             List.of(
-                    seed(TestSeed.class),
+                    input(TestSeed.class, "test_seed"),
                     input(TestInput.class),
                     expectation(TestExpectation.class));
 
     private static final ObjectMapper MAPPER = SystemTestMapper.create(EXTENSIONS);
 
-    private static final Seed SEED = parse(VALID_SEED_YAML, Seed.class);
+    private static final Input SEED = parse(VALID_SEED_YAML, Input.class);
     private static final Input INPUT = parse(VALID_INPUTS_YAML, Input.class);
     private static final Expectation EXPECTATION =
             parse(VALID_EXPECTATIONS_YAML, Expectation.class);
@@ -433,7 +431,7 @@ class YamlTestPackageParserTest {
     }
 
     @SuppressWarnings({"unused", "checkstyle:RedundantModifier"})
-    public static final class TestSeed implements Seed {
+    public static final class TestSeed implements Input {
 
         private final String seed;
 

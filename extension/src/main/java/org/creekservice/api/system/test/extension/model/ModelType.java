@@ -38,32 +38,6 @@ public final class ModelType<T> {
     private final Optional<String> name;
 
     /**
-     * Create metadata about a {@link Seed} subtype, with a standard type name.
-     *
-     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
-     *
-     * @param type the subtype
-     * @param <T> the subtype
-     * @return the model metadata
-     */
-    public static <T extends Seed> ModelType<T> seed(final Class<T> type) {
-        return modelType(type, Seed.class);
-    }
-
-    /**
-     * Create metadata about a {@link Seed} subtype, with a custom explicit name.
-     *
-     * @param type the subtype
-     * @param name the name of the subtype.
-     * @param <T> the subtype
-     * @return the model metadata
-     */
-    public static <T extends Seed> ModelType<T> seed(final Class<T> type, final String name) {
-        return modelType(type, name, Seed.class);
-    }
-
-    /**
      * Create metadata about a {@link Ref} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code

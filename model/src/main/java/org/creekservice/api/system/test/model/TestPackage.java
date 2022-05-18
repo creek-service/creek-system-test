@@ -24,25 +24,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.creekservice.api.system.test.extension.model.Seed;
+import org.creekservice.api.system.test.extension.model.Input;
 
 /** A package to seed data and test suites. */
 public final class TestPackage {
 
     private final Path root;
-    private final List<Seed> seedData;
+    private final List<Input> seedData;
     private final List<TestSuite> suites;
 
     public static TestPackage testPackage(
             final Path root,
-            final Collection<Seed> seedData,
+            final Collection<Input> seedData,
             final Collection<TestSuite.Builder> suites) {
         return new TestPackage(root, seedData, suites);
     }
 
     private TestPackage(
             final Path root,
-            final Collection<Seed> seedData,
+            final Collection<Input> seedData,
             final Collection<TestSuite.Builder> suites) {
         this.root = requireNonNull(root, "root");
         this.seedData = List.copyOf(requireNonNull(seedData, "seedData"));
@@ -56,7 +56,7 @@ public final class TestPackage {
         return root;
     }
 
-    public List<Seed> seedData() {
+    public List<Input> seedData() {
         return List.copyOf(seedData);
     }
 
