@@ -17,4 +17,4 @@
 package org.creekservice.api.system.test.extension.model;
 
 /** A reference to an expectation file */
-public interface ExpectationRef extends BaseRef {}
+public interface ExpectationRef extends Ref {}

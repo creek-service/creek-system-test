@@ -321,7 +321,7 @@ class SystemTestMapperTest {
         }
     }
 
-    public static final class TestRef implements Ref {
+    public static final class TestRef implements InputRef, ExpectationRef {
         @Override
         public String id() {
             return null;

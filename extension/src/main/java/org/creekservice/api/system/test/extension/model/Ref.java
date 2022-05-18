@@ -19,8 +19,25 @@ package org.creekservice.api.system.test.extension.model;
 /**
  * A reference to a model file.
  *
- * <p>Creek test extensions can define additional reference types. Common reference types can derive
- * from this interface. More specialized reference types can derive from either {@link InputRef} or
- * {@link ExpectationRef}.
+ * <p>Creek test extensions can define additional reference types. Those reference types should not
+ * implement this interface directly: they should either implement {@link InputRef} or {@link
+ * ExpectationRef} or both.
  */
-public interface Ref extends InputRef, ExpectationRef {}
+public interface Ref {
+    /**
+     * The id of the file being referenced
+     *
+     * <p>The name of the file within the type's directory, e.g. for an {@link InputRef input ref}
+     * the path is relative to the {@code inputs} directory, and for an {@link ExpectationRef} it is
+     * relative to the {@code expectations} directory.
+     *
+     * <p>The {@code .yml} or {@code .yaml} file extension is optional
+     *
+     * <p>For example, a {@link Input} file called {@code some_input.yml} within the test package's
+     * {@code input} directory can be referenced with the id {@code "some_input"} or {@code
+     * "some_input.yml"}.
+     *
+     * @return the id of the model file.
+     */
+    String id();
+}

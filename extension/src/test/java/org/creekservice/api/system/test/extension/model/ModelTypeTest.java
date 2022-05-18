@@ -183,7 +183,7 @@ class ModelTypeTest {
     @Test
     void shouldThrowOnSyntheticTypes() {
         // Given:
-        final Ref lambda = () -> "some location";
+        final TestRef lambda = () -> "some location";
 
         // When:
         final Exception e =
@@ -196,7 +196,7 @@ class ModelTypeTest {
                 is("Anonymous/synthetic types are not supported: " + lambda.getClass()));
     }
 
-    private interface TestRef extends Ref {}
+    private interface TestRef extends InputRef, ExpectationRef {}
 
     private interface TestInputRef extends InputRef {}
 

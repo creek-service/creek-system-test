@@ -17,16 +17,16 @@
 package org.creekservice.internal.system.test.parser;
 
 
-import org.creekservice.api.system.test.extension.model.BaseRef;
+import org.creekservice.api.system.test.extension.model.Ref;
 import org.creekservice.api.system.test.model.LocationAware;
 
 public class MissingDependencyException extends TestLoadFailedException {
 
-    public MissingDependencyException(final BaseRef ref) {
+    public MissingDependencyException(final Ref ref) {
         super("Missing dependency: " + ref.id() + maybeLocation(ref));
     }
 
-    private static String maybeLocation(final BaseRef ref) {
+    private static String maybeLocation(final Ref ref) {
         if (ref instanceof LocationAware) {
             return ", referenced: " + ((LocationAware<?>) ref).location();
         }

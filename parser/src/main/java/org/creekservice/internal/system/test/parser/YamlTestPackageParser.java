@@ -38,10 +38,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.base.type.Suppliers;
-import org.creekservice.api.system.test.extension.model.BaseRef;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.Input;
 import org.creekservice.api.system.test.extension.model.ModelType;
+import org.creekservice.api.system.test.extension.model.Ref;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
@@ -210,7 +210,7 @@ public final class YamlTestPackageParser implements TestPackageParser {
         }
     }
 
-    private static <T> T findDependency(final BaseRef ref, final Map<String, LazyFile<T>> known) {
+    private static <T> T findDependency(final Ref ref, final Map<String, LazyFile<T>> known) {
         final LazyFile<T> dependency = known.get(ref.id());
         if (dependency == null) {
             throw new MissingDependencyException(ref);

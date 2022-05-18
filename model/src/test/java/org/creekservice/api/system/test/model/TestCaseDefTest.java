@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.model.InputRef;
-import org.creekservice.api.system.test.extension.model.Ref;
 import org.creekservice.internal.system.test.parser.SystemTestMapper;
 import org.junit.jupiter.api.Test;
 
@@ -371,7 +370,7 @@ class TestCaseDefTest {
     }
 
     @SuppressWarnings("checkstyle:RedundantModifier")
-    public static final class CustomRef extends BaseCustomRef implements Ref {
+    public static final class CustomRef extends BaseCustomRef implements InputRef, ExpectationRef {
 
         @JsonCreator
         public CustomRef(@JsonProperty("c") final String location) {
