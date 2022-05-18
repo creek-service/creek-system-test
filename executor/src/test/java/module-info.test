@@ -12,3 +12,6 @@
 
 --add-opens
   java.base/java.util=org.junitpioneer
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api=guava.testlib

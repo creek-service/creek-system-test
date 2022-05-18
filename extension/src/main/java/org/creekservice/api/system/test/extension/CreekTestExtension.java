@@ -16,10 +16,6 @@
 
 package org.creekservice.api.system.test.extension;
 
-
-import java.util.Set;
-import org.creekservice.api.system.test.extension.model.ModelType;
-
 /**
  * Base type for system test extensions to Creek.
  *
@@ -38,6 +34,6 @@ public interface CreekTestExtension {
     /** @return the extension name. */
     String name();
 
-    /** @return the set of system test model subtypes the extension exposes. */
-    Set<ModelType<?>> modelTypes();
+    /** Called to allow the extension to do its thing. */
+    void initialize(CreekSystemTest systemTest);
 }

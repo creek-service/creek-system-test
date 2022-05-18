@@ -21,17 +21,15 @@ import static org.creekservice.api.system.test.parser.TestPackagesLoader.testPac
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
-import org.creekservice.api.system.test.extension.model.ModelType;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
+import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
@@ -82,9 +80,9 @@ public final class SystemTestExecutor {
                     "Not a directory: " + options.testDirectory().toUri());
         }
 
-        final List<CreekTestExtension> extensions = loadExtensions();
+        final SystemTest api = initializeApi();
 
-        final TestExecutionResult result = executor(options, extensions).execute();
+        final TestExecutionResult result = executor(options, api).execute();
         if (result.isEmpty()) {
             throw new TestExecutionFailedException(
                     "No tests found under: " + options.testDirectory().toUri());
@@ -120,6 +118,10 @@ public final class SystemTestExecutor {
                 .collect(Collectors.joining(" "));
     }
 
+    private static SystemTest initializeApi() {
+        return new SystemTest(loadExtensions());
+    }
+
     private static List<CreekTestExtension> loadExtensions() {
         final List<CreekTestExtension> extensions = CreekTestExtensions.load();
         extensions.forEach(ext -> LOGGER.debug("Loaded extension: " + ext.name()));
@@ -127,17 +129,12 @@ public final class SystemTestExecutor {
     }
 
     private static TestPackagesExecutor executor(
-            final ExecutorOptions options, final Collection<CreekTestExtension> extensions) {
-        final Collection<ModelType<?>> modelExtensions =
-                extensions.stream()
-                        .map(CreekTestExtension::modelTypes)
-                        .flatMap(Set::stream)
-                        .collect(Collectors.toList());
+            final ExecutorOptions options, final SystemTest api) {
 
         final TestPackagesLoader loader =
                 testPackagesLoader(
                         options.testDirectory(),
-                        yamlParser(modelExtensions, new TestPackageParserObserver(LOGGER)),
+                        yamlParser(api.modelTypes(), new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
         return new TestPackagesExecutor(

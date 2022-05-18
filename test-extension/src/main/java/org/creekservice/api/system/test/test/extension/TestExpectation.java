@@ -45,4 +45,9 @@ public final class TestExpectation implements Expectation {
     public int hashCode() {
         return Objects.hash(output);
     }
+
+    @Override
+    public String toString() {
+        return "TestExpectation{" + "output='" + output + '\'' + '}';
+    }
 }
