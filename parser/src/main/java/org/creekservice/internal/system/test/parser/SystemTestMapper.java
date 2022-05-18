@@ -40,7 +40,6 @@ import org.creekservice.api.system.test.extension.model.Input;
 import org.creekservice.api.system.test.extension.model.InputRef;
 import org.creekservice.api.system.test.extension.model.ModelType;
 import org.creekservice.api.system.test.extension.model.Ref;
-import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.LocationAware;
 
 public final class SystemTestMapper {
@@ -72,7 +71,6 @@ public final class SystemTestMapper {
     private static void registerModelTypes(
             final JsonMapper.Builder builder, final Collection<ModelType<?>> modelTypes) {
 
-        builder.addMixIn(Seed.class, ModelMixin.class);
         builder.addMixIn(Input.class, ModelMixin.class);
         builder.addMixIn(Expectation.class, ModelMixin.class);
         builder.addMixIn(Ref.class, RefMixin.class);

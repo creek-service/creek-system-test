@@ -42,7 +42,6 @@ import org.creekservice.api.system.test.extension.model.BaseRef;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.Input;
 import org.creekservice.api.system.test.extension.model.ModelType;
-import org.creekservice.api.system.test.extension.model.Seed;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
@@ -90,8 +89,8 @@ public final class YamlTestPackageParser implements TestPackageParser {
             return Optional.empty();
         }
 
-        final List<Seed> seedData =
-                loadDir(path.resolve(SEED), Seed.class)
+        final List<Input> seedData =
+                loadDir(path.resolve(SEED), Input.class)
                         .map(LazyFile::content)
                         .collect(Collectors.toList());
 

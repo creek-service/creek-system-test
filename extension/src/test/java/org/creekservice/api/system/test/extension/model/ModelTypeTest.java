@@ -31,13 +31,14 @@ class ModelTypeTest {
     @Test
     void shouldImplementHashCodeAndEquals() {
         new EqualsTester()
-                .addEqualityGroup(ModelType.seed(TestSeed.class), ModelType.seed(TestSeed.class))
                 .addEqualityGroup(
-                        ModelType.seed(TestSeed.class, "test"),
-                        ModelType.seed(TestSeed.class, "test"))
+                        ModelType.input(TestInput.class), ModelType.input(TestInput.class))
+                .addEqualityGroup(
+                        ModelType.input(TestInput.class, "test"),
+                        ModelType.input(TestInput.class, "test"))
                 .addEqualityGroup(ModelType.input(mock(TestInput.class).getClass()))
-                .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass()))
-                .addEqualityGroup(ModelType.seed(mock(Seed.class).getClass(), "diff"))
+                .addEqualityGroup(ModelType.expectation(mock(Expectation.class).getClass()))
+                .addEqualityGroup(ModelType.expectation(mock(Expectation.class).getClass(), "diff"))
                 .testEquals();
     }
 
@@ -105,26 +106,6 @@ class ModelTypeTest {
     }
 
     @Test
-    void shouldCreateSeedWithDerivedNaming() {
-        // When:
-        final ModelType<TestSeed> result = ModelType.seed(TestSeed.class);
-
-        // Then:
-        assertThat(result.name(), is(empty()));
-        assertThat(result.type(), is(TestSeed.class));
-    }
-
-    @Test
-    void shouldCreateSeedWithExplicitNaming() {
-        // When:
-        final ModelType<TestSeed> result = ModelType.seed(TestSeed.class, "explicit_name");
-
-        // Then:
-        assertThat(result.name(), is(of("explicit_name")));
-        assertThat(result.type(), is(TestSeed.class));
-    }
-
-    @Test
     void shouldCreateInputWithDerivedNaming() {
         // When:
         final ModelType<TestInput> result = ModelType.input(TestInput.class);
@@ -167,8 +148,7 @@ class ModelTypeTest {
 
     @Test
     void shouldThrowOnIfNotSubtype() {
-        assertThrows(IllegalArgumentException.class, () -> ModelType.seed(Seed.class));
-        assertThrows(IllegalArgumentException.class, () -> ModelType.seed(Seed.class, "explicit"));
+        assertThrows(IllegalArgumentException.class, () -> ModelType.input(Input.class));
         assertThrows(
                 IllegalArgumentException.class, () -> ModelType.input(Input.class, "explicit"));
         assertThrows(
@@ -221,8 +201,6 @@ class ModelTypeTest {
     private interface TestInputRef extends InputRef {}
 
     private interface TestExpectationRef extends ExpectationRef {}
-
-    private interface TestSeed extends Seed {}
 
     private interface TestInput extends Input {}
 
