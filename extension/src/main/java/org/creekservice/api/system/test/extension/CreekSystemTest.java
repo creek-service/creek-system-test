@@ -22,5 +22,12 @@ import org.creekservice.api.system.test.extension.model.ModelContainer;
 /** API to the system tests exposed to extensions */
 public interface CreekSystemTest {
 
+    /**
+     * Information about the data model of the system tests.
+     *
+     * <p>This is the model used when deserializing system tests.
+     *
+     * @return the model.
+     */
     ModelContainer model();
 }
