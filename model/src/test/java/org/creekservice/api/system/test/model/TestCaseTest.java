@@ -108,8 +108,8 @@ class TestCaseTest {
     @Test
     void shouldSetTestSuiteOnBuild() {
         // Given:
-        final List<Input> inputs = List.of(this.input);
-        final List<Expectation> expectations = List.of(this.expectation);
+        final List<Input> inputs = List.of(input);
+        final List<Expectation> expectations = List.of(expectation);
         final TestCase.Builder builder = testCase(inputs, expectations, def(inputs, expectations));
 
         // When:
@@ -117,6 +117,38 @@ class TestCaseTest {
 
         // Then:
         assertThat(testCase.suite(), is(sameInstance(suite)));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldReturnImmutableInputs() {
+        // Given:
+        final List<Input> inputs =
+                testCase(
+                                List.of(input),
+                                List.of(expectation),
+                                def(List.of(input), List.of(expectation)))
+                        .build(suite)
+                        .inputs();
+
+        // Then:
+        assertThrows(UnsupportedOperationException.class, () -> inputs.remove(0));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldReturnImmutableExpectations() {
+        // Given:
+        final List<Expectation> expectations =
+                testCase(
+                                List.of(input),
+                                List.of(expectation),
+                                def(List.of(input), List.of(expectation)))
+                        .build(suite)
+                        .expectations();
+
+        // Then:
+        assertThrows(UnsupportedOperationException.class, () -> expectations.remove(0));
     }
 
     private TestCaseDef def(

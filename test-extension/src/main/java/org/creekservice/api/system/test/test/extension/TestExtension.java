@@ -17,9 +17,10 @@
 package org.creekservice.api.system.test.test.extension;
 
 
-import java.util.Set;
+import java.util.Collection;
+import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.model.ModelType;
+import org.creekservice.api.system.test.extension.model.ExpectationHandler.Verifier;
 
 public final class TestExtension implements CreekTestExtension {
 
@@ -29,7 +30,11 @@ public final class TestExtension implements CreekTestExtension {
     }
 
     @Override
-    public Set<ModelType<?>> modelTypes() {
-        return Set.of(ModelType.expectation(TestExpectation.class));
+    public void initialize(final CreekSystemTest systemTest) {
+        systemTest.model().addExpectation(TestExpectation.class, this::prepareExpectation);
+    }
+
+    private Verifier prepareExpectation(final Collection<TestExpectation> expectations) {
+        return () -> System.out.println("Verifying expectations: " + expectations);
     }
 }
