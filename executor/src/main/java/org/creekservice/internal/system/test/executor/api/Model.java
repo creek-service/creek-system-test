@@ -69,7 +69,7 @@ public final class Model implements ModelContainer {
 
     @Override
     public <T extends Input> NameBuilder addInput(
-            final Class<T> type, final InputHandler<T> handler) {
+            final Class<T> type, final InputHandler<? super T> handler) {
         requireNonNull(handler, "handler");
         final NameBuilder builder = addType(type, ModelType::input, ModelType::input);
         inputHandlers.put(type, handler);
@@ -78,7 +78,7 @@ public final class Model implements ModelContainer {
 
     @Override
     public <T extends Expectation> NameBuilder addExpectation(
-            final Class<T> type, final ExpectationHandler<T> handler) {
+            final Class<T> type, final ExpectationHandler<? super T> handler) {
         requireNonNull(handler, "handler");
         final NameBuilder builder = addType(type, ModelType::expectation, ModelType::expectation);
         expectationHandlers.put(type, handler);
