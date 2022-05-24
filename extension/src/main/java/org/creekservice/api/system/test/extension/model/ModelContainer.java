@@ -53,7 +53,7 @@ public interface ModelContainer extends ModelCollection {
      * @param <T> the model extension.
      * @return a builder that can be used to customize the model.
      */
-    <T extends Input> NameBuilder addInput(Class<T> type, InputHandler<T> handler);
+    <T extends Input> NameBuilder addInput(Class<T> type, InputHandler<? super T> handler);
 
     /**
      * Register an {@link Expectation} model extension and its handler.
@@ -64,7 +64,7 @@ public interface ModelContainer extends ModelCollection {
      * @return a builder that can be used to customize the model.
      */
     <T extends Expectation> NameBuilder addExpectation(
-            Class<T> type, ExpectationHandler<T> handler);
+            Class<T> type, ExpectationHandler<? super T> handler);
 
     interface NameBuilder {
         /**
