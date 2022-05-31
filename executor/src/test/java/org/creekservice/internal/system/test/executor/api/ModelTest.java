@@ -232,7 +232,8 @@ class ModelTest {
                                         m.addExpectation(
                                                 TestExpectation.class,
                                                 mock(ExpectationHandler.class))),
-                Arguments.of("inputHandler", (Consumer<Model>) m -> m.inputHandler(TestInput.class)),
+                Arguments.of(
+                        "inputHandler", (Consumer<Model>) m -> m.inputHandler(TestInput.class)),
                 Arguments.of(
                         "expectationHandler",
                         (Consumer<Model>) m -> m.expectationHandler(TestExpectation.class)));
