@@ -16,6 +16,9 @@
 
 package org.creekservice.api.system.test.extension.model;
 
+/**
+ * A mutable container of extensions to the Creek Service model.
+ */
 public interface ModelContainer extends ModelCollection {
 
     /**
