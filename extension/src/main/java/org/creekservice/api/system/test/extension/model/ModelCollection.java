@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.extension.model;
 
+/** A collection of extensions to the Creek Service model. */
 public interface ModelCollection {
 
     /**

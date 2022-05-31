@@ -214,27 +214,28 @@ class ModelTest {
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
                 Arguments.of("modelTypes", (Consumer<Model>) Model::modelTypes),
-                Arguments.of("modelTypes", (Consumer<Model>) m -> m.hasType(TestRef.class)),
-                Arguments.of("modelTypes", (Consumer<Model>) m -> m.addRef(TestRef.class)),
+                Arguments.of("hasType", (Consumer<Model>) m -> m.hasType(TestRef.class)),
+                Arguments.of("addRef", (Consumer<Model>) m -> m.addRef(TestRef.class)),
                 Arguments.of(
-                        "modelTypes", (Consumer<Model>) m -> m.addInputRef(TestInputRef.class)),
+                        "addInputRef", (Consumer<Model>) m -> m.addInputRef(TestInputRef.class)),
                 Arguments.of(
-                        "modelTypes",
+                        "addExpectationRef",
                         (Consumer<Model>) m -> m.addExpectationRef(TestExpectationRef.class)),
                 Arguments.of(
-                        "modelTypes",
+                        "addInput",
                         (Consumer<Model>)
                                 m -> m.addInput(TestInput.class, mock(InputHandler.class))),
                 Arguments.of(
-                        "modelTypes",
+                        "addExpectation",
                         (Consumer<Model>)
                                 m ->
                                         m.addExpectation(
                                                 TestExpectation.class,
                                                 mock(ExpectationHandler.class))),
-                Arguments.of("modelTypes", (Consumer<Model>) m -> m.inputHandler(TestInput.class)),
                 Arguments.of(
-                        "modelTypes",
+                        "inputHandler", (Consumer<Model>) m -> m.inputHandler(TestInput.class)),
+                Arguments.of(
+                        "expectationHandler",
                         (Consumer<Model>) m -> m.expectationHandler(TestExpectation.class)));
     }
 
