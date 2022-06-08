@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
     id("com.github.spotbugs") version "5.0.6"                           // https://plugins.gradle.org/plugin/com.github.spotbugs
     id("com.diffplug.spotless") version "6.7.0"                         // https://plugins.gradle.org/plugin/com.diffplug.spotless
-    id("pl.allegro.tech.build.axion-release") version "1.13.14"          // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
+    id("pl.allegro.tech.build.axion-release") version "1.13.14"         // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
     id("com.github.kt3k.coveralls") version "2.12.0"                    // https://plugins.gradle.org/plugin/com.github.kt3k.coveralls
     id("org.javamodularity.moduleplugin") version "1.8.11" apply false  // https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin
 }
@@ -57,8 +57,9 @@ subprojects {
         set("spotBugsVersion", "4.7.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.13.3")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.6.3")          // https://mvnrepository.com/artifact/info.picocli/picocli
-
         set("log4jVersion", "2.17.2")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+        set("slf4jVersion", "1.7.36")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+
         set("guavaVersion", "31.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.8.2")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "1.7.1")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
@@ -84,7 +85,6 @@ subprojects {
         testImplementation("org.mockito:mockito-junit-jupiter:$mockitoVersion")
         testImplementation("org.hamcrest:hamcrest-core:$hamcrestVersion")
         testImplementation("com.google.guava:guava-testlib:$guavaVersion")
-        testImplementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
         testImplementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
         testImplementation("org.apache.logging.log4j:log4j-slf4j18-impl:$log4jVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
