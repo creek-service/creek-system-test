@@ -16,16 +16,18 @@
 
 package org.creekservice.api.system.test.extension.model;
 
-/** Container of test package listeners */
-public interface TestListenerContainer extends TestListenerCollection {
 
-    /**
-     * Append the supplied {@code listener} to the end of the collection.
-     *
-     * <p>Listeners are invoked in order for {@code beforeXXXX} methods and in reverse order for
-     * {@code afterXXXX} methods.
-     *
-     * @param listener the listener to append.
-     */
-    void append(TestLifecycleListener listener);
+import java.util.List;
+
+/** Public API of a test suite. */
+public interface CreekTestSuite extends Locatable {
+
+    /** @return the name of the suite */
+    String name();
+
+    /** @return the list of services under test */
+    List<String> services();
+
+    /** @return the test cases in the suite. */
+    List<? extends CreekTestCase> tests();
 }

@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.model;
+package org.creekservice.api.system.test.extension.test;
 
-/**
- * Listener of lifecycle events for tests.
- *
- * <p>Once registered, the listener will be invoked as each test suite is executed.
- *
- * <p>Throwing an exception from a callback will result in test executing terminating.
- */
-public interface TestLifecycleListener {
-    default void beforeSuite(String suiteName) {}
+/** Container of test package listeners */
+public interface TestListenerContainer extends TestListenerCollection {
 
-    default void afterSuite(String suiteName) {}
-
-    default void beforeTest(String testName) {}
-
-    default void afterTest(String testName) {}
+    /**
+     * Append the supplied {@code listener} to the end of the collection.
+     *
+     * <p>Listeners are invoked in order for {@code beforeXXXX} methods and in reverse order for
+     * {@code afterXXXX} methods.
+     *
+     * @param listener the listener to append.
+     */
+    void append(TestLifecycleListener listener);
 }

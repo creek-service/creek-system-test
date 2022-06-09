@@ -19,29 +19,31 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
 
 public final class LoggingTestLifecycleListener implements TestLifecycleListener {
 
     private static final Logger LOGGER = LogManager.getLogger(LoggingTestLifecycleListener.class);
 
     @Override
-    public void beforeSuite(final String suiteName) {
-        LOGGER.info("Starting suite '" + suiteName + "'");
+    public void beforeSuite(final CreekTestSuite suite) {
+        LOGGER.info("Starting suite '" + suite.name() + "'");
     }
 
     @Override
-    public void afterSuite(final String suiteName) {
-        LOGGER.info("Finished suite '" + suiteName + "'");
+    public void afterSuite(final CreekTestSuite suite) {
+        LOGGER.info("Finished suite '" + suite.name() + "'");
     }
 
     @Override
-    public void beforeTest(final String testName) {
-        LOGGER.info("Starting test '" + testName + "'");
+    public void beforeTest(final CreekTestCase test) {
+        LOGGER.info("Starting test '" + test.name() + "'");
     }
 
     @Override
-    public void afterTest(final String testName) {
-        LOGGER.info("Finished test '" + testName + "'");
+    public void afterTest(final CreekTestCase test) {
+        LOGGER.info("Finished test '" + test.name() + "'");
     }
 }

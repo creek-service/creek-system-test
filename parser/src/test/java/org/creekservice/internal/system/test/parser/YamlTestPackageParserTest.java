@@ -213,14 +213,12 @@ class YamlTestPackageParserTest {
         assertThat(result.isPresent(), is(true));
         final TestPackage pkg = result.get();
 
+        assertThat(pkg.suites().get(0).location().toString(), is(locationPrefix + "suite.yml:2"));
         assertThat(
-                pkg.suites().get(0).def().location().toString(),
-                is(locationPrefix + "suite.yml:2"));
-        assertThat(
-                pkg.suites().get(0).tests().get(0).def().location().toString(),
+                pkg.suites().get(0).tests().get(0).location().toString(),
                 is(locationPrefix + "suite.yml:6"));
         assertThat(
-                pkg.suites().get(0).def().tests().get(0).location().toString(),
+                pkg.suites().get(0).tests().get(0).location().toString(),
                 is(locationPrefix + "suite.yml:6"));
     }
 
@@ -380,8 +378,7 @@ class YamlTestPackageParserTest {
         assertThat(result.isPresent(), is(true));
         assertThat(result.get().suites(), hasSize(1));
         assertThat(
-                result.get().suites().get(0).def().location().toString(),
-                containsString("suite-2.yml"));
+                result.get().suites().get(0).location().toString(), containsString("suite-2.yml"));
     }
 
     @Test

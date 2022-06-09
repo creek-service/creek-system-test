@@ -16,15 +16,16 @@
 
 package org.creekservice.api.system.test.extension.model;
 
-/** The API exposed to extensions for viewing and interacting with test packages. */
-public interface SystemTestPackage {
 
-    /**
-     * Test listeners.
-     *
-     * <p>Listeners are invoked on test lifecycle events.
-     *
-     * @return test listeners
-     */
-    TestListenerContainer listener();
+import java.net.URI;
+
+/**
+ * A thing with a location.
+ *
+ * <p>For example, a test case within a test suite file.
+ */
+public interface Locatable {
+
+    /** @return the location */
+    URI location();
 }

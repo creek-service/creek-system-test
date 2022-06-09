@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Iterators;
-import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.model.TestListenerContainer;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.TestListenerContainer;
 
 public final class TestListeners implements TestListenerContainer {
 
@@ -46,6 +46,7 @@ public final class TestListeners implements TestListenerContainer {
         listeners.add(listener);
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public Iterator<TestLifecycleListener> iterator() {
         throwIfNotOnCorrectThread();

@@ -19,31 +19,43 @@ package org.creekservice.api.system.test.extension.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TestLifecycleListenerTest {
 
+    @Mock private CreekTestSuite suite;
+    @Mock private CreekTestCase test;
+
+    @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
     void shouldDoNothingByDefault(
-            final String ignored, final Consumer<TestLifecycleListener> method) {
+            final String ignored,
+            final BiConsumer<TestLifecycleListener, TestLifecycleListenerTest> method) {
         // Given:
         final TestLifecycleListener listener = new TestLifecycleListener() {};
 
         // When:
-        method.accept(listener);
+        method.accept(listener, this);
 
         // Then: did nothing.
+        verifyNoInteractions(suite, test);
     }
 
     @Test
@@ -60,13 +72,20 @@ class TestLifecycleListenerTest {
         return Stream.of(
                 Arguments.of(
                         "beforeSuite",
-                        (Consumer<TestLifecycleListener>) l -> l.beforeSuite("name")),
+                        (BiConsumer<TestLifecycleListener, TestLifecycleListenerTest>)
+                                (l, t) -> l.beforeSuite(t.suite)),
                 Arguments.of(
-                        "afterSuite", (Consumer<TestLifecycleListener>) l -> l.afterSuite("name")),
+                        "afterSuite",
+                        (BiConsumer<TestLifecycleListener, TestLifecycleListenerTest>)
+                                (l, t) -> l.afterSuite(t.suite)),
                 Arguments.of(
-                        "beforeTest", (Consumer<TestLifecycleListener>) l -> l.beforeSuite("name")),
+                        "beforeTest",
+                        (BiConsumer<TestLifecycleListener, TestLifecycleListenerTest>)
+                                (l, t) -> l.beforeTest(t.test)),
                 Arguments.of(
-                        "afterTest", (Consumer<TestLifecycleListener>) l -> l.afterSuite("name")));
+                        "afterTest",
+                        (BiConsumer<TestLifecycleListener, TestLifecycleListenerTest>)
+                                (l, t) -> l.afterTest(t.test)));
     }
 
     private List<String> publicMethodNames() {

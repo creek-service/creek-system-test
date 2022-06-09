@@ -19,7 +19,7 @@ package org.creekservice.internal.system.test.executor.execution;
 import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.extension.model.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
 
@@ -48,7 +48,7 @@ public final class TestSuiteExecutor {
     }
 
     private void beforeSuite(final TestSuite testSuite) {
-        listeners.forEach(listener -> listener.beforeSuite(testSuite.def().name()));
+        listeners.forEach(listener -> listener.beforeSuite(testSuite));
     }
 
     private TestSuiteResult runSuite(final TestSuite testSuite) {
@@ -66,6 +66,6 @@ public final class TestSuiteExecutor {
     }
 
     private void afterSuite(final TestSuite testSuite) {
-        listeners.forEachReverse(listener -> listener.afterSuite(testSuite.def().name()));
+        listeners.forEachReverse(listener -> listener.afterSuite(testSuite));
     }
 }

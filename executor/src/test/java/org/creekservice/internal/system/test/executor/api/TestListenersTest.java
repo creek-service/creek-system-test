@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
