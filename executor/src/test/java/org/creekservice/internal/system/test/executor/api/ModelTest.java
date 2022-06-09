@@ -25,10 +25,13 @@ import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.NullPointerTester;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.ExpectationHandler;
@@ -205,9 +208,12 @@ class ModelTest {
 
     @Test
     void shouldHaveThreadingTestForEachPublicMethod() {
-        final int publicMethodCount = publicMethodCount();
+        final List<String> publicMethodNames = publicMethodNames();
         final int testedMethodCount = (int) publicMethods().count();
-        assertThat(testedMethodCount, is(publicMethodCount));
+        assertThat(
+                "Public methods:\n" + String.join(System.lineSeparator(), publicMethodNames),
+                testedMethodCount,
+                is(publicMethodNames.size()));
     }
 
     @SuppressWarnings("unchecked")
@@ -239,11 +245,11 @@ class ModelTest {
                         (Consumer<Model>) m -> m.expectationHandler(TestExpectation.class)));
     }
 
-    private int publicMethodCount() {
-        return (int)
-                Arrays.stream(Model.class.getMethods())
-                        .filter(m -> !m.getDeclaringClass().equals(Object.class))
-                        .count();
+    private List<String> publicMethodNames() {
+        return Arrays.stream(Model.class.getMethods())
+                .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .map(Method::toGenericString)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private static final class TestRef implements InputRef, ExpectationRef {

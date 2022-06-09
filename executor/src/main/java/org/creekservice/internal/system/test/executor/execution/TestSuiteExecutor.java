@@ -16,14 +16,44 @@
 
 package org.creekservice.internal.system.test.executor.execution;
 
+import static java.util.Objects.requireNonNull;
 
+import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.system.test.extension.model.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
 
 public final class TestSuiteExecutor {
 
+    private final TestListenerCollection listeners;
+    private final TestCaseExecutor testExecutor;
+
+    public TestSuiteExecutor(final TestListenerCollection listeners) {
+        this(listeners, new TestCaseExecutor(listeners));
+    }
+
+    @VisibleForTesting
+    TestSuiteExecutor(final TestListenerCollection listeners, final TestCaseExecutor testExecutor) {
+        this.listeners = requireNonNull(listeners, "listeners");
+        this.testExecutor = requireNonNull(testExecutor, "testExecutor");
+    }
+
     public TestSuiteResult executeSuite(final TestSuite testSuite) {
-        // Coming soon...
+        try {
+            beforeSuite(testSuite);
+            return runSuite(testSuite);
+        } finally {
+            afterSuite(testSuite);
+        }
+    }
+
+    private void beforeSuite(final TestSuite testSuite) {
+        listeners.forEach(listener -> listener.beforeSuite(testSuite.def().name()));
+    }
+
+    private TestSuiteResult runSuite(final TestSuite testSuite) {
+        testSuite.tests().forEach(testExecutor::executeTest);
+
         // For now, this facilitates testing:
         switch (testSuite.tests().size()) {
             case 1:
@@ -33,5 +63,9 @@ public final class TestSuiteExecutor {
             default:
                 return new TestSuiteResult(0, 0);
         }
+    }
+
+    private void afterSuite(final TestSuite testSuite) {
+        listeners.forEachReverse(listener -> listener.afterSuite(testSuite.def().name()));
     }
 }

@@ -39,6 +39,10 @@ allprojects {
             }
         }
     }
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor(10, TimeUnit.MINUTES)
+    }
 }
 
 subprojects {

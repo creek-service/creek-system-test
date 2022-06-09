@@ -19,39 +19,26 @@ package org.creekservice.internal.system.test.executor.api;
 import static java.util.Objects.requireNonNull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.api.system.test.extension.model.SystemTestPackage;
+import org.creekservice.api.system.test.extension.model.TestListenerContainer;
 
-public final class SystemTest implements CreekSystemTest {
+public final class Tests implements SystemTestPackage {
 
-    private final Model model;
-    private final Tests tests;
+    private final TestListeners listeners;
 
-    public SystemTest(final Collection<? extends CreekTestExtension> extensions) {
-        this(extensions, new Model(), new Tests());
+    public Tests() {
+        this(new TestListeners());
     }
 
     @VisibleForTesting
-    SystemTest(
-            final Collection<? extends CreekTestExtension> extensions,
-            final Model model,
-            final Tests tests) {
-        this.model = requireNonNull(model, "model");
-        this.tests = requireNonNull(tests, "test");
-        extensions.forEach(ext -> ext.initialize(this));
+    Tests(final TestListeners listeners) {
+        this.listeners = requireNonNull(listeners, "listeners");
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public Model model() {
-        return model;
-    }
-
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
-    @Override
-    public Tests test() {
-        return tests;
+    public TestListenerContainer listener() {
+        return listeners;
     }
 }

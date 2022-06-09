@@ -42,6 +42,7 @@ class SystemTestTest {
     @Mock private CreekTestExtension ext1;
     @Mock private CreekTestExtension ext2;
     @Mock private Model model;
+    @Mock private Tests tests;
     private SystemTest api;
     @Captor private ArgumentCaptor<SystemTest> apiCapture;
     private final Class<? extends InputRef> refType = mock(InputRef.class).getClass();
@@ -49,7 +50,7 @@ class SystemTestTest {
     @Test
     void shouldExposeModel() {
         // Given:
-        api = new SystemTest(List.of(ext1, ext2), model);
+        api = new SystemTest(List.of(ext1, ext2), model, tests);
 
         // Then:
         assertThat(api.model(), is(sameInstance(model)));
@@ -58,7 +59,7 @@ class SystemTestTest {
     @Test
     void shouldExposeModelToExtensions() {
         // When:
-        api = new SystemTest(List.of(ext1, ext2), model);
+        api = new SystemTest(List.of(ext1, ext2), model, tests);
 
         // Then:
         verify(ext1).initialize(apiCapture.capture());
@@ -66,6 +67,28 @@ class SystemTestTest {
 
         verify(ext2).initialize(apiCapture.capture());
         assertThat(apiCapture.getValue().model(), is(sameInstance(model)));
+    }
+
+    @Test
+    void shouldExposeTests() {
+        // Given:
+        api = new SystemTest(List.of(ext1, ext2), model, tests);
+
+        // Then:
+        assertThat(api.test(), is(sameInstance(tests)));
+    }
+
+    @Test
+    void shouldExposeTestsToExtensions() {
+        // When:
+        api = new SystemTest(List.of(ext1, ext2), model, tests);
+
+        // Then:
+        verify(ext1).initialize(apiCapture.capture());
+        assertThat(apiCapture.getValue().test(), is(sameInstance(tests)));
+
+        verify(ext2).initialize(apiCapture.capture());
+        assertThat(apiCapture.getValue().test(), is(sameInstance(tests)));
     }
 
     @Test
@@ -90,7 +113,7 @@ class SystemTestTest {
                 .initialize(any());
 
         // When:
-        api = new SystemTest(List.of(ext1, ext2), model);
+        api = new SystemTest(List.of(ext1, ext2), model, tests);
 
         // Then:
         verify(model, times(2)).addInputRef(refType);

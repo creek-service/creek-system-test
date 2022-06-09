@@ -33,6 +33,8 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
+import org.creekservice.internal.system.test.executor.execution.listener.CreekTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.execution.listener.LoggingTestLifecycleListener;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
@@ -119,7 +121,9 @@ public final class SystemTestExecutor {
     }
 
     private static SystemTest initializeApi() {
-        return new SystemTest(loadExtensions());
+        final SystemTest api = new SystemTest(loadExtensions());
+        api.test().listener().append(new LoggingTestLifecycleListener());
+        return api;
     }
 
     private static List<CreekTestExtension> loadExtensions() {
@@ -134,11 +138,15 @@ public final class SystemTestExecutor {
         final TestPackagesLoader loader =
                 testPackagesLoader(
                         options.testDirectory(),
-                        yamlParser(api.modelTypes(), new TestPackageParserObserver(LOGGER)),
+                        yamlParser(api.model().modelTypes(), new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
+        api.test().listener().append(new CreekTestLifecycleListener());
+
         return new TestPackagesExecutor(
-                loader, new TestSuiteExecutor(), new ResultsWriter(options.resultDirectory()));
+                loader,
+                new TestSuiteExecutor(api.test().listener()),
+                new ResultsWriter(options.resultDirectory()));
     }
 
     private static final class TestExecutionFailedException extends RuntimeException {

@@ -18,8 +18,11 @@ plugins {
     `java-library`
 }
 
+val creekBaseVersion : String by extra
+
 dependencies {
     // Non-test dependency free
 
     testImplementation(project(":test-extension"))
+    testImplementation("org.creekservice:creek-base-type:$creekBaseVersion")
 }

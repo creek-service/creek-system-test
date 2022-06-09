@@ -14,28 +14,21 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension;
+package org.creekservice.api.system.test.extension.model;
 
+/**
+ * Listener of lifecycle events for tests.
+ *
+ * <p>Once registered, the listener will be invoked as each test suite is executed.
+ *
+ * <p>Throwing an exception from a callback will result in test executing terminating.
+ */
+public interface TestLifecycleListener {
+    default void beforeSuite(String suiteName) {}
 
-import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.model.SystemTestPackage;
+    default void afterSuite(String suiteName) {}
 
-/** API to the system tests exposed to extensions */
-public interface CreekSystemTest {
+    default void beforeTest(String testName) {}
 
-    /**
-     * The data model of the system tests.
-     *
-     * <p>This is the model used when deserializing system tests.
-     *
-     * @return the model.
-     */
-    ModelContainer model();
-
-    /**
-     * The test being executed.
-     *
-     * @return the test container.
-     */
-    SystemTestPackage test();
+    default void afterTest(String testName) {}
 }

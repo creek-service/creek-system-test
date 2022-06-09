@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension;
+package org.creekservice.api.system.test.extension.model;
 
-
-import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.model.SystemTestPackage;
-
-/** API to the system tests exposed to extensions */
-public interface CreekSystemTest {
+/** Container of test package listeners */
+public interface TestListenerContainer extends TestListenerCollection {
 
     /**
-     * The data model of the system tests.
+     * Append the supplied {@code listener} to the end of the collection.
      *
-     * <p>This is the model used when deserializing system tests.
+     * <p>Listeners are invoked in order for {@code beforeXXXX} methods and in reverse order for
+     * {@code afterXXXX} methods.
      *
-     * @return the model.
+     * @param listener the listener to append.
      */
-    ModelContainer model();
-
-    /**
-     * The test being executed.
-     *
-     * @return the test container.
-     */
-    SystemTestPackage test();
+    void append(TestLifecycleListener listener);
 }
