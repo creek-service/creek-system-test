@@ -19,14 +19,16 @@ package org.creekservice.api.system.test.model;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireEqual;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import org.creekservice.api.system.test.extension.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.model.Expectation;
 import org.creekservice.api.system.test.extension.model.Input;
 
 /** A single test case. */
-public final class TestCase {
+public final class TestCase implements CreekTestCase {
 
     private final TestCaseDef def;
     private final TestSuite suite;
@@ -54,10 +56,17 @@ public final class TestCase {
         requireEqual(expectations.size(), def.expectations().size(), "expectations size mismatch");
     }
 
-    public TestCaseDef def() {
-        return def;
+    @Override
+    public String name() {
+        return def.name();
     }
 
+    @Override
+    public URI location() {
+        return def.location();
+    }
+
+    @Override
     public TestSuite suite() {
         return suite;
     }

@@ -14,28 +14,17 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension;
+package org.creekservice.api.system.test.extension.test;
 
-
-import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.test.SystemTestPackage;
-
-/** API to the system tests exposed to extensions */
-public interface CreekSystemTest {
+/** The API exposed to extensions for viewing and interacting with test packages. */
+public interface SystemTestPackage {
 
     /**
-     * The data model of the system tests.
+     * Test listeners.
      *
-     * <p>This is the model used when deserializing system tests.
+     * <p>Listeners are invoked on test lifecycle events.
      *
-     * @return the model.
+     * @return test listeners
      */
-    ModelContainer model();
-
-    /**
-     * The test being executed.
-     *
-     * @return the test container.
-     */
-    SystemTestPackage test();
+    TestListenerContainer listener();
 }

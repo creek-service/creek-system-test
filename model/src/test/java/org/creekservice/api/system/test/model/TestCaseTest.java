@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -108,9 +109,7 @@ class TestCaseTest {
     @Test
     void shouldSetTestSuiteOnBuild() {
         // Given:
-        final List<Input> inputs = List.of(input);
-        final List<Expectation> expectations = List.of(expectation);
-        final TestCase.Builder builder = testCase(inputs, expectations, def(inputs, expectations));
+        final TestCase.Builder builder = builder(List.of(input), List.of(expectation));
 
         // When:
         final TestCase testCase = builder.build(suite);
@@ -119,17 +118,33 @@ class TestCaseTest {
         assertThat(testCase.suite(), is(sameInstance(suite)));
     }
 
+    @Test
+    void shouldReturnTestName() {
+        // Given:
+        final TestCase testCase = builder(List.of(input), List.of(expectation)).build(suite);
+        when(def.name()).thenReturn("Bob");
+
+        // Then:
+        assertThat(testCase.name(), is("Bob"));
+    }
+
+    @Test
+    void shouldReturnLocation() {
+        // Given:
+        final TestCase testCase = builder(List.of(input), List.of(expectation)).build(suite);
+        final URI location = URI.create("file://some.location:24");
+        when(def.location()).thenReturn(location);
+
+        // Then:
+        assertThat(testCase.location(), is(location));
+    }
+
     @SuppressWarnings("ConstantConditions")
     @Test
     void shouldReturnImmutableInputs() {
         // Given:
         final List<Input> inputs =
-                testCase(
-                                List.of(input),
-                                List.of(expectation),
-                                def(List.of(input), List.of(expectation)))
-                        .build(suite)
-                        .inputs();
+                builder(List.of(input), List.of(expectation)).build(suite).inputs();
 
         // Then:
         assertThrows(UnsupportedOperationException.class, () -> inputs.remove(0));
@@ -140,12 +155,7 @@ class TestCaseTest {
     void shouldReturnImmutableExpectations() {
         // Given:
         final List<Expectation> expectations =
-                testCase(
-                                List.of(input),
-                                List.of(expectation),
-                                def(List.of(input), List.of(expectation)))
-                        .build(suite)
-                        .expectations();
+                builder(List.of(input), List.of(expectation)).build(suite).expectations();
 
         // Then:
         assertThrows(UnsupportedOperationException.class, () -> expectations.remove(0));
@@ -156,6 +166,11 @@ class TestCaseTest {
         givenDefInputs(inputs.size());
         givenDefExpectations(expectations.size());
         return def;
+    }
+
+    private TestCase.Builder builder(
+            final List<Input> inputs, final List<Expectation> expectations) {
+        return testCase(inputs, expectations, def(inputs, expectations));
     }
 
     private void givenDefInputs(final int inputs) {

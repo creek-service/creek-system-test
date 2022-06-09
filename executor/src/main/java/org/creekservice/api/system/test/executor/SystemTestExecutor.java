@@ -141,7 +141,7 @@ public final class SystemTestExecutor {
                         yamlParser(api.model().modelTypes(), new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
-        api.test().listener().append(new CreekTestLifecycleListener());
+        api.test().listener().append(new CreekTestLifecycleListener(api));
 
         return new TestPackagesExecutor(
                 loader,

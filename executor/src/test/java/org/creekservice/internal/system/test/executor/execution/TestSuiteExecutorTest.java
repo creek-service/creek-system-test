@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
@@ -29,11 +28,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.model.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
-import org.creekservice.api.system.test.model.TestSuiteDef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,13 +46,7 @@ class TestSuiteExecutorTest {
 
     @Mock private TestListenerCollection listeners;
     @Mock private TestCaseExecutor testExecutor;
-
-    @Mock(strictness = LENIENT)
-    private TestSuite testSuite;
-
-    @Mock(strictness = LENIENT)
-    private TestSuiteDef testSuiteDef;
-
+    @Mock private TestSuite testSuite;
     @Mock private TestCase testCase0;
     @Mock private TestCase testCase1;
     @Mock private TestLifecycleListener listener;
@@ -64,9 +56,6 @@ class TestSuiteExecutorTest {
     @BeforeEach
     void setUp() {
         suiteExecutor = new TestSuiteExecutor(listeners, testExecutor);
-
-        when(testSuite.def()).thenReturn(testSuiteDef);
-        when(testSuiteDef.name()).thenReturn("the suite");
     }
 
     @Test
@@ -77,7 +66,7 @@ class TestSuiteExecutorTest {
         // Then:
         verify(listeners).forEach(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
-        verify(listener).beforeSuite("the suite");
+        verify(listener).beforeSuite(testSuite);
     }
 
     @Test
@@ -88,7 +77,7 @@ class TestSuiteExecutorTest {
         // Then:
         verify(listeners).forEachReverse(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
-        verify(listener).afterSuite("the suite");
+        verify(listener).afterSuite(testSuite);
     }
 
     @Test

@@ -14,29 +14,25 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.execution.listener;
+package org.creekservice.api.system.test.extension.test;
 
-import static java.util.Objects.requireNonNull;
 
+import org.creekservice.api.system.test.extension.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
-import org.creekservice.internal.system.test.executor.api.SystemTest;
 
-public final class CreekTestLifecycleListener implements TestLifecycleListener {
+/**
+ * Listener of lifecycle events for tests.
+ *
+ * <p>Once registered, the listener will be invoked as each test suite is executed.
+ *
+ * <p>Throwing an exception from a callback will result in test executing terminating.
+ */
+public interface TestLifecycleListener {
+    default void beforeSuite(CreekTestSuite suite) {}
 
-    private final SystemTest api;
+    default void afterSuite(CreekTestSuite suite) {}
 
-    public CreekTestLifecycleListener(final SystemTest api) {
-        this.api = requireNonNull(api, "api");
-    }
+    default void beforeTest(CreekTestCase test) {}
 
-    @Override
-    public void beforeSuite(final CreekTestSuite suite) {
-        // Coming soon...
-    }
-
-    @Override
-    public void afterSuite(final CreekTestSuite suite) {
-        // Coming soon...
-    }
+    default void afterTest(CreekTestCase test) {}
 }

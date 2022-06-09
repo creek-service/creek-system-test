@@ -18,6 +18,7 @@ package org.creekservice.api.system.test.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.EqualsTester;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,12 +88,41 @@ class TestSuiteTest {
         // Given:
         final List<TestCase.Builder> testBuilders = List.of(testBuilder);
         final TestSuite.Builder builder = TestSuite.testSuite(testBuilders, def(testBuilders));
-
-        // When:
         final TestSuite suite = builder.build(pkg);
 
         // Then:
         verify(testBuilder).build(suite);
+    }
+
+    @Test
+    void shouldReturnSuiteName() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        when(def.name()).thenReturn("Bob");
+
+        // Then:
+        assertThat(suite.name(), is("Bob"));
+    }
+
+    @Test
+    void shouldReturnLocation() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        final URI location = URI.create("file://some.location:24");
+        when(def.location()).thenReturn(location);
+
+        // Then:
+        assertThat(suite.location(), is(location));
+    }
+
+    @Test
+    void shouldReturnServiceNames() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        when(def.services()).thenReturn(List.of("Alice", "Jane"));
+
+        // Then:
+        assertThat(suite.services(), is(List.of("Alice", "Jane")));
     }
 
     private TestSuiteDef def(final Collection<TestCase.Builder> testCases) {

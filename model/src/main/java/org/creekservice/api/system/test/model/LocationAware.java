@@ -18,13 +18,11 @@ package org.creekservice.api.system.test.model;
 
 
 import java.net.URI;
+import org.creekservice.api.system.test.extension.model.Locatable;
 
-public interface LocationAware<T extends LocationAware<T>> {
+public interface LocationAware<T extends LocationAware<T>> extends Locatable {
 
     URI UNKNOWN_LOCATION = URI.create("file://unknown");
-
-    /** @return the location */
-    URI location();
 
     /**
      * @param location the location

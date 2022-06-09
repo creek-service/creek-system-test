@@ -20,8 +20,8 @@ import static java.util.Objects.requireNonNull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.extension.model.SystemTestPackage;
-import org.creekservice.api.system.test.extension.model.TestListenerContainer;
+import org.creekservice.api.system.test.extension.test.SystemTestPackage;
+import org.creekservice.api.system.test.extension.test.TestListenerContainer;
 
 public final class Tests implements SystemTestPackage {
 

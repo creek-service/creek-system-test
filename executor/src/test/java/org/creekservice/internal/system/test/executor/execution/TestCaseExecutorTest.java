@@ -21,17 +21,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.model.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
-import org.creekservice.api.system.test.model.TestCaseDef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,13 +42,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TestCaseExecutorTest {
 
     @Mock private TestListenerCollection listeners;
-
-    @Mock(strictness = LENIENT)
-    private TestCase testCase;
-
-    @Mock(strictness = LENIENT)
-    private TestCaseDef testCaseDef;
-
+    @Mock private TestCase testCase;
     @Mock private TestLifecycleListener listener;
     @Captor private ArgumentCaptor<Consumer<TestLifecycleListener>> actionCaptor;
     private TestCaseExecutor executor;
@@ -59,9 +50,6 @@ class TestCaseExecutorTest {
     @BeforeEach
     void setUp() {
         executor = new TestCaseExecutor(listeners);
-
-        when(testCase.def()).thenReturn(testCaseDef);
-        when(testCaseDef.name()).thenReturn("the test");
     }
 
     @Test
@@ -72,7 +60,7 @@ class TestCaseExecutorTest {
         // Then:
         verify(listeners).forEach(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
-        verify(listener).beforeTest("the test");
+        verify(listener).beforeTest(testCase);
     }
 
     @Test
@@ -83,7 +71,7 @@ class TestCaseExecutorTest {
         // Then:
         verify(listeners).forEachReverse(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
-        verify(listener).afterTest("the test");
+        verify(listener).afterTest(testCase);
     }
 
     @Test

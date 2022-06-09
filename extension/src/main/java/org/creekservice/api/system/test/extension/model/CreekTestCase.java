@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension;
+package org.creekservice.api.system.test.extension.model;
 
 
-import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.test.SystemTestPackage;
+import java.util.List;
 
-/** API to the system tests exposed to extensions */
-public interface CreekSystemTest {
+/** Public API of a test case. */
+public interface CreekTestCase extends Locatable {
 
-    /**
-     * The data model of the system tests.
-     *
-     * <p>This is the model used when deserializing system tests.
-     *
-     * @return the model.
-     */
-    ModelContainer model();
+    /** @return the name of the test case */
+    String name();
 
-    /**
-     * The test being executed.
-     *
-     * @return the test container.
-     */
-    SystemTestPackage test();
+    /** @return the suite the test case belongs too. */
+    CreekTestSuite suite();
+
+    /** @return the inputs to be fed in at the start of the test case. */
+    List<Input> inputs();
+
+    /** @return the expectations to be asserted at the end of the test case. */
+    List<Expectation> expectations();
 }
