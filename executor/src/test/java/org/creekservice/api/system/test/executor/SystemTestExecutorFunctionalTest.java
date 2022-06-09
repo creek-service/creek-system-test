@@ -221,7 +221,6 @@ class SystemTestExecutorFunctionalTest {
         assertThat(
                 stdErr.get(),
                 is("There were failing tests. See the report at: " + resultDir.toUri()));
-        assertThat(stdOut.get(), is(""));
         assertThat(exitCode, is(1));
     }
 
@@ -238,7 +237,6 @@ class SystemTestExecutorFunctionalTest {
         assertThat(
                 stdErr.get(),
                 is("There were failing tests. See the report at: " + resultDir.toUri()));
-        assertThat(stdOut.get(), is(""));
         assertThat(exitCode, is(1));
     }
 
@@ -253,8 +251,24 @@ class SystemTestExecutorFunctionalTest {
 
         // Then:
         assertThat(stdErr.get(), is(""));
-        assertThat(stdOut.get(), is(""));
         assertThat(exitCode, is(0));
+    }
+
+    @Test
+    void shouldLogTestLifecycle() {
+        // Given:
+        final String[] args = minimalArgs();
+        givenTestCaseCount(3);
+
+        // When:
+        runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), containsString("Starting suite 'suite name'"));
+        assertThat(stdOut.get(), containsString("Starting test 'test 0'"));
+        assertThat(stdOut.get(), containsString("Finished test 'test 0'"));
+        assertThat(stdOut.get(), containsString("Finished suite 'suite name'"));
     }
 
     @Test

@@ -14,28 +14,20 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension;
+package org.creekservice.internal.system.test.executor.execution.listener;
 
 
-import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.model.SystemTestPackage;
+import org.creekservice.api.system.test.extension.model.TestLifecycleListener;
 
-/** API to the system tests exposed to extensions */
-public interface CreekSystemTest {
+public final class CreekTestLifecycleListener implements TestLifecycleListener {
 
-    /**
-     * The data model of the system tests.
-     *
-     * <p>This is the model used when deserializing system tests.
-     *
-     * @return the model.
-     */
-    ModelContainer model();
+    @Override
+    public void beforeSuite(final String suiteName) {
+        // Coming soon...
+    }
 
-    /**
-     * The test being executed.
-     *
-     * @return the test container.
-     */
-    SystemTestPackage test();
+    @Override
+    public void afterSuite(final String suiteName) {
+        // Coming soon...
+    }
 }
