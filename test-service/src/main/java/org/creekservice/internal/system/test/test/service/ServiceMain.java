@@ -28,6 +28,7 @@ public final class ServiceMain {
 
     public static void main(final String... args) {
         doLogging();
+        awaitShutdown();
     }
 
     private static void doLogging() {
@@ -35,5 +36,18 @@ public final class ServiceMain {
         System.err.println("System.err logging");
         LOGGER.info("LOGGER.info logging");
         LOGGER.error("LOGGER.error logging");
+
+        LOGGER.info("some.lifecycle.event=started");
+    }
+
+    @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
+    private static void awaitShutdown() {
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // meh
+            }
+        }
     }
 }

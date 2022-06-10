@@ -26,4 +26,9 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
     public String name() {
         return SERVICE_NAME;
     }
+
+    @Override
+    public String dockerImage() {
+        return "ghcr.io/creekservice/" + name();
+    }
 }

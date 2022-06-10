@@ -23,8 +23,6 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
@@ -41,11 +39,13 @@ import org.creekservice.internal.system.test.executor.execution.listener.StopAll
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Entry point for running system tests */
 public final class SystemTestExecutor {
 
-    private static final Logger LOGGER = LogManager.getLogger(SystemTestExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemTestExecutor.class);
 
     private SystemTestExecutor() {}
 
@@ -64,7 +64,7 @@ public final class SystemTestExecutor {
 
             System.exit(success ? 0 : 1);
         } catch (final Exception e) {
-            LOGGER.fatal(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             System.exit(2);
         }
     }
@@ -105,11 +105,11 @@ public final class SystemTestExecutor {
 
     private static void echo(final ExecutorOptions options) {
         LOGGER.info(
-                "SystemTestExecutor: "
-                        + JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
+                "SystemTestExecutor: {}",
+                JarVersion.jarVersion(SystemTestExecutor.class).orElse("unknown"));
         LOGGER.info(classPath());
         LOGGER.info(modulePath());
-        LOGGER.info(options);
+        LOGGER.info("{}", options);
     }
 
     private static String classPath() {

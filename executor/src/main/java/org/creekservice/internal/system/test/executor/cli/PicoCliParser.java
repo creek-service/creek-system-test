@@ -23,17 +23,17 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
 public final class PicoCliParser {
 
-    private static final Logger LOGGER = LogManager.getLogger(PicoCliParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PicoCliParser.class);
 
     private PicoCliParser() {}
 

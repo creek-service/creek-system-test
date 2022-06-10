@@ -17,15 +17,16 @@
 package org.creekservice.internal.system.test.executor.execution.listener;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.creekservice.api.system.test.extension.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class LoggingTestLifecycleListener implements TestLifecycleListener {
 
-    private static final Logger LOGGER = LogManager.getLogger(LoggingTestLifecycleListener.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(LoggingTestLifecycleListener.class);
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {

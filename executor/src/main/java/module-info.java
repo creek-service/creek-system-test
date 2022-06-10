@@ -4,9 +4,11 @@ module creek.system.test.executor {
     requires creek.system.test.extension;
     requires creek.system.test.parser;
     requires info.picocli;
+    requires org.slf4j;
     requires org.apache.logging.log4j;
     requires java.management;
     requires com.github.spotbugs.annotations;
+    requires testcontainers;
 
     exports org.creekservice.api.system.test.executor;
 

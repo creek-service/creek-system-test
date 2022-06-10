@@ -26,4 +26,7 @@ public interface ServiceDefinition {
      * @return the name of the service.
      */
     String name();
+
+    /** @return the docker image name, without version info. */
+    String dockerImage();
 }

@@ -150,5 +150,10 @@ public final class ServiceDefinitions implements ServiceDefinitionCollection {
         public String name() {
             return descriptor.name();
         }
+
+        @Override
+        public String dockerImage() {
+            return descriptor.dockerImage();
+        }
     }
 }

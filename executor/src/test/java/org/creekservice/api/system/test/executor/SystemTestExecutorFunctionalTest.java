@@ -128,7 +128,7 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldRunFromClassPath() {
+    void shouldEchoClassPath() {
         // Given:
         final String[] javaArgs = {
             "-cp",
@@ -298,15 +298,21 @@ class SystemTestExecutorFunctionalTest {
     }
 
     private int runExecutor(final String[] cmdArgs) {
-        final String modulePath =
-                LIB_DIR + SEPARATOR + TEST_EXT_LIB_DIR + SEPARATOR + TEST_SERVICES_LIB_DIR;
+        // Run from the classpath by default until test containers works from the module path:
+        final String classPath =
+                LIB_DIR
+                        + "/*"
+                        + SEPARATOR
+                        + TEST_EXT_LIB_DIR
+                        + "/*"
+                        + SEPARATOR
+                        + TEST_SERVICES_LIB_DIR
+                        + "/*";
 
         final String[] javaArgs = {
-            "--module-path",
-            modulePath,
-            "--add-modules=creek.system.test.test.extension",
-            "--add-reads=creek.system.test.extension=creek.system.test.test.extension",
-            "--module=creek.system.test.executor/org.creekservice.api.system.test.executor.SystemTestExecutor"
+            "-cp",
+            classPath,
+            org.creekservice.api.system.test.executor.SystemTestExecutor.class.getName()
         };
         return runExecutor(javaArgs, cmdArgs);
     }
