@@ -6,5 +6,6 @@ include(
     "model",
     "parser",
     "test-extension",
-    "test-service"
+    "test-service",
+    "test-services"
 )

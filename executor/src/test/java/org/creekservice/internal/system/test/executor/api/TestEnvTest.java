@@ -20,23 +20,31 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TestsTest {
+class TestEnvTest {
 
     @Mock private TestListeners listeners;
-    private Tests tests;
+    @Mock private LocalServiceInstances services;
+    private TestSuiteEnv testEnv;
+
+    @BeforeEach
+    void setUp() {
+        testEnv = new TestSuiteEnv(listeners, services);
+    }
 
     @Test
     void shouldExposeListeners() {
-        // Given:
-        tests = new Tests(listeners);
+        assertThat(testEnv.listener(), is(sameInstance(listeners)));
+    }
 
-        // Then:
-        assertThat(tests.listener(), is(sameInstance(listeners)));
+    @Test
+    void shouldExposeServices() {
+        assertThat(testEnv.services(), is(sameInstance(services)));
     }
 }

@@ -21,25 +21,31 @@ import static java.util.Objects.requireNonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 
 public final class SystemTest implements CreekSystemTest {
 
     private final Model model;
-    private final Tests tests;
+    private final TestSuiteEnv testEnv;
+    private final ServiceDefinitions services;
 
-    public SystemTest(final Collection<? extends CreekTestExtension> extensions) {
-        this(extensions, new Model(), new Tests());
+    public SystemTest(
+            final Collection<? extends CreekTestExtension> extensions,
+            final Collection<? extends ComponentDescriptor> components) {
+        this(extensions, new Model(), new TestSuiteEnv(), new ServiceDefinitions(components));
     }
 
     @VisibleForTesting
     SystemTest(
             final Collection<? extends CreekTestExtension> extensions,
             final Model model,
-            final Tests tests) {
+            final TestSuiteEnv testEnv,
+            final ServiceDefinitions services) {
         this.model = requireNonNull(model, "model");
-        this.tests = requireNonNull(tests, "test");
+        this.testEnv = requireNonNull(testEnv, "testEnv");
+        this.services = requireNonNull(services, "services");
         extensions.forEach(ext -> ext.initialize(this));
     }
 
@@ -51,7 +57,13 @@ public final class SystemTest implements CreekSystemTest {
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public Tests test() {
-        return tests;
+    public TestSuiteEnv testSuite() {
+        return testEnv;
+    }
+
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+    @Override
+    public ServiceDefinitions services() {
+        return services;
     }
 }

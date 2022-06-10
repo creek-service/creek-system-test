@@ -19,24 +19,26 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
-public final class CreekTestLifecycleListener implements TestLifecycleListener {
+/**
+ * A test lifecycle listener that stops any services left running at the end of a test suite.
+ *
+ * <p>Generally, services should be stopped by the class/extension that started them. This is here
+ * to ensure all services are stopped after the suite has run.
+ */
+public final class StopAllServicesTestLifecycleListener implements TestLifecycleListener {
 
     private final SystemTest api;
 
-    public CreekTestLifecycleListener(final SystemTest api) {
+    public StopAllServicesTestLifecycleListener(final SystemTest api) {
         this.api = requireNonNull(api, "api");
     }
 
     @Override
-    public void beforeSuite(final CreekTestSuite suite) {
-        // Coming soon...
-    }
-
-    @Override
     public void afterSuite(final CreekTestSuite suite) {
-        // Coming soon...
+        api.testSuite().services().forEach(ServiceInstance::stop);
     }
 }

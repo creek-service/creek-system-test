@@ -57,6 +57,9 @@ class SystemTestExecutorFunctionalTest {
     private static final Path TEST_EXT_LIB_DIR =
             TestPaths.moduleRoot("test-extension").resolve("build/libs").toAbsolutePath();
 
+    private static final Path TEST_SERVICES_LIB_DIR =
+            TestPaths.moduleRoot("test-services").resolve("build/libs").toAbsolutePath();
+
     private static final String SEPARATOR = System.getProperty("path.separator");
 
     private static final Pattern VERSION_PATTERN =
@@ -295,7 +298,8 @@ class SystemTestExecutorFunctionalTest {
     }
 
     private int runExecutor(final String[] cmdArgs) {
-        final String modulePath = LIB_DIR + SEPARATOR + TEST_EXT_LIB_DIR;
+        final String modulePath =
+                LIB_DIR + SEPARATOR + TEST_EXT_LIB_DIR + SEPARATOR + TEST_SERVICES_LIB_DIR;
 
         final String[] javaArgs = {
             "--module-path",
@@ -349,7 +353,7 @@ class SystemTestExecutorFunctionalTest {
 
     private String suiteContent(final int numberTestCases) {
         final String header =
-                "---\n" + "name: suite name\n" + "services:\n" + "  - service_a\n" + "tests:\n";
+                "---\n" + "name: suite name\n" + "services:\n" + "  - test-service\n" + "tests:\n";
 
         final String cases =
                 IntStream.range(0, numberTestCases)

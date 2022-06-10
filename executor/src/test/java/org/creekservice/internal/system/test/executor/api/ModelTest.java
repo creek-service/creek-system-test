@@ -196,6 +196,7 @@ class ModelTest {
         assertThat(e.getMessage(), is("duplicate type: " + TestRef.class.getName()));
     }
 
+    @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
     void shouldThrowIfWrongThread(final String ignored, final Consumer<Model> method) {

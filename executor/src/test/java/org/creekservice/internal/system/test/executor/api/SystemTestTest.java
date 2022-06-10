@@ -19,16 +19,11 @@ package org.creekservice.internal.system.test.executor.api;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
-import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.model.InputRef;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,24 +37,25 @@ class SystemTestTest {
     @Mock private CreekTestExtension ext1;
     @Mock private CreekTestExtension ext2;
     @Mock private Model model;
-    @Mock private Tests tests;
+    @Mock private TestSuiteEnv testEnv;
+    @Mock private ServiceDefinitions services;
     private SystemTest api;
     @Captor private ArgumentCaptor<SystemTest> apiCapture;
-    private final Class<? extends InputRef> refType = mock(InputRef.class).getClass();
+
+    @BeforeEach
+    void setUp() {
+        api = new SystemTest(List.of(), model, testEnv, services);
+    }
 
     @Test
     void shouldExposeModel() {
-        // Given:
-        api = new SystemTest(List.of(ext1, ext2), model, tests);
-
-        // Then:
         assertThat(api.model(), is(sameInstance(model)));
     }
 
     @Test
     void shouldExposeModelToExtensions() {
         // When:
-        api = new SystemTest(List.of(ext1, ext2), model, tests);
+        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
 
         // Then:
         verify(ext1).initialize(apiCapture.capture());
@@ -70,52 +66,38 @@ class SystemTestTest {
     }
 
     @Test
-    void shouldExposeTests() {
-        // Given:
-        api = new SystemTest(List.of(ext1, ext2), model, tests);
-
-        // Then:
-        assertThat(api.test(), is(sameInstance(tests)));
+    void shouldExposeTestEnv() {
+        assertThat(api.testSuite(), is(sameInstance(testEnv)));
     }
 
     @Test
-    void shouldExposeTestsToExtensions() {
+    void shouldExposeTestEnvToExtensions() {
         // When:
-        api = new SystemTest(List.of(ext1, ext2), model, tests);
+        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
 
         // Then:
         verify(ext1).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().test(), is(sameInstance(tests)));
+        assertThat(apiCapture.getValue().testSuite(), is(sameInstance(testEnv)));
 
         verify(ext2).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().test(), is(sameInstance(tests)));
+        assertThat(apiCapture.getValue().testSuite(), is(sameInstance(testEnv)));
     }
 
     @Test
-    void shouldGetModelTypes() {
-        // Given:
-        doAnswer(
-                        inv -> {
-                            final CreekSystemTest api = inv.getArgument(0);
-                            api.model().addInputRef(refType);
-                            return null;
-                        })
-                .when(ext1)
-                .initialize(any());
+    void shouldExposeServiceRegistry() {
+        assertThat(api.services(), is(sameInstance(services)));
+    }
 
-        doAnswer(
-                        inv -> {
-                            final CreekSystemTest api = inv.getArgument(0);
-                            api.model().addInputRef(refType);
-                            return null;
-                        })
-                .when(ext2)
-                .initialize(any());
-
+    @Test
+    void shouldExposeServiceRegistryToExtensions() {
         // When:
-        api = new SystemTest(List.of(ext1, ext2), model, tests);
+        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
 
         // Then:
-        verify(model, times(2)).addInputRef(refType);
+        verify(ext1).initialize(apiCapture.capture());
+        assertThat(apiCapture.getValue().services(), is(sameInstance(services)));
+
+        verify(ext2).initialize(apiCapture.capture());
+        assertThat(apiCapture.getValue().services(), is(sameInstance(services)));
     }
 }
