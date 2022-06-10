@@ -19,6 +19,12 @@ package org.creekservice.api.system.test.extension.service;
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
 
+    /** Start the instance. No-op if already started. */
+    void start();
+
+    /** @return {@code true} if the instance is running. */
+    boolean running();
+
     /** Stop the instance. No-op if already stopped. */
     void stop();
 }

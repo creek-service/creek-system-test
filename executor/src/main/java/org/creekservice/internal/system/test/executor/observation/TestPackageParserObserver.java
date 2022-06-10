@@ -23,8 +23,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.Logger;
 import org.creekservice.api.system.test.parser.TestPackageParser;
+import org.slf4j.Logger;
 
 public final class TestPackageParserObserver implements TestPackageParser.Observer {
 
