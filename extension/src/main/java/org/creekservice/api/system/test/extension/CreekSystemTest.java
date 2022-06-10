@@ -18,7 +18,8 @@ package org.creekservice.api.system.test.extension;
 
 
 import org.creekservice.api.system.test.extension.model.ModelContainer;
-import org.creekservice.api.system.test.extension.test.SystemTestPackage;
+import org.creekservice.api.system.test.extension.service.ServiceDefinitionCollection;
+import org.creekservice.api.system.test.extension.test.TestSuiteEnvironment;
 
 /** API to the system tests exposed to extensions */
 public interface CreekSystemTest {
@@ -33,9 +34,18 @@ public interface CreekSystemTest {
     ModelContainer model();
 
     /**
-     * The test being executed.
+     * The test suite being executed.
      *
      * @return the test container.
      */
-    SystemTestPackage test();
+    TestSuiteEnvironment testSuite();
+
+    /**
+     * The services known to Creek.
+     *
+     * <p>These are the services discovered on the class or module path.
+     *
+     * @return a collection of services.
+     */
+    ServiceDefinitionCollection services();
 }

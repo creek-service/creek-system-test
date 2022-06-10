@@ -26,15 +26,18 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.creekservice.api.base.type.JarVersion;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
+import org.creekservice.internal.system.test.executor.components.ComponentDescriptors;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
-import org.creekservice.internal.system.test.executor.execution.listener.CreekTestLifecycleListener;
 import org.creekservice.internal.system.test.executor.execution.listener.LoggingTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.execution.listener.ServicesUnderTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.execution.listener.StopAllServicesTestLifecycleListener;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
@@ -121,8 +124,9 @@ public final class SystemTestExecutor {
     }
 
     private static SystemTest initializeApi() {
-        final SystemTest api = new SystemTest(loadExtensions());
-        api.test().listener().append(new LoggingTestLifecycleListener());
+        final SystemTest api = new SystemTest(loadExtensions(), loadComponents());
+        api.testSuite().listener().append(new StopAllServicesTestLifecycleListener(api));
+        api.testSuite().listener().append(new LoggingTestLifecycleListener());
         return api;
     }
 
@@ -130,6 +134,12 @@ public final class SystemTestExecutor {
         final List<CreekTestExtension> extensions = CreekTestExtensions.load();
         extensions.forEach(ext -> LOGGER.debug("Loaded extension: " + ext.name()));
         return extensions;
+    }
+
+    private static List<ComponentDescriptor> loadComponents() {
+        final List<ComponentDescriptor> components = ComponentDescriptors.load();
+        components.forEach(comp -> LOGGER.debug("Loaded components: " + comp.name()));
+        return components;
     }
 
     private static TestPackagesExecutor executor(
@@ -141,11 +151,11 @@ public final class SystemTestExecutor {
                         yamlParser(api.model().modelTypes(), new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
-        api.test().listener().append(new CreekTestLifecycleListener(api));
+        api.testSuite().listener().append(new ServicesUnderTestLifecycleListener(api));
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api.test().listener()),
+                new TestSuiteExecutor(api.testSuite().listener()),
                 new ResultsWriter(options.resultDirectory()));
     }
 

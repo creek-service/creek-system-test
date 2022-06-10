@@ -26,6 +26,7 @@ val spotBugsVersion : String by extra
 
 dependencies {
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
+    implementation("org.creekservice:creek-platform-metadata:$creekBaseVersion")
     implementation(project(":extension"))
     implementation(project(":parser"))
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
@@ -35,6 +36,7 @@ dependencies {
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j18-impl:$log4jVersion")
 
     testImplementation(project(":test-extension"))
+    testImplementation(project(":test-services"))
 }
 
 application {
@@ -45,4 +47,5 @@ application {
 tasks.test {
     dependsOn("installDist")
     dependsOn(":test-extension:jar")
+    dependsOn(":test-services:jar")
 }

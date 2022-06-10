@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test;
+package org.creekservice.api.system.test.test.services;
 
-/** The API exposed to extensions for viewing and interacting with test packages. */
-public interface SystemTestPackage {
 
-    /**
-     * Test listeners.
-     *
-     * <p>Listeners are invoked on test lifecycle events.
-     *
-     * @return test listeners
-     */
-    TestListenerContainer listener();
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+
+public final class TestServiceDescriptor implements ServiceDescriptor {
+    public static final String SERVICE_NAME = "test-service";
+
+    @Override
+    public String name() {
+        return SERVICE_NAME;
+    }
 }
