@@ -16,35 +16,32 @@
 
 package org.creekservice.internal.system.test.executor.execution.listener;
 
+import static java.util.Objects.requireNonNull;
 
-import org.creekservice.api.system.test.extension.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.creekservice.internal.system.test.executor.api.SystemTest;
 
-public final class LoggingTestLifecycleListener implements TestLifecycleListener {
+/**
+ * A test lifecycle listener that resets theServiceContainer and stops any services left running at
+ * the end of a test suite.
+ */
+public final class SuiteCleanUpListener implements TestLifecycleListener {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(LoggingTestLifecycleListener.class);
+    private final SystemTest api;
+
+    public SuiteCleanUpListener(final SystemTest api) {
+        this.api = requireNonNull(api, "api");
+    }
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
-        LOGGER.info("Starting suite '" + suite.name() + "'");
+        api.testSuite().services().clear();
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
-        LOGGER.info("Finished suite '" + suite.name() + "'");
-    }
-
-    @Override
-    public void beforeTest(final CreekTestCase test) {
-        LOGGER.info("Starting test '" + test.name() + "'");
-    }
-
-    @Override
-    public void afterTest(final CreekTestCase test) {
-        LOGGER.info("Finished test '" + test.name() + "'");
+        api.testSuite().services().forEach(ServiceInstance::stop);
     }
 }

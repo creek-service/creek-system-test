@@ -19,6 +19,9 @@ package org.creekservice.api.system.test.extension.service;
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
 
+    /** The unique name of the instance. */
+    String name();
+
     /** Start the instance. No-op if already started. */
     void start();
 

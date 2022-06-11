@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
@@ -62,11 +63,10 @@ public final class LocalServiceInstances implements ServiceContainer {
     }
 
     @Override
-    public ServiceInstance start(final ServiceDefinition def) {
+    public ServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
 
         final Instance instance = new Instance(def);
-        instance.start();
         instances.add(instance);
         return instance;
     }
@@ -76,6 +76,13 @@ public final class LocalServiceInstances implements ServiceContainer {
     public Iterator<ServiceInstance> iterator() {
         throwIfNotOnCorrectThread();
         return instances.iterator();
+    }
+
+    public void clear() {
+        throwIfNotOnCorrectThread();
+        throwOnRunningServices();
+        instances.clear();
+        names.clear();
     }
 
     private String instanceName(final String serviceName) {
@@ -95,6 +102,18 @@ public final class LocalServiceInstances implements ServiceContainer {
                 .waitingFor(
                         Wait.forLogMessage(".*lifecycle.*started.*", 1)
                                 .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
+    }
+
+    private void throwOnRunningServices() {
+        final String running =
+                instances.stream()
+                        .filter(ServiceInstance::running)
+                        .map(ServiceInstance::name)
+                        .collect(Collectors.joining(", "));
+
+        if (!running.isEmpty()) {
+            throw new IllegalStateException("The following services are still running: " + running);
+        }
     }
 
     private void throwIfNotOnCorrectThread() {
@@ -123,6 +142,12 @@ public final class LocalServiceInstances implements ServiceContainer {
             this.image = dockerImageName(def);
             this.container = requireNonNull(createContainer(image, name), "container");
             this.cachedContainerId = container.getContainerId();
+        }
+
+        @Override
+        public String name() {
+            throwIfNotOnCorrectThread();
+            return name;
         }
 
         @Override

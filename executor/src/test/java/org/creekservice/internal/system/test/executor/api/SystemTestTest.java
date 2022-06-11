@@ -19,32 +19,24 @@ package org.creekservice.internal.system.test.executor.api;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Mockito.verify;
 
-import java.util.List;
-import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class SystemTestTest {
 
-    @Mock private CreekTestExtension ext1;
-    @Mock private CreekTestExtension ext2;
     @Mock private Model model;
     @Mock private TestSuiteEnv testEnv;
     @Mock private ServiceDefinitions services;
     private SystemTest api;
-    @Captor private ArgumentCaptor<SystemTest> apiCapture;
 
     @BeforeEach
     void setUp() {
-        api = new SystemTest(List.of(), model, testEnv, services);
+        api = new SystemTest(model, testEnv, services);
     }
 
     @Test
@@ -53,51 +45,12 @@ class SystemTestTest {
     }
 
     @Test
-    void shouldExposeModelToExtensions() {
-        // When:
-        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
-
-        // Then:
-        verify(ext1).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().model(), is(sameInstance(model)));
-
-        verify(ext2).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().model(), is(sameInstance(model)));
-    }
-
-    @Test
     void shouldExposeTestEnv() {
         assertThat(api.testSuite(), is(sameInstance(testEnv)));
     }
 
     @Test
-    void shouldExposeTestEnvToExtensions() {
-        // When:
-        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
-
-        // Then:
-        verify(ext1).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().testSuite(), is(sameInstance(testEnv)));
-
-        verify(ext2).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().testSuite(), is(sameInstance(testEnv)));
-    }
-
-    @Test
     void shouldExposeServiceRegistry() {
         assertThat(api.services(), is(sameInstance(services)));
-    }
-
-    @Test
-    void shouldExposeServiceRegistryToExtensions() {
-        // When:
-        api = new SystemTest(List.of(ext1, ext2), model, testEnv, services);
-
-        // Then:
-        verify(ext1).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().services(), is(sameInstance(services)));
-
-        verify(ext2).initialize(apiCapture.capture());
-        assertThat(apiCapture.getValue().services(), is(sameInstance(services)));
     }
 }

@@ -18,27 +18,43 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
- * A test lifecycle listener that stops any services left running at the end of a test suite.
+ * A test lifecycle listener that is responsible for registering {@link ServiceInstance service
+ * instances} for each service under test.
  *
- * <p>Generally, services should be stopped by the class/extension that started them. This is here
- * to ensure all services are stopped after the suite has run.
+ * <p>Before each test suite is executed the listener will add an instance of each service listed
+ * under the test suites {@code services} property, in the order they are defined, to the test
+ * suite.
  */
-public final class StopAllServicesTestLifecycleListener implements TestLifecycleListener {
+public final class AddServicesUnderTestListener implements TestLifecycleListener {
 
     private final SystemTest api;
+    private final List<ServiceInstance> added = new ArrayList<>();
 
-    public StopAllServicesTestLifecycleListener(final SystemTest api) {
+    public AddServicesUnderTestListener(final SystemTest api) {
         this.api = requireNonNull(api, "api");
     }
 
     @Override
-    public void afterSuite(final CreekTestSuite suite) {
-        api.testSuite().services().forEach(ServiceInstance::stop);
+    public void beforeSuite(final CreekTestSuite suite) {
+        added.clear();
+        suite.services().stream().map(this::addServiceUnderTest).forEachOrdered(added::add);
+    }
+
+    public List<ServiceInstance> added() {
+        return List.copyOf(added);
+    }
+
+    private ServiceInstance addServiceUnderTest(final String serviceName) {
+        final ServiceDefinition def = api.services().get(serviceName);
+        return api.testSuite().services().add(def);
     }
 }

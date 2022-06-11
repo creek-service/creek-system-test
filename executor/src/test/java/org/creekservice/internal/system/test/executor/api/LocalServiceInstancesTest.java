@@ -78,13 +78,43 @@ class LocalServiceInstancesTest {
     }
 
     @Test
-    void shouldStartAndStopServices() {
+    void shouldAddMultipleServiceInstances() {
+        // Given:
+        final ServiceInstance instance0 = instances.add(serviceDef);
+
         // When:
-        final ServiceInstance instance0 = instances.start(serviceDef);
-        final ServiceInstance instance1 = instances.start(serviceDef);
+        final ServiceInstance instance1 = instances.add(serviceDef);
 
         // Then:
         assertThat(instances(instances), contains(instance0, instance1));
+    }
+
+    @Test
+    void shouldNotStartServicesOnAdd() {
+        // When:
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // Then:
+        assertThat(instance, is(running(false)));
+    }
+
+    @Test
+    void shouldStartAndStopServices() {
+        // Given:
+        final ServiceInstance instance0 = instances.add(serviceDef);
+        final ServiceInstance instance1 = instances.add(serviceDef);
+
+        // When:
+        instance0.start();
+
+        // Then:
+        assertThat(instance0, is(running(true)));
+        assertThat(instance1, is(running(false)));
+
+        // When:
+        instance1.start();
+
+        // Then:
         assertThat(instance0, is(running(true)));
         assertThat(instance1, is(running(true)));
 
@@ -99,15 +129,42 @@ class LocalServiceInstancesTest {
         instance1.stop();
 
         // Then:
-        assertThat(instances(instances), contains(instance0, instance1));
         assertThat(instance0, is(running(false)));
         assertThat(instance1, is(running(false)));
     }
 
     @Test
+    void shouldKeepStoppedServices() {
+        // Given:
+        final ServiceInstance instance = instances.add(serviceDef);
+        instance.start();
+
+        // When:
+        instance.stop();
+
+        // Then:
+        assertThat(instances(instances), contains(instance));
+    }
+
+    @Test
+    void shouldDoNothingOnSubsequentServiceStarts() {
+        // Given:
+        final ServiceInstance instance = instances.add(serviceDef);
+        instance.start();
+        assertThat(instance, is(running(true)));
+
+        // When:
+        instance.start();
+
+        // Then: no error and nothing has changed:
+        assertThat(instance, is(running(true)));
+    }
+
+    @Test
     void shouldDoNothingOnSubsequentServiceStops() {
         // Given:
-        final ServiceInstance instance = instances.start(serviceDef);
+        final ServiceInstance instance = instances.add(serviceDef);
+        instance.start();
         instance.stop();
         assertThat(instance, is(running(false)));
 
@@ -121,14 +178,14 @@ class LocalServiceInstancesTest {
     @Test
     void shouldRestartService() {
         // Given:
-        final ServiceInstance instance = instances.start(serviceDef);
+        final ServiceInstance instance = instances.add(serviceDef);
+        instance.start();
         instance.stop();
-        assertThat(instance, is(running(false)));
 
         // When:
         instance.start();
 
-        // Then: no error and nothing has changed:
+        // Then:
         assertThat(instance, is(running(true)));
     }
 
@@ -136,16 +193,56 @@ class LocalServiceInstancesTest {
     void shouldThrowOnServiceStartFailure() {
         // Given:
         when(serviceDef.dockerImage()).thenReturn("i-do-not-exist");
+        final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
-        final Exception e = assertThrows(RuntimeException.class, () -> instances.start(serviceDef));
+        final Exception e = assertThrows(RuntimeException.class, instance::start);
 
         // Then:
         assertThat(
                 e.getMessage(),
                 startsWith("Failed to start service: test-service, image: i-do-not-exist:latest"));
         assertThat(e.getMessage(), containsString("Cause: Container startup failed"));
-        assertThat("should not track failed instance", instances(instances), is(empty()));
+    }
+
+    @Test
+    void shouldResetInstanceNamingOnClear() {
+        // Given:
+        final ServiceInstance i0 = instances.add(serviceDef);
+
+        // When:
+        instances.clear();
+
+        // Then:
+        assertThat(instances.add(serviceDef).name(), is(i0.name()));
+    }
+
+    @Test
+    void shouldClearInstances() {
+        // Given:
+        instances.add(serviceDef);
+
+        // When:
+        instances.clear();
+
+        // Then:
+        assertThat(instances(instances), is(empty()));
+    }
+
+    @Test
+    void shouldThrowOnClearIfAnyInstancesAreRunning() {
+        // Given:
+        instances.add(serviceDef);
+        instances.add(serviceDef).start();
+        instances.add(serviceDef).start();
+
+        // When:
+        final Exception e = assertThrows(IllegalStateException.class, instances::clear);
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("The following services are still running: test-service-1, test-service-2"));
     }
 
     @SuppressWarnings("unused")
@@ -176,7 +273,7 @@ class LocalServiceInstancesTest {
     void shouldThrowIfWrongThreadForInstance(
             final String ignored, final Consumer<Instance> method) {
         // Given:
-        final Instance instance = (Instance) instances.start(serviceDef);
+        final Instance instance = (Instance) instances.add(serviceDef);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
 
         try {
@@ -241,6 +338,10 @@ class LocalServiceInstancesTest {
 
     private boolean dockerContainerRunState(final ServiceInstance instance) {
         final String containerId = ((Instance) instance).cachedContainerId();
+        if (containerId == null) {
+            return false; // Never started
+        }
+
         try {
             return Boolean.TRUE.equals(
                     dockerClient.inspectContainerCmd(containerId).exec().getState().getRunning());
@@ -259,15 +360,17 @@ class LocalServiceInstancesTest {
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
                 Arguments.of(
+                        "clear", (Consumer<LocalServiceInstances>) LocalServiceInstances::clear),
+                Arguments.of(
                         "spliterator",
                         (Consumer<LocalServiceInstances>) LocalServiceInstances::spliterator),
                 Arguments.of(
                         "iterator",
                         (Consumer<LocalServiceInstances>) LocalServiceInstances::iterator),
                 Arguments.of(
-                        "start",
+                        "add",
                         (Consumer<LocalServiceInstances>)
-                                si -> si.start(mock(ServiceDefinition.class))),
+                                si -> si.add(mock(ServiceDefinition.class))),
                 Arguments.of(
                         "forEach",
                         (Consumer<LocalServiceInstances>) si -> si.forEach(mock(Consumer.class))));
@@ -282,6 +385,7 @@ class LocalServiceInstancesTest {
 
     public static Stream<Arguments> publicInstanceMethods() {
         return Stream.of(
+                Arguments.of("name", (Consumer<Instance>) Instance::name),
                 Arguments.of("start", (Consumer<Instance>) Instance::start),
                 Arguments.of("stop", (Consumer<Instance>) Instance::stop),
                 Arguments.of("running", (Consumer<Instance>) Instance::running));
