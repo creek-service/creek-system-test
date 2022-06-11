@@ -31,22 +31,31 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class StopAllServicesTestLifecycleListenerTest {
+class SuiteCleanUpListenerTest {
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private SystemTest api;
 
-    private StopAllServicesTestLifecycleListener listener;
+    private SuiteCleanUpListener listener;
     @Mock private ServiceInstance service;
     @Captor private ArgumentCaptor<Consumer<? super ServiceInstance>> actionCaptor;
 
     @BeforeEach
     void setUp() {
-        listener = new StopAllServicesTestLifecycleListener(api);
+        listener = new SuiteCleanUpListener(api);
     }
 
     @Test
-    void shouldStopAllServices() {
+    void shouldClearTheServicesContainerBeforeSuite() {
+        // When:
+        listener.beforeSuite(null);
+
+        // Then:
+        verify(api.testSuite().services()).clear();
+    }
+
+    @Test
+    void shouldStopAllServicesAfterSuite() {
         // When:
         listener.afterSuite(null);
 

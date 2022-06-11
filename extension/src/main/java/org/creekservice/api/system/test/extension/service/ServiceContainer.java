@@ -20,9 +20,15 @@ package org.creekservice.api.system.test.extension.service;
 public interface ServiceContainer extends ServiceCollection {
 
     /**
-     * Start an instance of a service.
+     * Add an instance of the service defined by the supplied {@code def}.
+     *
+     * <p>Adding the same service def multiple times will result in multiple service instances.
+     *
+     * <p>The newly added instance is not automatically started. Call {@link ServiceInstance#start()
+     * start} on the returned instance to start the service.
      *
      * @param def the def of the service to start.
+     * @return the service instance that was added.
      */
-    ServiceInstance start(ServiceDefinition def);
+    ServiceInstance add(ServiceDefinition def);
 }

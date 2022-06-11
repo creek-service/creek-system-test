@@ -21,11 +21,10 @@ import static org.creekservice.api.base.type.Iterators.reverseIterator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
-import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
  * A test lifecycle listener that is responsible for starting and stopping the services under test.
@@ -35,28 +34,27 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
  *
  * <p>After each test suite, the listener will stop the instances it started, in reverse order.
  */
-public final class ServicesUnderTestLifecycleListener implements TestLifecycleListener {
+public final class StartServicesUnderTestListener implements TestLifecycleListener {
 
-    private final SystemTest api;
+    private final Supplier<List<ServiceInstance>> servicesSupplier;
     private final List<ServiceInstance> started = new ArrayList<>();
 
-    public ServicesUnderTestLifecycleListener(final SystemTest api) {
-        this.api = requireNonNull(api, "api");
+    public StartServicesUnderTestListener(final Supplier<List<ServiceInstance>> servicesSupplier) {
+        this.servicesSupplier = requireNonNull(servicesSupplier, "servicesSupplier");
     }
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         started.clear();
-        suite.services().stream().map(this::startServicesUnderTest).forEachOrdered(started::add);
+        final List<ServiceInstance> services = servicesSupplier.get();
+        for (ServiceInstance service : services) {
+            service.start();
+            started.add(service);
+        }
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
         reverseIterator(started).forEachRemaining(ServiceInstance::stop);
-    }
-
-    private ServiceInstance startServicesUnderTest(final String serviceName) {
-        final ServiceDefinition def = api.services().get(serviceName);
-        return api.testSuite().services().start(def);
     }
 }

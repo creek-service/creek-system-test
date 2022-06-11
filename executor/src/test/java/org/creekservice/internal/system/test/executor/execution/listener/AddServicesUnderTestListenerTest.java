@@ -17,13 +17,13 @@
 package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,13 +46,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ServicesUnderTestLifecycleListenerTest {
+class AddServicesUnderTestListenerTest {
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private SystemTest api;
 
     @Mock private CreekTestSuite suite;
-    private ServicesUnderTestLifecycleListener listener;
+    private AddServicesUnderTestListener listener;
     private final Map<String, ServiceDefinition> defs = new HashMap<>();
     private final Map<String, ServiceInstance> instances = new HashMap<>();
 
@@ -61,11 +61,11 @@ class ServicesUnderTestLifecycleListenerTest {
         defs.clear();
         instances.clear();
 
-        listener = new ServicesUnderTestLifecycleListener(api);
+        listener = new AddServicesUnderTestListener(api);
     }
 
     @Test
-    void shouldStartServicesBeforeSuiteInOrder() {
+    void shouldAddServicesBeforeSuite() {
         // Given:
         givenSuiteHasServices("a", "b", "c");
 
@@ -75,27 +75,25 @@ class ServicesUnderTestLifecycleListenerTest {
         // Then:
         final InOrder inOrder = inOrder(api.services(), api.testSuite().services());
         inOrder.verify(api.services()).get("a");
-        inOrder.verify(api.testSuite().services()).start(defs.get("a"));
+        inOrder.verify(api.testSuite().services()).add(defs.get("a"));
         inOrder.verify(api.services()).get("b");
-        inOrder.verify(api.testSuite().services()).start(defs.get("b"));
+        inOrder.verify(api.testSuite().services()).add(defs.get("b"));
         inOrder.verify(api.services()).get("c");
-        inOrder.verify(api.testSuite().services()).start(defs.get("c"));
+        inOrder.verify(api.testSuite().services()).add(defs.get("c"));
     }
 
     @Test
-    void shouldStopServicesAfterSuiteInReverseOrder() {
+    void shouldTrackAddedInstances() {
         // Given:
         givenSuiteHasServices("a", "b", "c");
-        listener.beforeSuite(suite);
 
         // When:
-        listener.afterSuite(suite);
+        listener.beforeSuite(suite);
 
         // Then:
-        final InOrder inOrder = inOrder(instances.values().toArray());
-        inOrder.verify(instances.get("c:0")).stop();
-        inOrder.verify(instances.get("b:0")).stop();
-        inOrder.verify(instances.get("a:0")).stop();
+        assertThat(
+                listener.added(),
+                contains(instances.get("a:0"), instances.get("b:0"), instances.get("c:0")));
     }
 
     @Test
@@ -105,12 +103,10 @@ class ServicesUnderTestLifecycleListenerTest {
 
         // When:
         listener.beforeSuite(suite);
-        listener.afterSuite(suite);
 
         // Then:
-        verify(api.testSuite().services(), times(2)).start(defs.get("a"));
-        verify(instances.get("a:1")).stop();
-        verify(instances.get("a:0")).stop();
+        verify(api.testSuite().services(), times(2)).add(defs.get("a"));
+        assertThat(listener.added(), contains(instances.get("a:0"), instances.get("a:1")));
     }
 
     @Test
@@ -124,23 +120,6 @@ class ServicesUnderTestLifecycleListenerTest {
 
         // Then:
         assertThat(e.getMessage(), is("unknown service"));
-    }
-
-    @Test
-    void shouldStopStartedServicesOnAfterSuiteEvenIfBeforeSuiteThrew() {
-        // Given:
-        givenSuiteHasServices("a", "bad-service", "c");
-        when(api.services().get("bad-service")).thenThrow(new RuntimeException("unknown service"));
-
-        assertThrows(Exception.class, () -> listener.beforeSuite(suite));
-
-        // When:
-        listener.afterSuite(suite);
-
-        // Then:
-        verify(instances.get("a:0")).stop();
-        verify(instances.get("bad-service:0"), never()).stop();
-        verify(instances.get("c:0"), never()).stop();
     }
 
     private void givenSuiteHasServices(final String... serviceNames) {
@@ -171,7 +150,7 @@ class ServicesUnderTestLifecycleListenerTest {
             }
         }
 
-        when(api.testSuite().services().start(def)).thenReturn(first, others);
+        when(api.testSuite().services().add(def)).thenReturn(first, others);
     }
 
     private ServiceDefinition setUpDefMock(final String serviceName) {

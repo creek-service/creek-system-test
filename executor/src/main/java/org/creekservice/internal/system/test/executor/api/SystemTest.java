@@ -23,7 +23,6 @@ import java.util.Collection;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.CreekTestExtension;
 
 public final class SystemTest implements CreekSystemTest {
 
@@ -31,22 +30,15 @@ public final class SystemTest implements CreekSystemTest {
     private final TestSuiteEnv testEnv;
     private final ServiceDefinitions services;
 
-    public SystemTest(
-            final Collection<? extends CreekTestExtension> extensions,
-            final Collection<? extends ComponentDescriptor> components) {
-        this(extensions, new Model(), new TestSuiteEnv(), new ServiceDefinitions(components));
+    public SystemTest(final Collection<? extends ComponentDescriptor> components) {
+        this(new Model(), new TestSuiteEnv(), new ServiceDefinitions(components));
     }
 
     @VisibleForTesting
-    SystemTest(
-            final Collection<? extends CreekTestExtension> extensions,
-            final Model model,
-            final TestSuiteEnv testEnv,
-            final ServiceDefinitions services) {
+    SystemTest(final Model model, final TestSuiteEnv testEnv, final ServiceDefinitions services) {
         this.model = requireNonNull(model, "model");
         this.testEnv = requireNonNull(testEnv, "testEnv");
         this.services = requireNonNull(services, "services");
-        extensions.forEach(ext -> ext.initialize(this));
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")

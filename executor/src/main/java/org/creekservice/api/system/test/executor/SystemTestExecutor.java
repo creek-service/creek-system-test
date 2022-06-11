@@ -33,9 +33,10 @@ import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
 import org.creekservice.internal.system.test.executor.components.ComponentDescriptors;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
-import org.creekservice.internal.system.test.executor.execution.listener.LoggingTestLifecycleListener;
-import org.creekservice.internal.system.test.executor.execution.listener.ServicesUnderTestLifecycleListener;
-import org.creekservice.internal.system.test.executor.execution.listener.StopAllServicesTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
+import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
+import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
+import org.creekservice.internal.system.test.executor.observation.LoggingTestLifecycleListener;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
@@ -124,9 +125,16 @@ public final class SystemTestExecutor {
     }
 
     private static SystemTest initializeApi() {
-        final SystemTest api = new SystemTest(loadExtensions(), loadComponents());
-        api.testSuite().listener().append(new StopAllServicesTestLifecycleListener(api));
+        final SystemTest api = new SystemTest(loadComponents());
         api.testSuite().listener().append(new LoggingTestLifecycleListener());
+        api.testSuite().listener().append(new SuiteCleanUpListener(api));
+        final AddServicesUnderTestListener addServicesListener =
+                new AddServicesUnderTestListener(api);
+        api.testSuite().listener().append(addServicesListener);
+        loadExtensions().forEach(ext -> ext.initialize(api));
+        api.testSuite()
+                .listener()
+                .append(new StartServicesUnderTestListener(addServicesListener::added));
         return api;
     }
 
@@ -150,8 +158,6 @@ public final class SystemTestExecutor {
                         options.testDirectory(),
                         yamlParser(api.model().modelTypes(), new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
-
-        api.testSuite().listener().append(new ServicesUnderTestLifecycleListener(api));
 
         return new TestPackagesExecutor(
                 loader,
