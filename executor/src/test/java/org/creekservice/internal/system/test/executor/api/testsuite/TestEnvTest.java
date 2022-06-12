@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.testing.NullPointerTester;
-import org.creekservice.internal.system.test.executor.api.model.Model;
-import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
-import org.creekservice.internal.system.test.executor.api.testsuite.TestSuiteEnv;
+import org.creekservice.internal.system.test.executor.api.testsuite.listeners.TestListeners;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,38 +30,32 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class SystemTestTest {
+class TestEnvTest {
 
-    @Mock private Model model;
-    @Mock private TestSuiteEnv testEnv;
-    @Mock private ServiceDefinitions services;
-    private SystemTest api;
+    @Mock private TestListeners listeners;
+    @Mock private LocalServiceInstances services;
+    private TestSuiteEnv testEnv;
 
     @BeforeEach
     void setUp() {
-        api = new SystemTest(model, testEnv, services);
+        testEnv = new TestSuiteEnv(listeners, services);
     }
 
     @Test
     void shouldThrowNPEs() {
         final NullPointerTester tester = new NullPointerTester();
-        tester.testAllPublicConstructors(SystemTest.class);
-        tester.testAllPublicStaticMethods(SystemTest.class);
-        tester.testAllPublicInstanceMethods(api);
+        tester.testAllPublicConstructors(TestSuiteEnv.class);
+        tester.testAllPublicStaticMethods(TestSuiteEnv.class);
+        tester.testAllPublicInstanceMethods(testEnv);
     }
 
     @Test
-    void shouldExposeModel() {
-        assertThat(api.model(), is(sameInstance(model)));
+    void shouldExposeListeners() {
+        assertThat(testEnv.listener(), is(sameInstance(listeners)));
     }
 
     @Test
-    void shouldExposeTestEnv() {
-        assertThat(api.testSuite(), is(sameInstance(testEnv)));
-    }
-
-    @Test
-    void shouldExposeServiceRegistry() {
-        assertThat(api.services(), is(sameInstance(services)));
+    void shouldExposeServices() {
+        assertThat(testEnv.services(), is(sameInstance(services)));
     }
 }

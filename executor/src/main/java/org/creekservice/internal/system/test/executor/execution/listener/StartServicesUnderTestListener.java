@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
 
 /**
  * A test lifecycle listener that is responsible for starting and stopping the services under test.

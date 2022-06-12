@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**

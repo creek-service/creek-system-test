@@ -16,6 +16,9 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+
+import java.util.Map;
+
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
 
@@ -30,4 +33,36 @@ public interface ServiceInstance {
 
     /** Stop the instance. No-op if already stopped. */
     void stop();
+
+    /**
+     * Amend the definition of the service instance.
+     *
+     * <p>**Note**: this method can not be called while the instance is running.
+     *
+     * @return type used to modify the instance.
+     */
+    Modifier modify();
+
+    interface Modifier {
+
+        /**
+         * Set an environment variable on the instance.
+         *
+         * @param name the name of the environment variable.
+         * @param value the value of the environment variable.
+         * @return self, for method chaining.
+         */
+        Modifier addEnv(String name, String value);
+
+        /**
+         * Set environment variables on the instance.
+         *
+         * @param env the map of environment variables to add.
+         * @return self, for method chaining.
+         */
+        default Modifier addEnv(Map<String, String> env) {
+            env.forEach(this::addEnv);
+            return this;
+        }
+    }
 }

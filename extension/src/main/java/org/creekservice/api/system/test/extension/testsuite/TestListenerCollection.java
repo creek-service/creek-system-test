@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test;
+package org.creekservice.api.system.test.extension.testsuite;
 
 import static java.util.Objects.requireNonNull;
 

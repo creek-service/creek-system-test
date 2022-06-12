@@ -14,37 +14,40 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-class TestEnvTest {
+class InstanceNamingTest {
 
-    @Mock private TestListeners listeners;
-    @Mock private LocalServiceInstances services;
-    private TestSuiteEnv testEnv;
+    private InstanceNaming strategy;
 
     @BeforeEach
     void setUp() {
-        testEnv = new TestSuiteEnv(listeners, services);
+        strategy = new InstanceNaming();
     }
 
     @Test
-    void shouldExposeListeners() {
-        assertThat(testEnv.listener(), is(sameInstance(listeners)));
+    void shouldGenerateUniqueServiceNames() {
+        assertThat(strategy.instanceName("a"), is("a-0"));
+        assertThat(strategy.instanceName("a"), is("a-1"));
+        assertThat(strategy.instanceName("b"), is("b-0"));
+        assertThat(strategy.instanceName("a"), is("a-2"));
     }
 
     @Test
-    void shouldExposeServices() {
-        assertThat(testEnv.services(), is(sameInstance(services)));
+    void shouldClear() {
+        // Given:
+        strategy.instanceName("a");
+
+        // When:
+        strategy.clear();
+
+        // Then:
+        assertThat(strategy.instanceName("a"), is("a-0"));
     }
 }

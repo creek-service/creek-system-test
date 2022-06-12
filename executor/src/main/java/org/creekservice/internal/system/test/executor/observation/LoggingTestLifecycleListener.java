@@ -19,7 +19,7 @@ package org.creekservice.internal.system.test.executor.observation;
 
 import org.creekservice.api.system.test.extension.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

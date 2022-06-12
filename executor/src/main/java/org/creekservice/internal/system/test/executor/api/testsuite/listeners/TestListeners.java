@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite.listeners;
 
+import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -23,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Iterators;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.test.TestListenerContainer;
+import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.testsuite.TestListenerContainer;
 
 public final class TestListeners implements TestListenerContainer {
 
@@ -43,7 +44,7 @@ public final class TestListeners implements TestListenerContainer {
     @Override
     public void append(final TestLifecycleListener listener) {
         throwIfNotOnCorrectThread();
-        listeners.add(listener);
+        listeners.add(requireNonNull(listener, "listener"));
     }
 
     @SuppressWarnings("NullableProblems")

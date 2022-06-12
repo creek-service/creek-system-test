@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,21 +30,17 @@ import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.google.common.testing.NullPointerTester;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.LocalServiceInstances.Instance;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -60,7 +55,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.DockerClientFactory;
 
 @ExtendWith(MockitoExtension.class)
-class LocalServiceInstancesTest {
+class LocalServiceInstancesFunctionalTest {
 
     @Mock(strictness = LENIENT)
     private ServiceDefinition serviceDef;
@@ -75,6 +70,14 @@ class LocalServiceInstancesTest {
 
         when(serviceDef.name()).thenReturn("test-service");
         when(serviceDef.dockerImage()).thenReturn("ghcr.io/creekservice/test-service");
+    }
+
+    @Test
+    void shouldThrowNPEs() {
+        final NullPointerTester tester = new NullPointerTester();
+        tester.testAllPublicConstructors(LocalServiceInstances.class);
+        tester.testAllPublicStaticMethods(LocalServiceInstances.class);
+        tester.testAllPublicInstanceMethods(instances);
     }
 
     @Test
@@ -201,7 +204,8 @@ class LocalServiceInstancesTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                startsWith("Failed to start service: test-service, image: i-do-not-exist:latest"));
+                startsWith(
+                        "Failed to start service: test-service-0, image: i-do-not-exist:latest"));
         assertThat(e.getMessage(), containsString("Cause: Container startup failed"));
     }
 
@@ -267,36 +271,6 @@ class LocalServiceInstancesTest {
                 is(publicMethodNames.size()));
     }
 
-    @SuppressWarnings("unused")
-    @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
-    @MethodSource("publicInstanceMethods")
-    void shouldThrowIfWrongThreadForInstance(
-            final String ignored, final Consumer<Instance> method) {
-        // Given:
-        final Instance instance = (Instance) instances.add(serviceDef);
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        try {
-            // Then:
-            final Future<?> result = executor.submit(() -> method.accept(instance));
-            final Exception e = assertThrows(ExecutionException.class, result::get);
-            assertThat(e.getCause(), is(instanceOf(ConcurrentModificationException.class)));
-        } finally {
-            instance.stop();
-            executor.shutdown();
-        }
-    }
-
-    @Test
-    void shouldHaveThreadingTestForEachInstancePublicMethod() {
-        final List<String> publicMethodNames = publicInstanceMethodNames();
-        final int testedMethodCount = (int) publicInstanceMethods().count();
-        assertThat(
-                "Public methods:\n" + String.join(System.lineSeparator(), publicMethodNames),
-                testedMethodCount,
-                is(publicMethodNames.size()));
-    }
-
     private Matcher<ServiceInstance> running(final boolean expectedRunState) {
         return new TypeSafeDiagnosingMatcher<>() {
             @Override
@@ -337,7 +311,7 @@ class LocalServiceInstancesTest {
     }
 
     private boolean dockerContainerRunState(final ServiceInstance instance) {
-        final String containerId = ((Instance) instance).cachedContainerId();
+        final String containerId = ((InstanceUnderTest) instance).cachedContainerId();
         if (containerId == null) {
             return false; // Never started
         }
@@ -378,21 +352,6 @@ class LocalServiceInstancesTest {
 
     private List<String> publicMethodNames() {
         return Arrays.stream(LocalServiceInstances.class.getMethods())
-                .filter(m -> !m.getDeclaringClass().equals(Object.class))
-                .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
-    }
-
-    public static Stream<Arguments> publicInstanceMethods() {
-        return Stream.of(
-                Arguments.of("name", (Consumer<Instance>) Instance::name),
-                Arguments.of("start", (Consumer<Instance>) Instance::start),
-                Arguments.of("stop", (Consumer<Instance>) Instance::stop),
-                Arguments.of("running", (Consumer<Instance>) Instance::running));
-    }
-
-    private List<String> publicInstanceMethodNames() {
-        return Arrays.stream(Instance.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .map(Method::toGenericString)
                 .collect(Collectors.toUnmodifiableList());

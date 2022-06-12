@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.model;
 
 import static java.util.Objects.requireNonNull;
 
