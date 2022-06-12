@@ -176,14 +176,15 @@ class LocalServiceInstancesFunctionalTest {
         // Given:
         final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
-        String instanceId = instanceId(instance);
+        final String oldInstanceId = instanceId(instance);
         instance.stop();
 
         // When:
         instance.start();
 
         // Then:
-        assertThat(instance, is(running(true, instanceId(instance))));
+        assertThat(dockerContainerRunState(oldInstanceId), is(false));
+        assertThat(dockerContainerRunState(instanceId(instance)), is(true));
     }
 
     @Test
@@ -327,10 +328,14 @@ class LocalServiceInstancesFunctionalTest {
             assertThat(containerId, is(cachedInstanceId));
         }
 
+        final String id = requireNonNullElse(containerId, cachedInstanceId);
+        return dockerContainerRunState(id);
+    }
+
+    private boolean dockerContainerRunState(final String containerId) {
         try {
-            final String id = requireNonNullElse(containerId, cachedInstanceId);
             return Boolean.TRUE.equals(
-                    dockerClient.inspectContainerCmd(id).exec().getState().getRunning());
+                    dockerClient.inspectContainerCmd(containerId).exec().getState().getRunning());
         } catch (NotFoundException e) {
             return false;
         }
