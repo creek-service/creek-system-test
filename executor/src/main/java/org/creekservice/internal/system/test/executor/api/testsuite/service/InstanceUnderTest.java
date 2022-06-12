@@ -20,6 +20,7 @@ import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /** An instance of one of the services under test. */
-final class InstanceUnderTest implements ServiceInstance {
+final class InstanceUnderTest implements ServiceInstance, ServiceInstance.Modifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstanceUnderTest.class);
 
@@ -36,7 +37,6 @@ final class InstanceUnderTest implements ServiceInstance {
     private final String name;
     private final DockerImageName imageName;
     private final GenericContainer<?> container;
-    private String cachedContainerId;
 
     InstanceUnderTest(
             final String name,
@@ -54,7 +54,6 @@ final class InstanceUnderTest implements ServiceInstance {
         this.name = requireNonBlank(name, "name");
         this.imageName = requireNonNull(imageName, "imageName");
         this.container = requireNonNull(container, "container");
-        this.cachedContainerId = container.getContainerId();
     }
 
     @Override
@@ -73,9 +72,12 @@ final class InstanceUnderTest implements ServiceInstance {
 
         try {
             container.start();
-            cachedContainerId = container.getContainerId();
 
-            LOGGER.info("Started {} ({}) with container-id {}", name, imageName, cachedContainerId);
+            LOGGER.info(
+                    "Started {} ({}) with container-id {}",
+                    name,
+                    imageName,
+                    container.getContainerId());
         } catch (final Exception e) {
             throw new FailedToStartServiceException(name, imageName, container, e);
         }
@@ -93,7 +95,11 @@ final class InstanceUnderTest implements ServiceInstance {
             return;
         }
 
-        LOGGER.info("Stopping {} ({}) with container-id {}", name, imageName, cachedContainerId);
+        LOGGER.info(
+                "Stopping {} ({}) with container-id {}",
+                name,
+                imageName,
+                container.getContainerId());
         container.stop();
         LOGGER.info("Stopped {} ({})", name, imageName);
     }
@@ -102,11 +108,29 @@ final class InstanceUnderTest implements ServiceInstance {
     public Modifier modify() {
         throwIfNotOnCorrectThread();
         throwIfRunning();
-        return null;
+        return this;
     }
 
-    String cachedContainerId() {
-        return cachedContainerId;
+    @Override
+    public Modifier withEnv(final String name, final String value) {
+        throwIfNotOnCorrectThread();
+        container.withEnv(requireNonNull(name, "name"), requireNonNull(value, "value"));
+        return this;
+    }
+
+    @Override
+    public Modifier withExposedPorts(final int... ports) {
+        throwIfNotOnCorrectThread();
+        Arrays.stream(ports).forEach(container::withExposedPorts);
+        return this;
+    }
+
+    String containerId() {
+        return container.getContainerId();
+    }
+
+    String logs() {
+        return container.getLogs();
     }
 
     private void throwIfRunning() {
@@ -117,7 +141,7 @@ final class InstanceUnderTest implements ServiceInstance {
                             + " ("
                             + imageName
                             + ") with container-id "
-                            + cachedContainerId);
+                            + container.getContainerId());
         }
     }
 

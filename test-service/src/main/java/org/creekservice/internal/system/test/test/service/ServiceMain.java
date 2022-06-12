@@ -27,8 +27,15 @@ public final class ServiceMain {
     private ServiceMain() {}
 
     public static void main(final String... args) {
+        dumpEnv();
         doLogging();
         awaitShutdown();
+    }
+
+    private static void dumpEnv() {
+        System.getenv().entrySet().stream()
+                .filter(e -> e.getKey().startsWith("CREEK_"))
+                .forEach(e -> LOGGER.info("Env: " + e.getKey() + "=" + e.getValue()));
     }
 
     private static void doLogging() {

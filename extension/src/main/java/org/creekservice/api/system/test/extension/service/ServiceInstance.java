@@ -52,7 +52,7 @@ public interface ServiceInstance {
          * @param value the value of the environment variable.
          * @return self, for method chaining.
          */
-        Modifier addEnv(String name, String value);
+        Modifier withEnv(String name, String value);
 
         /**
          * Set environment variables on the instance.
@@ -60,9 +60,17 @@ public interface ServiceInstance {
          * @param env the map of environment variables to add.
          * @return self, for method chaining.
          */
-        default Modifier addEnv(Map<String, String> env) {
-            env.forEach(this::addEnv);
+        default Modifier withEnv(Map<String, String> env) {
+            env.forEach(this::withEnv);
             return this;
         }
+
+        /**
+         * Add exposed ports to the container instance.
+         *
+         * @param ports the ports to expose.
+         * @return self, for method chaining.
+         */
+        Modifier withExposedPorts(int... ports);
     }
 }

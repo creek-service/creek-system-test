@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,7 +96,7 @@ class InstanceUnderTestTest {
     @Test
     void shouldStart() {
         // Given:
-        when(container.getContainerId()).thenReturn(null);
+        givenNotRunning();
 
         // When:
         instance.start();
@@ -117,18 +118,6 @@ class InstanceUnderTestTest {
     }
 
     @Test
-    void shouldCacheContainerIdOnStart() {
-        // Given:
-        when(container.getContainerId()).thenReturn(null).thenReturn("bob");
-
-        // When:
-        instance.start();
-
-        // Then:
-        assertThat(instance.cachedContainerId(), is("bob"));
-    }
-
-    @Test
     void shouldStop() {
         // Given:
         when(container.getContainerId()).thenReturn("bob");
@@ -143,27 +132,13 @@ class InstanceUnderTestTest {
     @Test
     void shouldIgnoreStopIfNotRunning() {
         // Given:
-        when(container.getContainerId()).thenReturn(null);
+        givenNotRunning();
 
         // When:
         instance.stop();
 
         // Then:
         verify(container, never()).stop();
-    }
-
-    @Test
-    void shouldNotClearCachedContainerIdOnStop() {
-        // Given:
-        when(container.getContainerId()).thenReturn(null).thenReturn("bob");
-
-        instance.start();
-
-        // When:
-        instance.stop();
-
-        // Then:
-        assertThat(instance.cachedContainerId(), is("bob"));
     }
 
     @Test
@@ -201,6 +176,49 @@ class InstanceUnderTestTest {
                                 + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
     }
 
+    @Test
+    void shouldAddEnv() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        instance.modify().withEnv("k0", "v0").withEnv("k1", "v1");
+
+        // Then:
+        verify(container).withEnv("k0", "v0");
+        verify(container).withEnv("k1", "v1");
+    }
+
+    @Test
+    void shouldAddEnvMap() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        instance.modify()
+                .withEnv(Map.of("k0", "v0", "k1", "v1"))
+                .withEnv(Map.of("k2", "v2"));
+
+        // Then:
+        verify(container).withEnv("k0", "v0");
+        verify(container).withEnv("k1", "v1");
+        verify(container).withEnv("k2", "v2");
+    }
+
+    @Test
+    void shouldAddExposedPorts() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        instance.modify().withExposedPorts(10, 11).withExposedPorts(12);
+
+        // Then:
+        verify(container).withExposedPorts(10);
+        verify(container).withExposedPorts(11);
+        verify(container).withExposedPorts(12);
+    }
+
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
@@ -224,13 +242,24 @@ class InstanceUnderTestTest {
                 is(publicMethodNames.size()));
     }
 
+    private void givenNotRunning() {
+        when(container.getContainerId()).thenReturn(null);
+    }
+
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
                 Arguments.of("name", (Consumer<InstanceUnderTest>) InstanceUnderTest::name),
                 Arguments.of("start", (Consumer<InstanceUnderTest>) InstanceUnderTest::start),
                 Arguments.of("stop", (Consumer<InstanceUnderTest>) InstanceUnderTest::stop),
                 Arguments.of("running", (Consumer<InstanceUnderTest>) InstanceUnderTest::running),
-                Arguments.of("modify", (Consumer<InstanceUnderTest>) InstanceUnderTest::modify));
+                Arguments.of("modify", (Consumer<InstanceUnderTest>) InstanceUnderTest::modify),
+                Arguments.of("withEnv", (Consumer<InstanceUnderTest>) i -> i.withEnv("k", "v")),
+                Arguments.of(
+                        "withEnv(Map)",
+                        (Consumer<InstanceUnderTest>) i -> i.withEnv(Map.of("k", "v"))),
+                Arguments.of(
+                        "withExposedPorts",
+                        (Consumer<InstanceUnderTest>) InstanceUnderTest::withExposedPorts));
     }
 
     private List<String> publicMethodNames() {
