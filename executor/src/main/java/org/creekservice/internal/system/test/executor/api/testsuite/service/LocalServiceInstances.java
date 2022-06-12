@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -55,14 +54,15 @@ public final class LocalServiceInstances implements ServiceContainer {
     }
 
     @Override
-    public ServiceInstance add(final ServiceDefinition def) {
+    public ServiceInstance add(final String serviceName, final String dockerImageName) {
         throwIfNotOnCorrectThread();
 
-        final String name = naming.instanceName(def.name());
-        final DockerImageName imageName = dockerImageName(def);
+        final String instanceName = naming.instanceName(serviceName);
+        final DockerImageName imageName = DockerImageName.parse(dockerImageName);
 
-        final InstanceUnderTest instance =
-                new InstanceUnderTest(name, imageName, createContainer(imageName, name));
+        final GenericContainer<?> container = createContainer(imageName, instanceName);
+        final ComponentInstance instance =
+                new ComponentInstance(instanceName, imageName, container);
         instances.add(instance);
         return instance;
     }
@@ -111,10 +111,5 @@ public final class LocalServiceInstances implements ServiceContainer {
         if (Thread.currentThread().getId() != threadId) {
             throw new ConcurrentModificationException("Class is not thread safe");
         }
-    }
-
-    private static DockerImageName dockerImageName(final ServiceDefinition def) {
-        final String fullName = def.dockerImage() + ":latest";
-        return DockerImageName.parse(fullName);
     }
 }

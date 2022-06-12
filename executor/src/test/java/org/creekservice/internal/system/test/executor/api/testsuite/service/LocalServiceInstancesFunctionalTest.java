@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
@@ -43,16 +43,12 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.DockerClientFactory;
 
-@ExtendWith(MockitoExtension.class)
 class LocalServiceInstancesFunctionalTest {
 
-    @Mock(strictness = LENIENT)
-    private ServiceDefinition serviceDef;
+    private static final String SERVICE_NAME = "test-service";
+    private static final String SERVICE_IMAGE = "ghcr.io/creekservice/test-service";
 
     private LocalServiceInstances instances;
 
@@ -61,18 +57,29 @@ class LocalServiceInstancesFunctionalTest {
     @BeforeEach
     void setUp() {
         instances = new LocalServiceInstances();
+    }
 
-        when(serviceDef.name()).thenReturn("test-service");
-        when(serviceDef.dockerImage()).thenReturn("ghcr.io/creekservice/test-service");
+    @Test
+    void shouldAddServiceInstancesFromDef() {
+        // Given:
+        final ServiceDefinition serviceDef = mock(ServiceDefinition.class);
+        when(serviceDef.name()).thenReturn(SERVICE_NAME);
+        when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
+
+        // When:
+        final ServiceInstance instance0 = instances.add(serviceDef);
+
+        // Then:
+        assertThat(instances(instances), contains(instance0));
     }
 
     @Test
     void shouldAddMultipleServiceInstances() {
         // Given:
-        final ServiceInstance instance0 = instances.add(serviceDef);
+        final ServiceInstance instance0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // When:
-        final ServiceInstance instance1 = instances.add(serviceDef);
+        final ServiceInstance instance1 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // Then:
         assertThat(instances(instances), contains(instance0, instance1));
@@ -81,7 +88,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldNotStartServicesOnAdd() {
         // When:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         final String instanceId = instanceId(instance);
 
         // Then:
@@ -91,8 +98,8 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldStartAndStopServices() {
         // Given:
-        final ServiceInstance instance0 = instances.add(serviceDef);
-        final ServiceInstance instance1 = instances.add(serviceDef);
+        final ServiceInstance instance0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance1 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         String instanceId0 = instanceId(instance0);
         String instanceId1 = instanceId(instance1);
 
@@ -130,7 +137,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldKeepStoppedServices() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         instance.start();
 
         // When:
@@ -143,7 +150,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldDoNothingOnSubsequentServiceStarts() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         instance.start();
         final String instanceId = instanceId(instance);
         assertThat(instance, is(running(true, instanceId)));
@@ -158,7 +165,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldDoNothingOnSubsequentServiceStops() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         instance.start();
         final String instanceId = instanceId(instance);
         instance.stop();
@@ -174,7 +181,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldRestartService() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
         instance.start();
         final String oldInstanceId = instanceId(instance);
         instance.stop();
@@ -190,8 +197,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldThrowOnServiceStartFailure() {
         // Given:
-        when(serviceDef.dockerImage()).thenReturn("i-do-not-exist");
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, "i-do-not-exist");
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, instance::start);
@@ -207,19 +213,19 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldResetInstanceNamingOnClear() {
         // Given:
-        final ServiceInstance i0 = instances.add(serviceDef);
+        final ServiceInstance i0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // When:
         instances.clear();
 
         // Then:
-        assertThat(instances.add(serviceDef).name(), is(i0.name()));
+        assertThat(instances.add(SERVICE_NAME, SERVICE_IMAGE).name(), is(i0.name()));
     }
 
     @Test
     void shouldClearInstances() {
         // Given:
-        instances.add(serviceDef);
+        instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // When:
         instances.clear();
@@ -231,9 +237,9 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldThrowOnClearIfAnyInstancesAreRunning() {
         // Given:
-        instances.add(serviceDef);
-        instances.add(serviceDef).start();
-        instances.add(serviceDef).start();
+        instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        instances.add(SERVICE_NAME, SERVICE_IMAGE).start();
+        instances.add(SERVICE_NAME, SERVICE_IMAGE).start();
 
         // When:
         final Exception e = assertThrows(IllegalStateException.class, instances::clear);
@@ -248,7 +254,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldSetEnvOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // When:
         instance.modify().withEnv("CREEK_TEST_ENV_KEY_0", "expected value");
@@ -264,7 +270,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldSetExposedPortOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
 
         // When:
         instance.modify().withExposedPorts(8080);
@@ -319,7 +325,7 @@ class LocalServiceInstancesFunctionalTest {
 
     private boolean dockerContainerRunState(
             final ServiceInstance instance, final String cachedInstanceId) {
-        final String containerId = ((InstanceUnderTest) instance).containerId();
+        final String containerId = ((ComponentInstance) instance).containerId();
         if (containerId == null && cachedInstanceId == null) {
             return false; // Never started
         }
@@ -343,7 +349,7 @@ class LocalServiceInstancesFunctionalTest {
 
     private ContainerConfig instanceConfig(final ServiceInstance instance) {
         return dockerClient
-                .inspectContainerCmd(((InstanceUnderTest) instance).containerId())
+                .inspectContainerCmd(((ComponentInstance) instance).containerId())
                 .exec()
                 .getConfig();
     }
@@ -355,6 +361,6 @@ class LocalServiceInstancesFunctionalTest {
     }
 
     private static String instanceId(final ServiceInstance instance) {
-        return ((InstanceUnderTest) instance).containerId();
+        return ((ComponentInstance) instance).containerId();
     }
 }
