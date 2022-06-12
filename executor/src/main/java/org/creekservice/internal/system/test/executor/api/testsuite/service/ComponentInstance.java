@@ -28,24 +28,24 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/** An instance of one of the services under test. */
-final class InstanceUnderTest implements ServiceInstance, ServiceInstance.Modifier {
+/** An instance of a service running in a local docker container. */
+final class ComponentInstance implements ServiceInstance, ServiceInstance.Modifier {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstanceUnderTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentInstance.class);
 
     private final long threadId;
     private final String name;
     private final DockerImageName imageName;
     private final GenericContainer<?> container;
 
-    InstanceUnderTest(
+    ComponentInstance(
             final String name,
             final DockerImageName imageName,
             final GenericContainer<?> container) {
         this(name, imageName, container, Thread.currentThread().getId());
     }
 
-    InstanceUnderTest(
+    ComponentInstance(
             final String name,
             final DockerImageName imageName,
             final GenericContainer<?> container,

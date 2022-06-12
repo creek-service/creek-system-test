@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.api.testsuite.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import com.google.common.testing.NullPointerTester;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,14 @@ class InstanceNamingTest {
     @BeforeEach
     void setUp() {
         strategy = new InstanceNaming();
+    }
+
+    @Test
+    void shouldThrowNPEs() {
+        final NullPointerTester tester = new NullPointerTester();
+        tester.testAllPublicConstructors(InstanceNaming.class);
+        tester.testAllPublicStaticMethods(InstanceNaming.class);
+        tester.testAllPublicInstanceMethods(strategy);
     }
 
     @Test

@@ -30,5 +30,26 @@ public interface ServiceContainer extends ServiceCollection {
      * @param def the def of the service to start.
      * @return the service instance that was added.
      */
-    ServiceInstance add(ServiceDefinition def);
+    default ServiceInstance add(ServiceDefinition def) {
+        return add(def.name(), def.dockerImage() + ":latest");
+    }
+
+    /**
+     * Add a service instance to the container.
+     *
+     * <p>The name of the instance will be the supplied {@code serviceName} with a instance number
+     * suffix. For example, adding a service named {@code finance-service} will result in an
+     * instance named {@code finance-service-0}.
+     *
+     * <p>Adding the same service name multiple times will result in multiple service instances, for
+     * example {@code finance-service-0}, {@code finance-service-1}, etc.
+     *
+     * <p>The newly added instance is not automatically started. Call {@link ServiceInstance#start()
+     * start} on the returned instance to start the service.
+     *
+     * @param serviceName the name of the service, e.g. {@code finance-service}.
+     * @param dockerImageName the full docker image name of the service.
+     * @return the service instance that was added.
+     */
+    ServiceInstance add(String serviceName, String dockerImageName);
 }

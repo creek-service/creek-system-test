@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
+import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ public final class InstanceNaming {
     private final Map<String, AtomicInteger> names = new HashMap<>();
 
     public String instanceName(final String serviceName) {
+        requireNonNull(serviceName, "serviceName");
         final AtomicInteger counter = names.computeIfAbsent(serviceName, k -> new AtomicInteger());
         return serviceName + "-" + counter.getAndIncrement();
     }

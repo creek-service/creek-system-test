@@ -92,6 +92,10 @@ class LocalServiceInstancesTest {
                         (Consumer<LocalServiceInstances>)
                                 si -> si.add(mock(ServiceDefinition.class))),
                 Arguments.of(
+                        "add",
+                        (Consumer<LocalServiceInstances>)
+                                si -> si.add("service-name", "image-name")),
+                Arguments.of(
                         "forEach",
                         (Consumer<LocalServiceInstances>) si -> si.forEach(mock(Consumer.class))));
     }
