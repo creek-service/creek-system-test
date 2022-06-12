@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite.listeners;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Mockito.mock;
 
+import com.google.common.testing.NullPointerTester;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +52,14 @@ class TestListenersTest {
     @BeforeEach
     void setUp() {
         listeners = new TestListeners();
+    }
+
+    @Test
+    void shouldThrowNPEs() {
+        final NullPointerTester tester = new NullPointerTester();
+        tester.testAllPublicConstructors(TestListeners.class);
+        tester.testAllPublicStaticMethods(TestListeners.class);
+        tester.testAllPublicInstanceMethods(listeners);
     }
 
     @Test

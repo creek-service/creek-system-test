@@ -15,3 +15,18 @@
 
 --add-exports
   creek.system.test.executor/org.creekservice.internal.system.test.executor.api=guava.testlib
+
+--add-exports
+creek.system.test.executor/org.creekservice.internal.system.test.executor.api.model=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.service=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.testsuite=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.testsuite.listeners=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.testsuite.service=guava.testlib

@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
-import static java.lang.System.lineSeparator;
-import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -43,15 +37,13 @@ import org.testcontainers.utility.DockerImageName;
 /** A local, docker based, implementation of {@link ServiceContainer}. */
 public final class LocalServiceInstances implements ServiceContainer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalServiceInstances.class);
-
     private static final int CONTAINER_START_UP_ATTEMPTS = 3;
     private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofSeconds(90);
 
     private final long threadId;
     private final Network network = Network.newNetwork();
     private final List<ServiceInstance> instances = new ArrayList<>();
-    private final Map<String, AtomicInteger> names = new HashMap<>();
+    private final InstanceNaming naming = new InstanceNaming();
 
     public LocalServiceInstances() {
         this(Thread.currentThread().getId());
@@ -66,7 +58,11 @@ public final class LocalServiceInstances implements ServiceContainer {
     public ServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
 
-        final Instance instance = new Instance(def);
+        final String name = naming.instanceName(def.name());
+        final DockerImageName imageName = dockerImageName(def);
+
+        final InstanceUnderTest instance =
+                new InstanceUnderTest(name, imageName, createContainer(imageName, name));
         instances.add(instance);
         return instance;
     }
@@ -82,12 +78,7 @@ public final class LocalServiceInstances implements ServiceContainer {
         throwIfNotOnCorrectThread();
         throwOnRunningServices();
         instances.clear();
-        names.clear();
-    }
-
-    private String instanceName(final String serviceName) {
-        final AtomicInteger counter = names.computeIfAbsent(serviceName, k -> new AtomicInteger());
-        return serviceName + "-" + counter.getAndIncrement();
+        naming.clear();
     }
 
     private GenericContainer<?> createContainer(
@@ -125,88 +116,5 @@ public final class LocalServiceInstances implements ServiceContainer {
     private static DockerImageName dockerImageName(final ServiceDefinition def) {
         final String fullName = def.dockerImage() + ":latest";
         return DockerImageName.parse(fullName);
-    }
-
-    @VisibleForTesting
-    final class Instance implements ServiceInstance {
-
-        private final String name;
-        private final DockerImageName image;
-        private final ServiceDefinition def;
-        private final GenericContainer<?> container;
-        private String cachedContainerId;
-
-        Instance(final ServiceDefinition def) {
-            this.def = requireNonNull(def, "def");
-            this.name = instanceName(def.name());
-            this.image = dockerImageName(def);
-            this.container = requireNonNull(createContainer(image, name), "container");
-            this.cachedContainerId = container.getContainerId();
-        }
-
-        @Override
-        public String name() {
-            throwIfNotOnCorrectThread();
-            return name;
-        }
-
-        @Override
-        public void start() {
-            if (running()) {
-                return;
-            }
-
-            LOGGER.info("Starting {} ({})", name, image);
-
-            try {
-                container.start();
-                cachedContainerId = container.getContainerId();
-
-                LOGGER.info("Started {} ({}) with container-id {}", name, image, cachedContainerId);
-            } catch (final Exception e) {
-                throw new FailedToStartServiceException(def, container, e);
-            }
-        }
-
-        @Override
-        public boolean running() {
-            throwIfNotOnCorrectThread();
-            return container.getContainerId() != null;
-        }
-
-        @Override
-        public void stop() {
-            if (!running()) {
-                return;
-            }
-
-            LOGGER.info("Stopping {} ({}) with container-id {}", name, image, cachedContainerId);
-            container.stop();
-            LOGGER.info("Stopped {} ({})", name, image);
-        }
-
-        String cachedContainerId() {
-            return cachedContainerId;
-        }
-    }
-
-    private static final class FailedToStartServiceException extends RuntimeException {
-        FailedToStartServiceException(
-                final ServiceDefinition def,
-                final GenericContainer<?> container,
-                final Throwable cause) {
-            super(
-                    "Failed to start service: "
-                            + def.name()
-                            + ", image: "
-                            + dockerImageName(def)
-                            + lineSeparator()
-                            + "Cause: "
-                            + cause.getMessage()
-                            + lineSeparator()
-                            + "Logs: "
-                            + container.getLogs(),
-                    cause);
-        }
     }
 }

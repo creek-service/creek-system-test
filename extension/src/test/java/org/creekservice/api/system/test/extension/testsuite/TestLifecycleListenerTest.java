@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.model;
+package org.creekservice.api.system.test.extension.testsuite;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.creekservice.api.system.test.extension.test.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.model.CreekTestSuite;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -19,7 +19,7 @@ package org.creekservice.api.system.test.extension;
 
 import org.creekservice.api.system.test.extension.model.ModelContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinitionCollection;
-import org.creekservice.api.system.test.extension.test.TestSuiteEnvironment;
+import org.creekservice.api.system.test.extension.testsuite.TestSuiteEnvironment;
 
 /** API to the system tests exposed to extensions */
 public interface CreekSystemTest {

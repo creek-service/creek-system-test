@@ -19,7 +19,7 @@ package org.creekservice.internal.system.test.executor.execution;
 import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.extension.test.TestListenerCollection;
+import org.creekservice.api.system.test.extension.testsuite.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
 

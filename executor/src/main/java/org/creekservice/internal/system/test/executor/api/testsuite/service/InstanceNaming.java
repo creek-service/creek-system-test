@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
-/** Container of test package listeners */
-public interface TestListenerContainer extends TestListenerCollection {
 
-    /**
-     * Append the supplied {@code listener} to the end of the collection.
-     *
-     * <p>Listeners are invoked in order for {@code beforeXXXX} methods and in reverse order for
-     * {@code afterXXXX} methods.
-     *
-     * @param listener the listener to append.
-     */
-    void append(TestLifecycleListener listener);
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/** Naming strategy for service instances. */
+public final class InstanceNaming {
+
+    private final Map<String, AtomicInteger> names = new HashMap<>();
+
+    public String instanceName(final String serviceName) {
+        final AtomicInteger counter = names.computeIfAbsent(serviceName, k -> new AtomicInteger());
+        return serviceName + "-" + counter.getAndIncrement();
+    }
+
+    public void clear() {
+        names.clear();
+    }
 }

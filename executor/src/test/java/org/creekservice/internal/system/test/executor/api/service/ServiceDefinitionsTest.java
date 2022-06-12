@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api;
+package org.creekservice.internal.system.test.executor.api.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -27,6 +27,7 @@ import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.testing.NullPointerTester;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +63,14 @@ class ServiceDefinitionsTest {
         when(serviceDescriptor0.name()).thenReturn("service-0");
 
         services = new ServiceDefinitions(List.of(serviceDescriptor0, serviceDescriptor1));
+    }
+
+    @Test
+    void shouldThrowNPEs() {
+        final NullPointerTester tester = new NullPointerTester();
+        tester.testAllPublicConstructors(ServiceDefinitions.class);
+        tester.testAllPublicStaticMethods(ServiceDefinitions.class);
+        tester.testAllPublicInstanceMethods(services);
     }
 
     @Test
