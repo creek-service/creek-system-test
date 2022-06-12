@@ -195,9 +195,7 @@ class InstanceUnderTestTest {
         givenNotRunning();
 
         // When:
-        instance.modify()
-                .withEnv(Map.of("k0", "v0", "k1", "v1"))
-                .withEnv(Map.of("k2", "v2"));
+        instance.modify().withEnv(Map.of("k0", "v0", "k1", "v1")).withEnv(Map.of("k2", "v2"));
 
         // Then:
         verify(container).withEnv("k0", "v0");
