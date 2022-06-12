@@ -30,3 +30,6 @@ creek.system.test.executor/org.creekservice.internal.system.test.executor.api.mo
 
 --add-exports
   creek.system.test.executor/org.creekservice.internal.system.test.executor.api.testsuite.service=guava.testlib
+
+--add-opens
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.testsuite.service=guava.testlib
