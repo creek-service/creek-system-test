@@ -176,14 +176,14 @@ class LocalServiceInstancesFunctionalTest {
         // Given:
         final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
-        final String instanceId = instanceId(instance);
+        String instanceId = instanceId(instance);
         instance.stop();
 
         // When:
         instance.start();
 
         // Then:
-        assertThat(instance, is(running(true, instanceId)));
+        assertThat(instance, is(running(true, instanceId(instance))));
     }
 
     @Test
