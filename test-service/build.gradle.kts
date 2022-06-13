@@ -18,7 +18,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     application
-    id("com.bmuschko.docker-remote-api") version "7.0.0"
+    id("com.bmuschko.docker-remote-api") version "7.4.0"
 }
 
 val slf4jVersion : String by extra
