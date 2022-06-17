@@ -145,6 +145,9 @@ public interface ServiceInstance {
         Configure withStartupAttempts(int attempts);
     }
 
+    /**
+     * Stores the result of {@link #execInContainer}.
+     */
     final class ExecResult {
 
         private final int exitCode;
@@ -161,6 +164,7 @@ public interface ServiceInstance {
             this.stderr = requireNonNull(stderr, "stderr");
         }
 
+        // Todo: test
         public int exitCode() {
             return exitCode;
         }
