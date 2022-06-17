@@ -16,9 +16,9 @@
 
 package org.creekservice.api.system.test.extension.service;
 
-import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
 import java.util.Optional;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
 /** Information required by Creek System Test to start a service */
 public interface ServiceDefinition {
@@ -37,14 +37,13 @@ public interface ServiceDefinition {
     /**
      * An optional service descriptor.
      *
-     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the test suite,
-     * will have an associated service definition. 3rd-party services started by extensions to facilitate testing
-     * will not.
+     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the
+     * test suite, will have an associated service definition. 3rd-party services started by
+     * extensions to facilitate testing will not.
      *
      * @return the service definition, if present.
      */
     Optional<ServiceDescriptor> descriptor(); // Todo: test
 }
-
 
 // Todo: I think ALL definitions will have a descriptor

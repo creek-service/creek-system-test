@@ -36,8 +36,6 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.creekservice.api.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;

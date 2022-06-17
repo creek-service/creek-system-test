@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -24,7 +25,8 @@ public interface ServiceCollection extends Iterable<ServiceInstance> {
     /**
      * Returns a sequential {@link Stream} with this collection as its source.
      *
-     * @return a sequential {@link Stream} over the {@link ServiceInstance instance's} in this collection.
+     * @return a sequential {@link Stream} over the {@link ServiceInstance instance's} in this
+     *     collection.
      */
     default Stream<ServiceInstance> stream() {
         // Todo: test

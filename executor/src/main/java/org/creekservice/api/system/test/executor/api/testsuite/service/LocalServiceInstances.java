@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 // Todo: move this back and instead have 'test' lib that exposes this as a JUNit resource.
@@ -97,12 +96,11 @@ public final class LocalServiceInstances implements ServiceContainer {
 
         return container;
 
-
-        //return container
-                // Todo: This is only going to work for services under test... use default for KAfka.
-            //    .waitingFor(
-          //              Wait.forLogMessage(".*lifecycle.*started.*", 1)
-              //                  .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
+        // return container
+        // Todo: This is only going to work for services under test... use default for KAfka.
+        //    .waitingFor(
+        //              Wait.forLogMessage(".*lifecycle.*started.*", 1)
+        //                  .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
     }
 
     private void throwOnRunningServices() {

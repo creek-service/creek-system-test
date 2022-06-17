@@ -17,10 +17,9 @@
 package org.creekservice.api.system.test.extension.service;
 
 
-import org.creekservice.api.platform.metadata.ServiceDescriptor;
-
 import java.util.Map;
 import java.util.Optional;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
@@ -31,9 +30,9 @@ public interface ServiceInstance {
     /**
      * An optional service descriptor.
      *
-     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the test suite,
-     * will have an associated service definition. 3rd-party services started by extensions to facilitate testing
-     * will not.
+     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the
+     * test suite, will have an associated service definition. 3rd-party services started by
+     * extensions to facilitate testing will not.
      *
      * @return the service definition, if present.
      */
@@ -49,7 +48,8 @@ public interface ServiceInstance {
     void stop();
 
     // Todo: Better to instead have a way for extentions to add endpoint info.
-    //   - think in terms of ServiceInstance being an interface, with docker container being only one possible impl
+    //   - think in terms of ServiceInstance being an interface, with docker container being only
+    // one possible impl
     /** Retrieve the actual port a service's port can be reached on via the local network */
     int mappedPort(int original);
 
@@ -94,6 +94,7 @@ public interface ServiceInstance {
 
         /**
          * Set the command to be run
+         *
          * @param cmdParts the parts of the command.
          * @return self, for method chaining.
          */

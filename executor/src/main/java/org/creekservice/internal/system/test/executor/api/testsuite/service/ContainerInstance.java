@@ -20,10 +20,8 @@ import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
-import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
-
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
@@ -69,7 +67,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
 
     @Override
     public Optional<ServiceDescriptor> descriptor() {
-        return Optional.empty();    // Todo:
+        return Optional.empty(); // Todo:
     }
 
     @Override
@@ -136,7 +134,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     @Override
     public Modifier withExposedPorts(final int... ports) {
         throwIfNotOnCorrectThread();
-        container.addExposedPorts(ports);  // Todo: test
+        container.addExposedPorts(ports); // Todo: test
         return this;
     }
 
