@@ -44,7 +44,7 @@ public final class ServiceMain {
         LOGGER.info("LOGGER.info logging");
         LOGGER.error("LOGGER.error logging");
 
-        LOGGER.info("some.lifecycle.event=started");
+        LOGGER.info("some.lifecycle.event=started"); // Todo: use common code.
     }
 
     @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})

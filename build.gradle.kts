@@ -49,7 +49,8 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "org.javamodularity.moduleplugin")
 
-    if (!name.startsWith("test-")) {
+    val shouldPublish = !name.startsWith("test-") || name == "test-util"
+    if (shouldPublish) {
         apply(plugin = "jacoco")
     }
 
@@ -97,7 +98,7 @@ subprojects {
     }
 
     tasks.compileJava {
-        options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic")
+        options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic,-module")
         options.compilerArgs.add("-Werror")
     }
 
@@ -156,7 +157,7 @@ subprojects {
         dependsOn("checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
     }
 
-    if (!project.name.startsWith("test-")) {
+    if (shouldPublish) {
         publishing {
             repositories {
                 maven {

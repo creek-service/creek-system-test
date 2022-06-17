@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.service;
+plugins {
+    `java-library`
+}
 
-
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-/** A collection of service instances */
-public interface ServiceCollection extends Iterable<ServiceInstance> {
-    /**
-     * Returns a sequential {@link Stream} with this collection as its source.
-     *
-     * @return a sequential {@link Stream} over the {@link ServiceInstance instance's} in this
-     *     collection.
-     */
-    default Stream<ServiceInstance> stream() {
-        return StreamSupport.stream(spliterator(), false);
-    }
+dependencies {
+    api(project(":executor"))
+    implementation(project(":extension"))
 }

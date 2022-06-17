@@ -48,3 +48,6 @@ public final class LoggingTestLifecycleListener implements TestLifecycleListener
         LOGGER.info("Finished test '" + test.name() + "'");
     }
 }
+
+// Todo: Log results?
+// Todo: Test.

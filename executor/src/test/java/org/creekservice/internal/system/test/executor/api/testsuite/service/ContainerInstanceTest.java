@@ -17,6 +17,8 @@
 package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
@@ -33,9 +35,13 @@ import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,17 +60,22 @@ class ContainerInstanceTest {
             DockerImageName.parse("ghcr.io/creekservice/test-service:latest");
 
     @Mock private GenericContainer<?> container;
+    @Mock private ServiceDescriptor descriptor;
+    @Mock private Consumer<ServiceInstance> startedCallback; // Todo: test
 
     private ContainerInstance instance;
 
     @BeforeEach
     void setUp() {
-        instance = new ContainerInstance("a-0", IMAGE_NAME, container);
+        instance = new ContainerInstance("a-0", IMAGE_NAME, container, Optional.empty(), startedCallback);
     }
 
     @Test
     void shouldThrowNPEs() {
-        final NullPointerTester tester = new NullPointerTester();
+        final NullPointerTester tester = new NullPointerTester()
+                .setDefault(String.class, "non-blank")
+                .setDefault(DockerImageName.class, DockerImageName.parse("some/service:latest"));
+
         tester.testAllPublicConstructors(ContainerInstance.class);
         tester.testAllPublicStaticMethods(ContainerInstance.class);
         tester.testAllPublicInstanceMethods(instance);
@@ -73,6 +84,16 @@ class ContainerInstanceTest {
     @Test
     void shouldExposeName() {
         assertThat(instance.name(), is("a-0"));
+    }
+
+    @Test
+    void shouldExposeNoDescriptor() {
+        assertThat(instance.descriptor(), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldExposeDescriptor() {
+        assertThat(new ContainerInstance("a-0", IMAGE_NAME, container, Optional.of(descriptor), startedCallback).descriptor(), is(Optional.of(descriptor)));
     }
 
     @Test
@@ -166,7 +187,7 @@ class ContainerInstanceTest {
         instance.start();
 
         // When:
-        final Exception e = assertThrows(IllegalStateException.class, instance::modify);
+        final Exception e = assertThrows(IllegalStateException.class, instance::configure);
 
         // Then:
         assertThat(
@@ -182,7 +203,7 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.modify().withEnv("k0", "v0").withEnv("k1", "v1");
+        instance.configure().withEnv("k0", "v0").withEnv("k1", "v1");
 
         // Then:
         verify(container).withEnv("k0", "v0");
@@ -195,7 +216,7 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.modify().withEnv(Map.of("k0", "v0", "k1", "v1")).withEnv(Map.of("k2", "v2"));
+        instance.configure().withEnv(Map.of("k0", "v0", "k1", "v1")).withEnv(Map.of("k2", "v2"));
 
         // Then:
         verify(container).withEnv("k0", "v0");
@@ -209,12 +230,23 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.modify().withExposedPorts(10, 11).withExposedPorts(12);
+        instance.configure().withExposedPorts(10, 11).withExposedPorts(12);
 
         // Then:
-        verify(container).withExposedPorts(10);
-        verify(container).withExposedPorts(11);
-        verify(container).withExposedPorts(12);
+        verify(container).addExposedPorts(10, 11);
+        verify(container).addExposedPorts(12);
+    }
+
+    @Test
+    void shouldSetCommand() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        instance.configure().withCommand("a", "b", "c");
+
+        // Then:
+        verify(container).withCommand("a", "b", "c");
     }
 
     @SuppressWarnings("unused")
@@ -224,7 +256,7 @@ class ContainerInstanceTest {
         // Given:
         instance =
                 new ContainerInstance(
-                        "a-0", IMAGE_NAME, container, Thread.currentThread().getId() + 1);
+                        "a-0", IMAGE_NAME, container, Optional.empty(), startedCallback, Thread.currentThread().getId() + 1);
 
         // Then:
         assertThrows(ConcurrentModificationException.class, () -> method.accept(instance));
@@ -233,11 +265,12 @@ class ContainerInstanceTest {
     @Test
     void shouldHaveThreadingTestForEachPublicMethod() {
         final List<String> publicMethodNames = publicMethodNames();
-        final int testedMethodCount = (int) publicMethods().count();
+        final List<String> tested = testedMethodNames();
         assertThat(
-                "Public methods:\n" + String.join(System.lineSeparator(), publicMethodNames),
-                testedMethodCount,
-                is(publicMethodNames.size()));
+                "Public methods:\n" + String.join(System.lineSeparator(), publicMethodNames)
+                + "\nTested methods:\n" + String.join(System.lineSeparator(), tested),
+                tested,
+                hasSize(publicMethodNames.size()));
     }
 
     private void givenNotRunning() {
@@ -250,14 +283,23 @@ class ContainerInstanceTest {
                 Arguments.of("start", (Consumer<ContainerInstance>) ContainerInstance::start),
                 Arguments.of("stop", (Consumer<ContainerInstance>) ContainerInstance::stop),
                 Arguments.of("running", (Consumer<ContainerInstance>) ContainerInstance::running),
-                Arguments.of("modify", (Consumer<ContainerInstance>) ContainerInstance::modify),
+                Arguments.of("descriptor", (Consumer<ContainerInstance>) ContainerInstance::descriptor),
+                Arguments.of("mappedPort", (Consumer<ContainerInstance>) i -> i.mappedPort(9)),
+                Arguments.of("modify", (Consumer<ContainerInstance>) ContainerInstance::configure),
                 Arguments.of("withEnv", (Consumer<ContainerInstance>) i -> i.withEnv("k", "v")),
                 Arguments.of(
                         "withEnv(Map)",
                         (Consumer<ContainerInstance>) i -> i.withEnv(Map.of("k", "v"))),
                 Arguments.of(
                         "withExposedPorts",
-                        (Consumer<ContainerInstance>) ContainerInstance::withExposedPorts));
+                        (Consumer<ContainerInstance>) ContainerInstance::withExposedPorts),
+                Arguments.of(
+                        "withCommand",
+                        (Consumer<ContainerInstance>) ContainerInstance::withCommand));
+    }
+
+    private static List<String> testedMethodNames() {
+        return publicMethods().map(a ->(String)a.get()[0]).collect(Collectors.toUnmodifiableList());
     }
 
     private List<String> publicMethodNames() {

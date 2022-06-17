@@ -154,7 +154,7 @@ public final class ServiceDefinitions implements ServiceDefinitionCollection {
 
         @Override
         public String dockerImage() {
-            return descriptor.dockerImage();
+            return descriptor.dockerImage() + ":latest";// Todo: Hard coded latest...can we get the version from the source jar's version
         }
 
         @Override

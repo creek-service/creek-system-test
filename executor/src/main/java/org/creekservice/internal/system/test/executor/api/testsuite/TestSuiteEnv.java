@@ -20,21 +20,21 @@ import static java.util.Objects.requireNonNull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.creekservice.api.system.test.extension.testsuite.TestSuiteEnvironment;
 import org.creekservice.internal.system.test.executor.api.testsuite.listeners.TestListeners;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
 
 public final class TestSuiteEnv implements TestSuiteEnvironment {
 
     private final TestListeners listeners;
-    private final LocalServiceInstances services;
+    private final DockerServiceContainer services;
 
     public TestSuiteEnv() {
-        this(new TestListeners(), new LocalServiceInstances());
+        this(new TestListeners(), new DockerServiceContainer());
     }
 
     @VisibleForTesting
-    TestSuiteEnv(final TestListeners listeners, final LocalServiceInstances services) {
+    TestSuiteEnv(final TestListeners listeners, final DockerServiceContainer services) {
         this.listeners = requireNonNull(listeners, "listeners");
         this.services = requireNonNull(services, "services");
     }
@@ -47,7 +47,7 @@ public final class TestSuiteEnv implements TestSuiteEnvironment {
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public LocalServiceInstances services() {
+    public DockerServiceContainer services() {
         return services;
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.executor.api.testsuite.service;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
 
 import java.time.Duration;
@@ -22,22 +22,24 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.InstanceNaming;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
-// Todo: move this back and instead have 'test' lib that exposes this as a JUNit resource.
 /** A local, docker based, implementation of {@link ServiceContainer}. */
-public final class LocalServiceInstances implements ServiceContainer {
+public final class DockerServiceContainer implements ServiceContainer {
 
+    // Todo: configurable
     private static final int CONTAINER_START_UP_ATTEMPTS = 3;
     private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofSeconds(90);
 
@@ -46,26 +48,34 @@ public final class LocalServiceInstances implements ServiceContainer {
     private final List<ServiceInstance> instances = new ArrayList<>();
     private final InstanceNaming naming = new InstanceNaming();
 
-    public LocalServiceInstances() {
+    public DockerServiceContainer() {
         this(Thread.currentThread().getId());
     }
 
     @VisibleForTesting
-    LocalServiceInstances(final long threadId) {
+    DockerServiceContainer(final long threadId) {
         this.threadId = threadId;
     }
 
     // Todo: do not allow add to be called if there is no active test suite.
+    // Todo: could use `dependsOn` to have 2nd service depending on 1st, 3rd on 2nd etc.
     @Override
-    public ServiceInstance add(final String serviceName, final String dockerImageName) {
+    public ServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
 
-        final String instanceName = naming.instanceName(serviceName);
-        final DockerImageName imageName = DockerImageName.parse(dockerImageName);
+        final String instanceName = naming.instanceName(def.name());
+        final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
         final GenericContainer<?> container = createContainer(imageName, instanceName);
         final ContainerInstance instance =
-                new ContainerInstance(instanceName, imageName, container);
+                new ContainerInstance(instanceName, imageName, container, def.descriptor(), def::started);
+
+        instance.configure()
+                .withStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
+                .withStartupTimeout(CONTAINER_START_UP_TIMEOUT);
+
+        def.configure(instance); // Todo: test
+
         instances.add(instance);
         return instance;
     }
@@ -91,16 +101,9 @@ public final class LocalServiceInstances implements ServiceContainer {
         container
                 .withNetwork(network)
                 .withNetworkAliases(instanceName)
-                .withStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)));
 
         return container;
-
-        // return container
-        // Todo: This is only going to work for services under test... use default for KAfka.
-        //    .waitingFor(
-        //              Wait.forLogMessage(".*lifecycle.*started.*", 1)
-        //                  .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
     }
 
     private void throwOnRunningServices() {

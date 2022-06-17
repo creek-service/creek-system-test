@@ -55,6 +55,14 @@ public final class AddServicesUnderTestListener implements TestLifecycleListener
 
     private ServiceInstance addServiceUnderTest(final String serviceName) {
         final ServiceDefinition def = api.services().get(serviceName);
-        return api.testSuite().services().add(def);
+        final ServiceInstance instance = api.testSuite().services().add(def);
+
+        // Todo: test
+        // Todo: need to add this logline to template:
+        instance.configure()
+                .withStartupLogMessage(".*lifecycle.*started.*", 1);
+
+
+        return instance;
     }
 }

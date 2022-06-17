@@ -17,9 +17,12 @@
 package org.creekservice.api.system.test.extension.service;
 
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+
+import static java.util.Objects.requireNonNull;
 
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
@@ -53,16 +56,26 @@ public interface ServiceInstance {
     /** Retrieve the actual port a service's port can be reached on via the local network */
     int mappedPort(int original);
 
+    // Todo: Doc and test
+    String externalHostName();
+    // Todo: Doc and test
+    String internalHostName();
+
+    // Run a command inside a running container, as though using "docker exec".
+    // Todo: Doc and test
+    // Todo: Throw if container not running?
+    ExecResult execInContainer(final String... cmd);
+
     /**
-     * Amend the definition of the service instance.
+     * Configure the service instance.
      *
      * <p>**Note**: this method can not be called while the instance is running.
      *
-     * @return type used to modify the instance.
+     * @return type used to configure the instance.
      */
-    Modifier modify();
+    Configure configure();
 
-    interface Modifier {
+    interface Configure {
 
         /**
          * Set an environment variable on the instance.
@@ -71,7 +84,7 @@ public interface ServiceInstance {
          * @param value the value of the environment variable.
          * @return self, for method chaining.
          */
-        Modifier withEnv(String name, String value);
+        Configure withEnv(String name, String value);
 
         /**
          * Set environment variables on the instance.
@@ -79,7 +92,7 @@ public interface ServiceInstance {
          * @param env the map of environment variables to add.
          * @return self, for method chaining.
          */
-        default Modifier withEnv(Map<String, String> env) {
+        default Configure withEnv(Map<String, String> env) {
             env.forEach(this::withEnv);
             return this;
         }
@@ -90,7 +103,7 @@ public interface ServiceInstance {
          * @param ports the ports to expose.
          * @return self, for method chaining.
          */
-        Modifier withExposedPorts(int... ports);
+        Configure withExposedPorts(int... ports);
 
         /**
          * Set the command to be run
@@ -98,6 +111,66 @@ public interface ServiceInstance {
          * @param cmdParts the parts of the command.
          * @return self, for method chaining.
          */
-        Modifier withCommand(final String... cmdParts);
+        Configure withCommand(String... cmdParts);
+
+        /**
+         * Set a log message to wait for before considering the instance available.
+         *
+         * <p>If not set, the instance is considered available once any mapped ports are open.
+         *
+         * @param regex  the regex pattern to check for
+         * @param times  the number of times the pattern is expected
+         * @return self, for method chaining.
+         */
+        Configure withStartupLogMessage(String regex, int times);
+
+        /**
+         * Set a startup timeout after which the instance will be considered failed.
+         *
+         * <p>Failed containers may result in another attempt, or cause the test suite to fail.
+         *
+         * @param timeout the timeout
+         * @return self, for method chaining.
+         */
+        Configure withStartupTimeout(Duration timeout);
+
+        /**
+         * Set how many attempts should be made to start the instance.
+         *
+         * <p>If the max attempts is exceeded the test suite will fail.
+         *
+         * @param attempts the max attempts.
+         * @return self, for method chaining.
+         */
+        Configure withStartupAttempts(int attempts);
+    }
+
+    final class ExecResult {
+
+        private final int exitCode;
+        private final String stdout;
+        private final String stderr;
+
+        public static ExecResult execResult(final int exitCode, final String stdout, final String stderr) {
+            return new ExecResult(exitCode, stdout, stderr);
+        }
+
+        private ExecResult(final int exitCode, final String stdout, final String stderr) {
+            this.exitCode = exitCode;
+            this.stdout = requireNonNull(stdout, "stdout");
+            this.stderr = requireNonNull(stderr, "stderr");
+        }
+
+        public int exitCode() {
+            return exitCode;
+        }
+
+        public String stdout() {
+            return stdout;
+        }
+
+        public String stderr() {
+            return stderr;
+        }
     }
 }

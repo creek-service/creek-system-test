@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.executor.api.testsuite.service;
+package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -36,51 +37,45 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.DockerClientFactory;
 
-class LocalServiceInstancesFunctionalTest {
+@ExtendWith(MockitoExtension.class)
+class DockerServiceContainerFunctionalTest {
 
     private static final String SERVICE_NAME = "test-service";
     private static final String SERVICE_IMAGE = "ghcr.io/creekservice/test-service";
 
-    private LocalServiceInstances instances;
+    private DockerServiceContainer instances;
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
+    @Mock private ServiceDefinition serviceDef;
 
     @BeforeEach
     void setUp() {
-        instances = new LocalServiceInstances();
-    }
+        instances = new DockerServiceContainer();
 
-    @Test
-    void shouldAddServiceInstancesFromDef() {
-        // Given:
-        final ServiceDefinition serviceDef = mock(ServiceDefinition.class);
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
-
-        // When:
-        final ServiceInstance instance0 = instances.add(serviceDef);
-
-        // Then:
-        assertThat(instances(instances), contains(instance0));
     }
 
     @Test
     void shouldAddMultipleServiceInstances() {
         // Given:
-        final ServiceInstance instance0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance0 = instances.add(serviceDef);
 
         // When:
-        final ServiceInstance instance1 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance1 = instances.add(serviceDef);
 
         // Then:
         assertThat(instances(instances), contains(instance0, instance1));
@@ -89,7 +84,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldNotStartServicesOnAdd() {
         // When:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
         final String instanceId = instanceId(instance);
 
         // Then:
@@ -99,8 +94,8 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldStartAndStopServices() {
         // Given:
-        final ServiceInstance instance0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
-        final ServiceInstance instance1 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance0 = instances.add(serviceDef);
+        final ServiceInstance instance1 = instances.add(serviceDef);
         String instanceId0 = instanceId(instance0);
         String instanceId1 = instanceId(instance1);
 
@@ -138,7 +133,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldKeepStoppedServices() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
 
         // When:
@@ -151,7 +146,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldDoNothingOnSubsequentServiceStarts() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
         final String instanceId = instanceId(instance);
         assertThat(instance, is(running(true, instanceId)));
@@ -166,7 +161,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldDoNothingOnSubsequentServiceStops() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
         final String instanceId = instanceId(instance);
         instance.stop();
@@ -182,7 +177,7 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldRestartService() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
         instance.start();
         final String oldInstanceId = instanceId(instance);
         instance.stop();
@@ -198,7 +193,8 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldThrowOnServiceStartFailure() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, "i-do-not-exist");
+        when(serviceDef.dockerImage()).thenReturn("i-do-no-exist");
+        final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, instance::start);
@@ -214,19 +210,19 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldResetInstanceNamingOnClear() {
         // Given:
-        final ServiceInstance i0 = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance i0 = instances.add(serviceDef);
 
         // When:
         instances.clear();
 
         // Then:
-        assertThat(instances.add(SERVICE_NAME, SERVICE_IMAGE).name(), is(i0.name()));
+        assertThat(instances.add(serviceDef).name(), is(i0.name()));
     }
 
     @Test
     void shouldClearInstances() {
         // Given:
-        instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        instances.add(serviceDef);
 
         // When:
         instances.clear();
@@ -238,9 +234,9 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldThrowOnClearIfAnyInstancesAreRunning() {
         // Given:
-        instances.add(SERVICE_NAME, SERVICE_IMAGE);
-        instances.add(SERVICE_NAME, SERVICE_IMAGE).start();
-        instances.add(SERVICE_NAME, SERVICE_IMAGE).start();
+        instances.add(serviceDef);
+        instances.add(serviceDef).start();
+        instances.add(serviceDef).start();
 
         // When:
         final Exception e = assertThrows(IllegalStateException.class, instances::clear);
@@ -255,10 +251,10 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldSetEnvOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
-        instance.modify().withEnv("CREEK_TEST_ENV_KEY_0", "expected value");
+        instance.configure().withEnv("CREEK_TEST_ENV_KEY_0", "expected value");
 
         // Then:
         instance.start();
@@ -271,10 +267,10 @@ class LocalServiceInstancesFunctionalTest {
     @Test
     void shouldSetExposedPortOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(SERVICE_NAME, SERVICE_IMAGE);
+        final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
-        instance.modify().withExposedPorts(8080);
+        instance.configure().withExposedPorts(8080);
 
         // Then:
         instance.start();
@@ -355,7 +351,7 @@ class LocalServiceInstancesFunctionalTest {
                 .getConfig();
     }
 
-    private static List<ServiceInstance> instances(final LocalServiceInstances instances) {
+    private static List<ServiceInstance> instances(final DockerServiceContainer instances) {
         final List<ServiceInstance> result = new ArrayList<>(2);
         instances.forEach(result::add);
         return result;

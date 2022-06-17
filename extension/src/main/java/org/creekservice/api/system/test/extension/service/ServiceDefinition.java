@@ -43,7 +43,16 @@ public interface ServiceDefinition {
      *
      * @return the service definition, if present.
      */
-    Optional<ServiceDescriptor> descriptor(); // Todo: test
+    default Optional<ServiceDescriptor> descriptor() {
+        return Optional.empty();
+    }
+
+    // Todo: doc & test
+    default void configure(final ServiceInstance instance) {
+    }
+
+    // Todo: doc & test
+    default void started(final ServiceInstance instance) {
+    }
 }
 
-// Todo: I think ALL definitions will have a descriptor

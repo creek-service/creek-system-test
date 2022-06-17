@@ -116,3 +116,7 @@ public final class TestSuite implements CreekTestSuite {
         }
     }
 }
+
+// Todo: Expose seed data at this level, as this means extensions don't need to worry about packages
+//   - they can scan the suite and its test cases to work out if they need to do any work.
+//   - this is common op, so could have method on interface for `containsResource(someType)`....
