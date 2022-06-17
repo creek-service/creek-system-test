@@ -57,6 +57,7 @@ subprojects {
 
     extra.apply {
         set("creekBaseVersion", "0.2.0-SNAPSHOT")
+        set("creekMetaVersion", "0.2.0-SNAPSHOT")
         set("creekTestVersion", "0.2.0-SNAPSHOT")
         set("testContainersVersion", "1.17.2")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.7.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations

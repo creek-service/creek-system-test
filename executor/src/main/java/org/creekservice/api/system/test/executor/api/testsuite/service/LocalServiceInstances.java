@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api.testsuite.service;
+package org.creekservice.api.system.test.executor.api.testsuite.service;
 
 
 import java.time.Duration;
@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.InstanceNaming;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -33,6 +35,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
+// Todo: move this back and instead have 'test' lib that exposes this as a JUNit resource.
 /** A local, docker based, implementation of {@link ServiceContainer}. */
 public final class LocalServiceInstances implements ServiceContainer {
 
@@ -53,6 +56,7 @@ public final class LocalServiceInstances implements ServiceContainer {
         this.threadId = threadId;
     }
 
+    // Todo: do not allow add to be called if there is no active test suite.
     @Override
     public ServiceInstance add(final String serviceName, final String dockerImageName) {
         throwIfNotOnCorrectThread();
@@ -61,8 +65,8 @@ public final class LocalServiceInstances implements ServiceContainer {
         final DockerImageName imageName = DockerImageName.parse(dockerImageName);
 
         final GenericContainer<?> container = createContainer(imageName, instanceName);
-        final ComponentInstance instance =
-                new ComponentInstance(instanceName, imageName, container);
+        final ContainerInstance instance =
+                new ContainerInstance(instanceName, imageName, container);
         instances.add(instance);
         return instance;
     }
@@ -85,14 +89,20 @@ public final class LocalServiceInstances implements ServiceContainer {
             final DockerImageName imageName, final String instanceName) {
         final GenericContainer<?> container = new GenericContainer<>(imageName);
 
-        return container
+        container
                 .withNetwork(network)
                 .withNetworkAliases(instanceName)
                 .withStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)))
-                .waitingFor(
-                        Wait.forLogMessage(".*lifecycle.*started.*", 1)
-                                .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)));
+
+        return container;
+
+
+        //return container
+                // Todo: This is only going to work for services under test... use default for KAfka.
+            //    .waitingFor(
+          //              Wait.forLogMessage(".*lifecycle.*started.*", 1)
+              //                  .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
     }
 
     private void throwOnRunningServices() {

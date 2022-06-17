@@ -48,25 +48,25 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
-class ComponentInstanceTest {
+class ContainerInstanceTest {
 
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creekservice/test-service:latest");
 
     @Mock private GenericContainer<?> container;
 
-    private ComponentInstance instance;
+    private ContainerInstance instance;
 
     @BeforeEach
     void setUp() {
-        instance = new ComponentInstance("a-0", IMAGE_NAME, container);
+        instance = new ContainerInstance("a-0", IMAGE_NAME, container);
     }
 
     @Test
     void shouldThrowNPEs() {
         final NullPointerTester tester = new NullPointerTester();
-        tester.testAllPublicConstructors(ComponentInstance.class);
-        tester.testAllPublicStaticMethods(ComponentInstance.class);
+        tester.testAllPublicConstructors(ContainerInstance.class);
+        tester.testAllPublicStaticMethods(ContainerInstance.class);
         tester.testAllPublicInstanceMethods(instance);
     }
 
@@ -220,10 +220,10 @@ class ComponentInstanceTest {
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
-    void shouldThrowIfWrongThread(final String ignored, final Consumer<ComponentInstance> method) {
+    void shouldThrowIfWrongThread(final String ignored, final Consumer<ContainerInstance> method) {
         // Given:
         instance =
-                new ComponentInstance(
+                new ContainerInstance(
                         "a-0", IMAGE_NAME, container, Thread.currentThread().getId() + 1);
 
         // Then:
@@ -246,22 +246,22 @@ class ComponentInstanceTest {
 
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
-                Arguments.of("name", (Consumer<ComponentInstance>) ComponentInstance::name),
-                Arguments.of("start", (Consumer<ComponentInstance>) ComponentInstance::start),
-                Arguments.of("stop", (Consumer<ComponentInstance>) ComponentInstance::stop),
-                Arguments.of("running", (Consumer<ComponentInstance>) ComponentInstance::running),
-                Arguments.of("modify", (Consumer<ComponentInstance>) ComponentInstance::modify),
-                Arguments.of("withEnv", (Consumer<ComponentInstance>) i -> i.withEnv("k", "v")),
+                Arguments.of("name", (Consumer<ContainerInstance>) ContainerInstance::name),
+                Arguments.of("start", (Consumer<ContainerInstance>) ContainerInstance::start),
+                Arguments.of("stop", (Consumer<ContainerInstance>) ContainerInstance::stop),
+                Arguments.of("running", (Consumer<ContainerInstance>) ContainerInstance::running),
+                Arguments.of("modify", (Consumer<ContainerInstance>) ContainerInstance::modify),
+                Arguments.of("withEnv", (Consumer<ContainerInstance>) i -> i.withEnv("k", "v")),
                 Arguments.of(
                         "withEnv(Map)",
-                        (Consumer<ComponentInstance>) i -> i.withEnv(Map.of("k", "v"))),
+                        (Consumer<ContainerInstance>) i -> i.withEnv(Map.of("k", "v"))),
                 Arguments.of(
                         "withExposedPorts",
-                        (Consumer<ComponentInstance>) ComponentInstance::withExposedPorts));
+                        (Consumer<ContainerInstance>) ContainerInstance::withExposedPorts));
     }
 
     private List<String> publicMethodNames() {
-        return Arrays.stream(ComponentInstance.class.getMethods())
+        return Arrays.stream(ContainerInstance.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .map(Method::toGenericString)
                 .collect(Collectors.toUnmodifiableList());

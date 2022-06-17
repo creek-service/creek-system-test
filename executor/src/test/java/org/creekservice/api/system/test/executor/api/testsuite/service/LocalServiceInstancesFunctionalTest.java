@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api.testsuite.service;
+package org.creekservice.api.system.test.executor.api.testsuite.service;
 
 import static java.util.Objects.requireNonNullElse;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,8 +36,11 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.creekservice.api.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -325,7 +328,7 @@ class LocalServiceInstancesFunctionalTest {
 
     private boolean dockerContainerRunState(
             final ServiceInstance instance, final String cachedInstanceId) {
-        final String containerId = ((ComponentInstance) instance).containerId();
+        final String containerId = ((ContainerInstance) instance).containerId();
         if (containerId == null && cachedInstanceId == null) {
             return false; // Never started
         }
@@ -349,7 +352,7 @@ class LocalServiceInstancesFunctionalTest {
 
     private ContainerConfig instanceConfig(final ServiceInstance instance) {
         return dockerClient
-                .inspectContainerCmd(((ComponentInstance) instance).containerId())
+                .inspectContainerCmd(((ContainerInstance) instance).containerId())
                 .exec()
                 .getConfig();
     }
@@ -361,6 +364,6 @@ class LocalServiceInstancesFunctionalTest {
     }
 
     private static String instanceId(final ServiceInstance instance) {
-        return ((ComponentInstance) instance).containerId();
+        return ((ContainerInstance) instance).containerId();
     }
 }

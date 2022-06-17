@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.api.testsuite.service;
+package org.creekservice.api.system.test.executor.api.testsuite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

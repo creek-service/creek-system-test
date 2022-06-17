@@ -20,9 +20,9 @@ import static java.util.Objects.requireNonNull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.creekservice.api.system.test.extension.testsuite.TestSuiteEnvironment;
 import org.creekservice.internal.system.test.executor.api.testsuite.listeners.TestListeners;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.LocalServiceInstances;
 
 public final class TestSuiteEnv implements TestSuiteEnvironment {
 

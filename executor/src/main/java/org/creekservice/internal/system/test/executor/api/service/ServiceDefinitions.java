@@ -26,6 +26,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -154,6 +155,11 @@ public final class ServiceDefinitions implements ServiceDefinitionCollection {
         @Override
         public String dockerImage() {
             return descriptor.dockerImage();
+        }
+
+        @Override
+        public Optional<ServiceDescriptor> descriptor() {
+            return Optional.of(descriptor);
         }
     }
 }

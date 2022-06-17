@@ -22,6 +22,10 @@ import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.Optional;
+
+import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,23 +33,24 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /** An instance of a service running in a local docker container. */
-final class ComponentInstance implements ServiceInstance, ServiceInstance.Modifier {
+public final class ContainerInstance implements ServiceInstance, ServiceInstance.Modifier {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentInstance.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerInstance.class);
 
     private final long threadId;
     private final String name;
     private final DockerImageName imageName;
     private final GenericContainer<?> container;
 
-    ComponentInstance(
+    public ContainerInstance(
             final String name,
             final DockerImageName imageName,
             final GenericContainer<?> container) {
         this(name, imageName, container, Thread.currentThread().getId());
     }
 
-    ComponentInstance(
+    @VisibleForTesting
+    ContainerInstance(
             final String name,
             final DockerImageName imageName,
             final GenericContainer<?> container,
@@ -60,6 +65,11 @@ final class ComponentInstance implements ServiceInstance, ServiceInstance.Modifi
     public String name() {
         throwIfNotOnCorrectThread();
         return name;
+    }
+
+    @Override
+    public Optional<ServiceDescriptor> descriptor() {
+        return Optional.empty();    // Todo:
     }
 
     @Override
@@ -105,6 +115,11 @@ final class ComponentInstance implements ServiceInstance, ServiceInstance.Modifi
     }
 
     @Override
+    public int mappedPort(final int original) {
+        return container.getMappedPort(original);
+    }
+
+    @Override
     public Modifier modify() {
         throwIfNotOnCorrectThread();
         throwIfRunning();
@@ -121,16 +136,20 @@ final class ComponentInstance implements ServiceInstance, ServiceInstance.Modifi
     @Override
     public Modifier withExposedPorts(final int... ports) {
         throwIfNotOnCorrectThread();
-        Arrays.stream(ports).forEach(container::withExposedPorts);
+        container.addExposedPorts(ports);  // Todo: test
         return this;
     }
 
-    String containerId() {
-        return container.getContainerId();
+    @Override
+    public Modifier withCommand(final String... cmdParts) {
+        // Todo: test
+        throwIfNotOnCorrectThread();
+        container.withCommand(cmdParts);
+        return this;
     }
 
-    String logs() {
-        return container.getLogs();
+    public String containerId() {
+        return container.getContainerId();
     }
 
     private void throwIfRunning() {

@@ -21,8 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.testing.NullPointerTester;
+import org.creekservice.api.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.creekservice.internal.system.test.executor.api.testsuite.listeners.TestListeners;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.LocalServiceInstances;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
