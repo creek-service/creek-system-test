@@ -84,6 +84,7 @@ public interface ServiceDefinition {
      *
      * @param instance the newly created instance.
      */
+    // Todo: ConfigurableServiceInstance
     default void configureInstance(final ServiceInstance instance) {}
 
     /**

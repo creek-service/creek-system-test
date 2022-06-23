@@ -104,6 +104,7 @@ public interface ServiceInstance {
      *
      * @return type used to configure the instance.
      */
+    // Todo: instead have a ConfigurableServiceInstance that is derived from ServiceInstance
     ConfigureInstance configure();
 
     interface ConfigureInstance {

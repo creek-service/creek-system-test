@@ -392,7 +392,8 @@ class SystemTestExecutorFunctionalTest {
     }
 }
 
-
-// Todo: next: to allow testing, have test extension define dummy input, expectation types that do nothing to the service,
+// Todo: next: to allow testing, have test extension define dummy input, expectation types that do
+// nothing to the service,
 //   but which inspect their params to see if they should succeed or fail.
-
+//   Test extension can also start instance of the test-service as its '3rd-party' service with a
+// different name.
