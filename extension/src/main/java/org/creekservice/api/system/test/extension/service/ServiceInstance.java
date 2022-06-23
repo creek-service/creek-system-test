@@ -16,13 +16,12 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
-
-import static java.util.Objects.requireNonNull;
 
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
@@ -50,21 +49,53 @@ public interface ServiceInstance {
     /** Stop the instance. No-op if already stopped. */
     void stop();
 
-    // Todo: Better to instead have a way for extentions to add endpoint info.
-    //   - think in terms of ServiceInstance being an interface, with docker container being only
-    // one possible impl
-    /** Retrieve the actual port a service's port can be reached on via the local network */
+    /**
+     * Retrieve the port a service's port can be reached on from the host network.
+     *
+     * <p>This may be the same port, or a different port, depending on where the instance is
+     * running.
+     */
     int mappedPort(int original);
 
-    // Todo: Doc and test
+    /**
+     * The host name the instance can be reached on from the host network.
+     *
+     * <p>The host network is the network accessible to the system test process itself. The external
+     * host name is the host name the system test process can use to access the instance.
+     *
+     * <p>For example, if services are running in local docker containers, then the external host
+     * name will be {@code localhost}, i.e. the current machine, where all the containers are
+     * running.
+     *
+     * @return the host name the instance can be reached on from the host network.
+     */
     String externalHostName();
-    // Todo: Doc and test
+
+    /**
+     * The host name the instance can be reach on from the internal network.
+     *
+     * <p>The internal network is the network service instances are using to communicate. The
+     * internal host name is the host name other services instances can use to access the instance.
+     *
+     * <p>For example, if services are running in local docker containers, then the internal host
+     * name will be a docker-generated host name for the container the service is running on.
+     *
+     * @return the host name the instance can be reach on from the internal network.
+     */
     String internalHostName();
 
-    // Run a command inside a running container, as though using "docker exec".
-    // Todo: Doc and test
-    // Todo: Throw if container not running?
-    ExecResult execInContainer(final String... cmd);
+    /**
+     * Run a command on the instance host.
+     *
+     * <p>**Note**: this method can not be called while the instance is running.
+     *
+     * <p>If services are running in docker containers this is the same as using {@code docker
+     * exec}.
+     *
+     * @param cmd the command to run.
+     * @return the result of the execution.
+     */
+    ExecResult execOnInstance(String... cmd);
 
     /**
      * Configure the service instance.
@@ -73,9 +104,9 @@ public interface ServiceInstance {
      *
      * @return type used to configure the instance.
      */
-    Configure configure();
+    ConfigureInstance configure();
 
-    interface Configure {
+    interface ConfigureInstance {
 
         /**
          * Set an environment variable on the instance.
@@ -84,7 +115,7 @@ public interface ServiceInstance {
          * @param value the value of the environment variable.
          * @return self, for method chaining.
          */
-        Configure withEnv(String name, String value);
+        ConfigureInstance addEnv(String name, String value);
 
         /**
          * Set environment variables on the instance.
@@ -92,8 +123,8 @@ public interface ServiceInstance {
          * @param env the map of environment variables to add.
          * @return self, for method chaining.
          */
-        default Configure withEnv(Map<String, String> env) {
-            env.forEach(this::withEnv);
+        default ConfigureInstance addEnv(Map<String, String> env) {
+            env.forEach(this::addEnv);
             return this;
         }
 
@@ -103,7 +134,7 @@ public interface ServiceInstance {
          * @param ports the ports to expose.
          * @return self, for method chaining.
          */
-        Configure withExposedPorts(int... ports);
+        ConfigureInstance addExposedPorts(int... ports);
 
         /**
          * Set the command to be run
@@ -111,18 +142,18 @@ public interface ServiceInstance {
          * @param cmdParts the parts of the command.
          * @return self, for method chaining.
          */
-        Configure withCommand(String... cmdParts);
+        ConfigureInstance setCommand(String... cmdParts);
 
         /**
          * Set a log message to wait for before considering the instance available.
          *
          * <p>If not set, the instance is considered available once any mapped ports are open.
          *
-         * @param regex  the regex pattern to check for
-         * @param times  the number of times the pattern is expected
+         * @param regex the regex pattern to check for
+         * @param times the number of times the pattern is expected
          * @return self, for method chaining.
          */
-        Configure withStartupLogMessage(String regex, int times);
+        ConfigureInstance setStartupLogMessage(String regex, int times);
 
         /**
          * Set a startup timeout after which the instance will be considered failed.
@@ -132,7 +163,7 @@ public interface ServiceInstance {
          * @param timeout the timeout
          * @return self, for method chaining.
          */
-        Configure withStartupTimeout(Duration timeout);
+        ConfigureInstance setStartupTimeout(Duration timeout);
 
         /**
          * Set how many attempts should be made to start the instance.
@@ -142,19 +173,18 @@ public interface ServiceInstance {
          * @param attempts the max attempts.
          * @return self, for method chaining.
          */
-        Configure withStartupAttempts(int attempts);
+        ConfigureInstance setStartupAttempts(int attempts);
     }
 
-    /**
-     * Stores the result of {@link #execInContainer}.
-     */
+    /** Stores the result of {@link #execOnInstance}. */
     final class ExecResult {
 
         private final int exitCode;
         private final String stdout;
         private final String stderr;
 
-        public static ExecResult execResult(final int exitCode, final String stdout, final String stderr) {
+        public static ExecResult execResult(
+                final int exitCode, final String stdout, final String stderr) {
             return new ExecResult(exitCode, stdout, stderr);
         }
 
@@ -164,7 +194,6 @@ public interface ServiceInstance {
             this.stderr = requireNonNull(stderr, "stderr");
         }
 
-        // Todo: test
         public int exitCode() {
             return exitCode;
         }

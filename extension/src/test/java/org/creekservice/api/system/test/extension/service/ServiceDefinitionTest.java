@@ -16,32 +16,59 @@
 
 package org.creekservice.api.system.test.extension.service;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
+@ExtendWith(MockitoExtension.class)
 class ServiceDefinitionTest {
+
+    @Mock private ServiceInstance instance;
+    private ServiceDefinition def;
+
+    @BeforeEach
+    void setUp() {
+        def =
+                new ServiceDefinition() {
+                    @Override
+                    public String name() {
+                        return null;
+                    }
+
+                    @Override
+                    public String dockerImage() {
+                        return null;
+                    }
+                };
+    }
 
     @Test
     void shouldNotHaveDescriptorByDefault() {
-        // Given:
-        final ServiceDefinition def = new ServiceDefinition() {
-            @Override
-            public String name() {
-                return null;
-            }
+        assertThat(def.descriptor(), is(Optional.empty()));
+    }
 
-            @Override
-            public String dockerImage() {
-                return null;
-            }
-        };
+    @Test
+    void shouldDoNothingInConfigureInstance() {
+        // When:
+        def.configureInstance(instance);
 
         // Then:
-        assertThat(def.descriptor(), is(Optional.empty()));
+        verifyNoInteractions(instance);
+    }
+
+    @Test
+    void shouldNoNothingInInstanceStarted() {
+        // When:
+        def.instanceStarted(instance);
+
+        // Then:
+        verifyNoInteractions(instance);
     }
 }

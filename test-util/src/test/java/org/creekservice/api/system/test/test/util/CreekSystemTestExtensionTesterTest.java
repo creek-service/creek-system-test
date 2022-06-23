@@ -20,18 +20,32 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.when;
 
+import org.creekservice.api.system.test.extension.service.ServiceContainer;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class CreekSystemTestExtensionTesterTest {
+
+    @Mock(strictness = LENIENT)
+    private ServiceDefinition serviceDef;
 
     private CreekSystemTestExtensionTester tester;
 
     @BeforeEach
     void setUp() {
         tester = CreekSystemTestExtensionTester.extensionTester();
+
+        when(serviceDef.name()).thenReturn("bob");
+        when(serviceDef.dockerImage()).thenReturn("bob-service");
     }
 
     @Test
@@ -42,5 +56,19 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldExposeDockerBasedServicesContainer() {
         assertThat(tester.dockerServicesContainer(), is(instanceOf(DockerServiceContainer.class)));
+    }
+
+    @Test
+    void shouldClear() {
+        // Given:
+        final ServiceContainer services = tester.dockerServicesContainer();
+        services.add(serviceDef);
+        assertThat(services.iterator().hasNext(), is(true));
+
+        // When:
+        tester.clearServices();
+
+        // Then:
+        assertThat(services.iterator().hasNext(), is(false));
     }
 }

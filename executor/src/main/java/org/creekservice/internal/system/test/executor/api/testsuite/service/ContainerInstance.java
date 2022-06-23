@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.api.testsuite.service;
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
+import static org.creekservice.api.base.type.RuntimeIOException.runtimeIOException;
 import static org.creekservice.api.system.test.extension.service.ServiceInstance.ExecResult.execResult;
 
 import java.io.IOException;
@@ -26,8 +27,6 @@ import java.time.Duration;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
@@ -40,7 +39,7 @@ import org.testcontainers.utility.DockerImageName;
 
 /** An instance of a service running in a local docker container. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class ContainerInstance implements ServiceInstance, ServiceInstance.Configure {
+public final class ContainerInstance implements ServiceInstance, ServiceInstance.ConfigureInstance {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerInstance.class);
 
@@ -58,7 +57,13 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
             final GenericContainer<?> container,
             final Optional<ServiceDescriptor> descriptor,
             final Consumer<ServiceInstance> startedCallback) {
-        this(name, imageName, container, descriptor, startedCallback, Thread.currentThread().getId());
+        this(
+                name,
+                imageName,
+                container,
+                descriptor,
+                startedCallback,
+                Thread.currentThread().getId());
     }
 
     @VisibleForTesting
@@ -100,7 +105,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
         try {
             container.start();
 
-            startedCallback.accept(this); // Todo: test.
+            startedCallback.accept(this);
 
             LOGGER.info(
                     "Started {} ({}) with container-id {}",
@@ -115,35 +120,38 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     @Override
     public boolean running() {
         throwIfNotOnCorrectThread();
-        // Todo: death detection.
+        // Todo: next: death detection.
         return container.getContainerId() != null;
     }
 
     @Override
     public String externalHostName() {
+        throwIfNotOnCorrectThread();
         return container.getHost();
     }
 
     @Override
     public String internalHostName() {
-        final InspectContainerResponse containerInfo = container.getContainerInfo();
-        if (containerInfo == null) {
-            throw new IllegalStateException("Container not running");
-        }
-        return containerInfo.getConfig().getHostName();
+        throwIfNotOnCorrectThread();
+        throwIfNotRunning();
+        // Internal network has the instance name as its network alias
+        return name();
     }
 
     @Override
-    public ExecResult execInContainer(final String... cmd) {
+    public ExecResult execOnInstance(final String... cmd) {
+        requireNonNull(cmd, "cmd");
+        throwIfNotOnCorrectThread();
+        throwIfNotRunning();
         final Container.ExecResult result;
         try {
             result = container.execInContainer(cmd);
             return execResult(result.getExitCode(), result.getStdout(), result.getStderr());
         } catch (IOException e) {
-            throw new RuntimeException(e); // Todo: custom exception type.
+            throw runtimeIOException(e);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Todo: test... throws.
-            return null;
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 
@@ -169,61 +177,71 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public Configure configure() {
+    public ConfigureInstance configure() {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         return this;
     }
 
     @Override
-    public Configure withEnv(final String name, final String value) {
+    public ConfigureInstance addEnv(final String name, final String value) {
         throwIfNotOnCorrectThread();
+        throwIfRunning();
         container.withEnv(requireNonNull(name, "name"), requireNonNull(value, "value"));
         return this;
     }
 
     @Override
-    public Configure withExposedPorts(final int... ports) {
+    public ConfigureInstance addExposedPorts(final int... ports) {
         throwIfNotOnCorrectThread();
+        throwIfRunning();
         container.addExposedPorts(requireNonNull(ports, "ports"));
         return this;
     }
 
     @Override
-    public Configure withCommand(final String... cmdParts) {
+    public ConfigureInstance setCommand(final String... cmdParts) {
         throwIfNotOnCorrectThread();
+        throwIfRunning();
         container.withCommand(requireNonNull(cmdParts, "cmdParts"));
         return this;
     }
 
-    // Todo: test
     @Override
-    public Configure withStartupLogMessage(final String regex, final int times) {
+    public ConfigureInstance setStartupLogMessage(final String regex, final int times) {
+        requireNonNull(regex, "regex");
         throwIfNotOnCorrectThread();
-        container.setWaitStrategy(Wait.forLogMessage(regex, times)
-                .withStartupTimeout(startUpTimeOut));
+        throwIfRunning();
+        container.setWaitStrategy(Wait.forLogMessage(regex, times));
+        setStartupTimeout(startUpTimeOut);
         return this;
     }
 
-    // Todo: test
     @Override
-    public Configure withStartupTimeout(final Duration timeout) {
+    public ConfigureInstance setStartupTimeout(final Duration timeout) {
         throwIfNotOnCorrectThread();
+        throwIfRunning();
         startUpTimeOut = requireNonNull(timeout, "timeout");
         container.withStartupTimeout(startUpTimeOut);
         return this;
     }
 
-    // Todo: test
     @Override
-    public Configure withStartupAttempts(final int attempts) {
+    public ConfigureInstance setStartupAttempts(final int attempts) {
         throwIfNotOnCorrectThread();
+        throwIfRunning();
         container.withStartupAttempts(attempts);
         return this;
     }
 
     String containerId() {
         return container.getContainerId();
+    }
+
+    private void throwIfNotOnCorrectThread() {
+        if (Thread.currentThread().getId() != threadId) {
+            throw new ConcurrentModificationException("Class is not thread safe");
+        }
     }
 
     private void throwIfRunning() {
@@ -238,9 +256,10 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
         }
     }
 
-    private void throwIfNotOnCorrectThread() {
-        if (Thread.currentThread().getId() != threadId) {
-            throw new ConcurrentModificationException("Class is not thread safe");
+    private void throwIfNotRunning() {
+        if (!running()) {
+            throw new IllegalStateException(
+                    "Container not running. service: " + name + " (" + imageName + ")");
         }
     }
 

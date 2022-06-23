@@ -18,19 +18,28 @@ package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Streams;
 import com.google.common.testing.NullPointerTester;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -39,18 +48,22 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import org.creekservice.api.base.type.RuntimeIOException;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.service.ServiceInstance.ConfigureInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,22 +72,30 @@ class ContainerInstanceTest {
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creekservice/test-service:latest");
 
-    @Mock private GenericContainer<?> container;
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    private GenericContainer<?> container;
+
     @Mock private ServiceDescriptor descriptor;
-    @Mock private Consumer<ServiceInstance> startedCallback; // Todo: test
+    @Mock private Consumer<ServiceInstance> startedCallback;
+    @Mock private Container.ExecResult containerExecResult;
 
     private ContainerInstance instance;
 
     @BeforeEach
     void setUp() {
-        instance = new ContainerInstance("a-0", IMAGE_NAME, container, Optional.empty(), startedCallback);
+        instance =
+                new ContainerInstance(
+                        "a-0", IMAGE_NAME, container, Optional.empty(), startedCallback);
     }
 
     @Test
     void shouldThrowNPEs() {
-        final NullPointerTester tester = new NullPointerTester()
-                .setDefault(String.class, "non-blank")
-                .setDefault(DockerImageName.class, DockerImageName.parse("some/service:latest"));
+        final NullPointerTester tester =
+                new NullPointerTester()
+                        .setDefault(String.class, "non-blank")
+                        .setDefault(
+                                DockerImageName.class,
+                                DockerImageName.parse("some/service:latest"));
 
         tester.testAllPublicConstructors(ContainerInstance.class);
         tester.testAllPublicStaticMethods(ContainerInstance.class);
@@ -93,13 +114,21 @@ class ContainerInstanceTest {
 
     @Test
     void shouldExposeDescriptor() {
-        assertThat(new ContainerInstance("a-0", IMAGE_NAME, container, Optional.of(descriptor), startedCallback).descriptor(), is(Optional.of(descriptor)));
+        assertThat(
+                new ContainerInstance(
+                                "a-0",
+                                IMAGE_NAME,
+                                container,
+                                Optional.of(descriptor),
+                                startedCallback)
+                        .descriptor(),
+                is(Optional.of(descriptor)));
     }
 
     @Test
     void shouldReportRunningIfContainerHasId() {
         // Given:
-        when(container.getContainerId()).thenReturn("bob");
+        givenRunning();
 
         // Then:
         assertThat(instance.running(), is(true));
@@ -129,7 +158,7 @@ class ContainerInstanceTest {
     @Test
     void shouldIgnoreStartIfRunning() {
         // Given:
-        when(container.getContainerId()).thenReturn("bob");
+        givenRunning();
 
         // When:
         instance.start();
@@ -141,7 +170,7 @@ class ContainerInstanceTest {
     @Test
     void shouldStop() {
         // Given:
-        when(container.getContainerId()).thenReturn("bob");
+        givenRunning();
 
         // When:
         instance.stop();
@@ -180,11 +209,158 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldThrowOnModifyIfRunning() {
+    void shouldInvokeCallbackAfterStart() {
         // Given:
-        when(container.getContainerId()).thenReturn(null).thenReturn("bob");
+        givenNotRunning();
 
+        // When:
         instance.start();
+
+        // Then:
+        final InOrder inOrder = inOrder(container, startedCallback);
+        inOrder.verify(container).start();
+        inOrder.verify(startedCallback).accept(instance);
+    }
+
+    @Test
+    void shouldNotInvokeCallbackOnSubsequentStarts() {
+        // Given:
+        givenRunning();
+
+        // When:
+        instance.start();
+
+        // Then:
+        verify(startedCallback, never()).accept(any());
+    }
+
+    @Test
+    void shouldNotInvokeCallbackIfStartThrows() {
+        // Given:
+        doThrow(new RuntimeException("Boom")).when(container).start();
+
+        // When:
+        assertThrows(RuntimeException.class, instance::start);
+
+        // Then:
+        verify(startedCallback, never()).accept(any());
+    }
+
+    @Test
+    void shouldExposeMappedPorts() {
+        // Given:
+        final int port = 253;
+        final int mapped = 11253;
+        when(container.getMappedPort(anyInt())).thenReturn(mapped);
+        // When:
+        final int result = instance.mappedPort(port);
+
+        // Then:
+        verify(container).getMappedPort(port);
+        assertThat(result, is(mapped));
+    }
+
+    @Test
+    void shouldThrowOnInternalHostNameIfNotRunning() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        final Exception e = assertThrows(IllegalStateException.class, instance::internalHostName);
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is(
+                        "Container not running. service: a-0 (ghcr.io/creekservice/test-service:latest)"));
+    }
+
+    @Test
+    void shouldExposeInstanceNameAsInternalHostName() {
+        // Given:
+        givenRunning();
+
+        // Then:
+        assertThat(instance.internalHostName(), is(instance.name()));
+    }
+
+    @Test
+    void shouldExposeExternalHostName() {
+        // Given:
+        when(container.getHost()).thenReturn("some-external-host");
+
+        // Then:
+        assertThat(instance.externalHostName(), is("some-external-host"));
+    }
+
+    @Test
+    void shouldThrowOnExecInContainerIfNotRunning() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        final Exception e = assertThrows(IllegalStateException.class, instance::execOnInstance);
+
+        // Then:§
+        assertThat(
+                e.getMessage(),
+                is(
+                        "Container not running. service: a-0 (ghcr.io/creekservice/test-service:latest)"));
+    }
+
+    @Test
+    void shouldExecInContainer() throws Exception {
+        // Given:
+        givenRunning();
+        when(container.execInContainer(any())).thenReturn(containerExecResult);
+        when(containerExecResult.getExitCode()).thenReturn(22);
+        when(containerExecResult.getStdout()).thenReturn("stdout stuff");
+        when(containerExecResult.getStderr()).thenReturn("stderr stuff");
+
+        // When:
+        final ServiceInstance.ExecResult result = instance.execOnInstance("some", "command");
+
+        // Then:
+        verify(container).execInContainer("some", "command");
+        assertThat(result.exitCode(), is(22));
+        assertThat(result.stdout(), is("stdout stuff"));
+        assertThat(result.stderr(), is("stderr stuff"));
+    }
+
+    @Test
+    void shouldThrowOnExecIfContainerThrowsIOException() throws Exception {
+        // Given:
+        givenRunning();
+        final IOException cause = new IOException("Boom");
+        when(container.execInContainer(any())).thenThrow(cause);
+
+        // When:
+        final Exception e = assertThrows(RuntimeIOException.class, instance::execOnInstance);
+
+        // Then:
+        assertThat(e.getCause(), is(cause));
+    }
+
+    @Test
+    void shouldThrowAndSetInterruptedOnExecIfContainerThrowsInterruptedException()
+            throws Exception {
+        // Given:
+        givenRunning();
+        final InterruptedException cause = new InterruptedException("Boom");
+        when(container.execInContainer(any())).thenThrow(cause);
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, instance::execOnInstance);
+
+        // Then:
+        assertThat(e.getCause(), is(cause));
+        assertThat(Thread.interrupted(), is(true));
+    }
+
+    @Test
+    void shouldThrowOnConfigureIfRunning() {
+        // Given:
+        givenRunning();
 
         // When:
         final Exception e = assertThrows(IllegalStateException.class, instance::configure);
@@ -197,17 +373,55 @@ class ContainerInstanceTest {
                                 + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
     }
 
+    @SuppressWarnings("unused")
+    @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
+    @MethodSource("configureMethods")
+    void shouldThrowOnConfigureMethodsIfRunning(
+            final String ignored, final Consumer<ConfigureInstance> method) {
+        // Given:
+        final ConfigureInstance configure = instance.configure();
+        givenRunning();
+
+        // When:
+        final Exception e =
+                assertThrows(IllegalStateException.class, () -> method.accept(configure));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is(
+                        "A service can not be modified when running. "
+                                + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
+    }
+
+    @Test
+    void shouldHaveThrowingTestForEachConfigureMethod() {
+        final List<String> methodNames = configureMethodNames();
+        final List<String> tested = testedConfigureNames();
+        final List<String> notTested = notTested(methodNames, tested);
+        assertThat(
+                "Not tested:\n"
+                        + String.join(System.lineSeparator(), notTested)
+                        + "\n\nMethods:\n"
+                        + String.join(System.lineSeparator(), methodNames)
+                        + "\n\nTested methods:\n"
+                        + String.join(System.lineSeparator(), tested),
+                tested,
+                hasSize(methodNames.size()));
+    }
+
     @Test
     void shouldAddEnv() {
         // Given:
         givenNotRunning();
 
         // When:
-        instance.configure().withEnv("k0", "v0").withEnv("k1", "v1");
+        final ConfigureInstance result = instance.configure().addEnv("k0", "v0").addEnv("k1", "v1");
 
         // Then:
         verify(container).withEnv("k0", "v0");
         verify(container).withEnv("k1", "v1");
+        assertThat(result, is(instance));
     }
 
     @Test
@@ -216,12 +430,16 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.configure().withEnv(Map.of("k0", "v0", "k1", "v1")).withEnv(Map.of("k2", "v2"));
+        final ConfigureInstance result =
+                instance.configure()
+                        .addEnv(Map.of("k0", "v0", "k1", "v1"))
+                        .addEnv(Map.of("k2", "v2"));
 
         // Then:
         verify(container).withEnv("k0", "v0");
         verify(container).withEnv("k1", "v1");
         verify(container).withEnv("k2", "v2");
+        assertThat(result, is(instance));
     }
 
     @Test
@@ -230,11 +448,13 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.configure().withExposedPorts(10, 11).withExposedPorts(12);
+        final ConfigureInstance result =
+                instance.configure().addExposedPorts(10, 11).addExposedPorts(12);
 
         // Then:
         verify(container).addExposedPorts(10, 11);
         verify(container).addExposedPorts(12);
+        assertThat(result, is(instance));
     }
 
     @Test
@@ -243,10 +463,70 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        instance.configure().withCommand("a", "b", "c");
+        final ConfigureInstance result = instance.configure().setCommand("a", "b", "c");
 
         // Then:
         verify(container).withCommand("a", "b", "c");
+        assertThat(result, is(instance));
+    }
+
+    @Test
+    void shouldSetStartUpLogMessageToWaitFor() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        final ConfigureInstance result =
+                instance.configure().setStartupLogMessage(".*started.*", 2);
+
+        // Then:
+        verify(container).setWaitStrategy(isA(LogMessageWaitStrategy.class));
+        assertThat(result, is(instance));
+    }
+
+    @Test
+    void shouldSetStartUpTimeout() {
+        // Given:
+        givenNotRunning();
+        final Duration timeout = Duration.ofHours(33);
+
+        // When:
+        final ConfigureInstance result = instance.configure().setStartupTimeout(timeout);
+
+        // Then:
+        verify(container).withStartupTimeout(timeout);
+        assertThat(result, is(instance));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldSetCustomStartupTimeoutWhenSettingCustomLogMessageToWaitFor() {
+        // Given:
+        givenNotRunning();
+        final Duration timeout = Duration.ofHours(33);
+        instance.configure().setStartupTimeout(timeout);
+        clearInvocations(container);
+
+        // When:
+        final ConfigureInstance result =
+                instance.configure().setStartupLogMessage(".*started.*", 2);
+
+        // Then:
+        verify(container).withStartupTimeout(timeout);
+        assertThat(result, is(instance));
+    }
+
+    @Test
+    void shouldSetStartupAttempts() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        final ConfigureInstance result = instance.configure().setStartupAttempts(23);
+
+        // Then:
+        verify(container).withStartupAttempts(23);
+        assertThat(result, is(instance));
     }
 
     @SuppressWarnings("unused")
@@ -256,7 +536,12 @@ class ContainerInstanceTest {
         // Given:
         instance =
                 new ContainerInstance(
-                        "a-0", IMAGE_NAME, container, Optional.empty(), startedCallback, Thread.currentThread().getId() + 1);
+                        "a-0",
+                        IMAGE_NAME,
+                        container,
+                        Optional.empty(),
+                        startedCallback,
+                        Thread.currentThread().getId() + 1);
 
         // Then:
         assertThrows(ConcurrentModificationException.class, () -> method.accept(instance));
@@ -264,13 +549,22 @@ class ContainerInstanceTest {
 
     @Test
     void shouldHaveThreadingTestForEachPublicMethod() {
-        final List<String> publicMethodNames = publicMethodNames();
+        final List<String> methodNames = publicMethodNames();
         final List<String> tested = testedMethodNames();
+        final List<String> notTested = notTested(methodNames, tested);
         assertThat(
-                "Public methods:\n" + String.join(System.lineSeparator(), publicMethodNames)
-                + "\nTested methods:\n" + String.join(System.lineSeparator(), tested),
+                "Not tested:\n"
+                        + String.join(System.lineSeparator(), notTested)
+                        + "\n\nMethods:\n"
+                        + String.join(System.lineSeparator(), methodNames)
+                        + "\n\nTested methods:\n"
+                        + String.join(System.lineSeparator(), tested),
                 tested,
-                hasSize(publicMethodNames.size()));
+                hasSize(methodNames.size()));
+    }
+
+    private void givenRunning() {
+        when(container.getContainerId()).thenReturn("bob");
     }
 
     private void givenNotRunning() {
@@ -278,34 +572,85 @@ class ContainerInstanceTest {
     }
 
     public static Stream<Arguments> publicMethods() {
-        return Stream.of(
-                Arguments.of("name", (Consumer<ContainerInstance>) ContainerInstance::name),
-                Arguments.of("start", (Consumer<ContainerInstance>) ContainerInstance::start),
-                Arguments.of("stop", (Consumer<ContainerInstance>) ContainerInstance::stop),
-                Arguments.of("running", (Consumer<ContainerInstance>) ContainerInstance::running),
-                Arguments.of("descriptor", (Consumer<ContainerInstance>) ContainerInstance::descriptor),
-                Arguments.of("mappedPort", (Consumer<ContainerInstance>) i -> i.mappedPort(9)),
-                Arguments.of("modify", (Consumer<ContainerInstance>) ContainerInstance::configure),
-                Arguments.of("withEnv", (Consumer<ContainerInstance>) i -> i.withEnv("k", "v")),
-                Arguments.of(
-                        "withEnv(Map)",
-                        (Consumer<ContainerInstance>) i -> i.withEnv(Map.of("k", "v"))),
-                Arguments.of(
-                        "withExposedPorts",
-                        (Consumer<ContainerInstance>) ContainerInstance::withExposedPorts),
-                Arguments.of(
-                        "withCommand",
-                        (Consumer<ContainerInstance>) ContainerInstance::withCommand));
+        return Streams.concat(
+                configureMethods(),
+                Stream.of(
+                        Arguments.of("name", (Consumer<ContainerInstance>) ContainerInstance::name),
+                        Arguments.of(
+                                "start", (Consumer<ContainerInstance>) ContainerInstance::start),
+                        Arguments.of("stop", (Consumer<ContainerInstance>) ContainerInstance::stop),
+                        Arguments.of(
+                                "running",
+                                (Consumer<ContainerInstance>) ContainerInstance::running),
+                        Arguments.of(
+                                "internalHostName",
+                                (Consumer<ContainerInstance>) ContainerInstance::internalHostName),
+                        Arguments.of(
+                                "externalHostName",
+                                (Consumer<ContainerInstance>) ContainerInstance::externalHostName),
+                        Arguments.of(
+                                "descriptor",
+                                (Consumer<ContainerInstance>) ContainerInstance::descriptor),
+                        Arguments.of(
+                                "mappedPort", (Consumer<ContainerInstance>) i -> i.mappedPort(9)),
+                        Arguments.of(
+                                "execInContainer",
+                                (Consumer<ContainerInstance>) ContainerInstance::execOnInstance),
+                        Arguments.of(
+                                "configure",
+                                (Consumer<ContainerInstance>) ContainerInstance::configure)));
     }
 
     private static List<String> testedMethodNames() {
-        return publicMethods().map(a ->(String)a.get()[0]).collect(Collectors.toUnmodifiableList());
+        return publicMethods()
+                .map(a -> (String) a.get()[0])
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private List<String> publicMethodNames() {
         return Arrays.stream(ContainerInstance.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
-                .map(Method::toGenericString)
+                .map(Method::getName)
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    public static Stream<Arguments> configureMethods() {
+        return Stream.of(
+                Arguments.of("addEnv", (Consumer<ConfigureInstance>) i -> i.addEnv("k", "v")),
+                Arguments.of(
+                        "addEnv", (Consumer<ConfigureInstance>) i -> i.addEnv(Map.of("k", "v"))),
+                Arguments.of(
+                        "setStartupAttempts",
+                        (Consumer<ConfigureInstance>) i -> i.setStartupAttempts(1)),
+                Arguments.of(
+                        "setStartupLogMessage",
+                        (Consumer<ConfigureInstance>) i -> i.setStartupLogMessage("", 1)),
+                Arguments.of(
+                        "setStartupTimeout",
+                        (Consumer<ConfigureInstance>) i -> i.setStartupTimeout(Duration.ZERO)),
+                Arguments.of(
+                        "addExposedPorts",
+                        (Consumer<ConfigureInstance>) ConfigureInstance::addExposedPorts),
+                Arguments.of(
+                        "setCommand", (Consumer<ConfigureInstance>) ConfigureInstance::setCommand));
+    }
+
+    private static List<String> testedConfigureNames() {
+        return configureMethods()
+                .map(a -> (String) a.get()[0])
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    private List<String> configureMethodNames() {
+        return Arrays.stream(ConfigureInstance.class.getMethods())
+                .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .map(Method::getName)
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    private static List<String> notTested(final List<String> all, final List<String> tested) {
+        final ArrayList<String> notTested = new ArrayList<>(all);
+        tested.forEach(notTested::remove);
+        return notTested;
     }
 }

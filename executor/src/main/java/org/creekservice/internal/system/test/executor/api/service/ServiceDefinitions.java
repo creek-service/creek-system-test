@@ -154,7 +154,9 @@ public final class ServiceDefinitions implements ServiceDefinitionCollection {
 
         @Override
         public String dockerImage() {
-            return descriptor.dockerImage() + ":latest";// Todo: Hard coded latest...can we get the version from the source jar's version
+            // Default to latest for now. See
+            // https://github.com/creek-service/creek-system-test/issues/78.
+            return descriptor.dockerImage() + ":latest";
         }
 
         @Override

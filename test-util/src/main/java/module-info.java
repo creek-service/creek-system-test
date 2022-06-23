@@ -1,4 +1,5 @@
 module creek.system.test.test.util {
+    requires transitive com.github.spotbugs.annotations;
     requires transitive creek.system.test.extension;
     requires creek.system.test.executor;
 

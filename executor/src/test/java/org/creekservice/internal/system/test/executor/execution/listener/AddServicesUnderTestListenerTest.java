@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,6 +81,19 @@ class AddServicesUnderTestListenerTest {
         inOrder.verify(api.testSuite().services()).add(defs.get("b"));
         inOrder.verify(api.services()).get("c");
         inOrder.verify(api.testSuite().services()).add(defs.get("c"));
+    }
+
+    @Test
+    void shouldConfigureStartUpLogMessage() {
+        // Given:
+        givenSuiteHasServices("a");
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(instances.get("a:0").configure())
+                .setStartupLogMessage(".*\\Qcreek.lifecycle.service.started\\E.*", 1);
     }
 
     @Test
@@ -140,7 +154,11 @@ class AddServicesUnderTestListenerTest {
 
         for (int i = 0; i != serviceNames.size(); ++i) {
             final String instanceName = serviceName + ":" + i;
-            final ServiceInstance instance = mock(ServiceInstance.class, instanceName);
+            final ServiceInstance instance =
+                    mock(
+                            ServiceInstance.class,
+                            withSettings().name(instanceName).defaultAnswer(RETURNS_DEEP_STUBS));
+
             instances.put(instanceName, instance);
 
             if (i == 0) {

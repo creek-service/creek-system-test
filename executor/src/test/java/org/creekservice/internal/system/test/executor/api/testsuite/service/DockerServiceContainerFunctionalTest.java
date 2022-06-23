@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -27,7 +26,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
@@ -37,12 +35,12 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +65,12 @@ class DockerServiceContainerFunctionalTest {
 
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
+    }
+
+    @AfterEach
+    void tearDown() {
+        instances.forEach(ServiceInstance::stop);
+        instances.clear();
     }
 
     @Test
@@ -193,7 +197,7 @@ class DockerServiceContainerFunctionalTest {
     @Test
     void shouldThrowOnServiceStartFailure() {
         // Given:
-        when(serviceDef.dockerImage()).thenReturn("i-do-no-exist");
+        when(serviceDef.dockerImage()).thenReturn("i-do-not-exist");
         final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
@@ -254,7 +258,7 @@ class DockerServiceContainerFunctionalTest {
         final ServiceInstance instance = instances.add(serviceDef);
 
         // When:
-        instance.configure().withEnv("CREEK_TEST_ENV_KEY_0", "expected value");
+        instance.configure().addEnv("CREEK_TEST_ENV_KEY_0", "expected value");
 
         // Then:
         instance.start();
@@ -268,9 +272,11 @@ class DockerServiceContainerFunctionalTest {
     void shouldSetExposedPortOnInstance() {
         // Given:
         final ServiceInstance instance = instances.add(serviceDef);
+        final ServiceInstance.ConfigureInstance configure = instance.configure();
+        configure.setStartupLogMessage(".*started.*", 1);
 
         // When:
-        instance.configure().withExposedPorts(8080);
+        configure.addExposedPorts(8080);
 
         // Then:
         instance.start();

@@ -37,7 +37,8 @@ public interface TestLifecycleListener {
     default void afterTest(CreekTestCase test) {}
 }
 
-// Todo: Split into TestSuiteLifecycleListener and TestLifecycleListener, with the former dervied
-// from the later.
-// Todo: add method to add another listener to suite and test.
+// Todo: next: Split into TestSuiteLifecycleListener and TestLifecycleListener, with the former
+// derived
+//    from the later.
+// Todo: next: add method to add another listener to suite and test.
 //      Need think about the ordering of these newly added listeners.

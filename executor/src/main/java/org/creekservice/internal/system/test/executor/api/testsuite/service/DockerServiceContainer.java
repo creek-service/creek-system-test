@@ -16,16 +16,15 @@
 
 package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
@@ -39,26 +38,30 @@ import org.testcontainers.utility.DockerImageName;
 /** A local, docker based, implementation of {@link ServiceContainer}. */
 public final class DockerServiceContainer implements ServiceContainer {
 
-    // Todo: configurable
+    // See https://github.com/creek-service/creek-system-test/issues/79 for making these
+    // configurable:
     private static final int CONTAINER_START_UP_ATTEMPTS = 3;
-    private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofSeconds(90);
+    private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofMinutes(1);
 
     private final long threadId;
+    private final Function<DockerImageName, GenericContainer<?>> containerFactory;
     private final Network network = Network.newNetwork();
     private final List<ServiceInstance> instances = new ArrayList<>();
     private final InstanceNaming naming = new InstanceNaming();
 
     public DockerServiceContainer() {
-        this(Thread.currentThread().getId());
+        this(Thread.currentThread().getId(), GenericContainer::new);
     }
 
     @VisibleForTesting
-    DockerServiceContainer(final long threadId) {
+    DockerServiceContainer(
+            final long threadId,
+            final Function<DockerImageName, GenericContainer<?>> containerFactory) {
         this.threadId = threadId;
+        this.containerFactory = requireNonNull(containerFactory, "containerFactory");
     }
 
     // Todo: do not allow add to be called if there is no active test suite.
-    // Todo: could use `dependsOn` to have 2nd service depending on 1st, 3rd on 2nd etc.
     @Override
     public ServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
@@ -68,13 +71,14 @@ public final class DockerServiceContainer implements ServiceContainer {
 
         final GenericContainer<?> container = createContainer(imageName, instanceName);
         final ContainerInstance instance =
-                new ContainerInstance(instanceName, imageName, container, def.descriptor(), def::started);
+                new ContainerInstance(
+                        instanceName, imageName, container, def.descriptor(), def::instanceStarted);
 
         instance.configure()
-                .withStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
-                .withStartupTimeout(CONTAINER_START_UP_TIMEOUT);
+                .setStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
+                .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
 
-        def.configure(instance); // Todo: test
+        def.configureInstance(instance);
 
         instances.add(instance);
         return instance;
@@ -96,7 +100,7 @@ public final class DockerServiceContainer implements ServiceContainer {
 
     private GenericContainer<?> createContainer(
             final DockerImageName imageName, final String instanceName) {
-        final GenericContainer<?> container = new GenericContainer<>(imageName);
+        final GenericContainer<?> container = containerFactory.apply(imageName);
 
         container
                 .withNetwork(network)

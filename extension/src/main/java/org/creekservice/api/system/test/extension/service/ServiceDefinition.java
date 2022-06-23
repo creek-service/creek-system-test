@@ -47,12 +47,78 @@ public interface ServiceDefinition {
         return Optional.empty();
     }
 
-    // Todo: doc & test
-    default void configure(final ServiceInstance instance) {
-    }
+    /**
+     * An optional callback that is invoked after a service instance if created from this
+     * definition.
+     *
+     * <p>Overriding this method allows the definition class itself to define how to configure the
+     * instance. The same functionality can be achieved by configuring the instance at the point of
+     * creation, e.g.
+     *
+     * <pre>{@code
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(def);
+     *    instance.configure()
+     *       .addExposedPort(22)
+     *       .addEnv("key", "value");
+     * }
+     * }</pre>
+     *
+     * <p>Is equivalent to:
+     *
+     * <pre>{@code
+     * class MyDef implements ServiceDefinition {
+     *     ...
+     *     public void configureInstance(final ServiceInstance instance) {
+     *          instance.configure()
+     *             .addExposedPort(22)
+     *             .addEnv("key", "value");
+     *     }
+     *     ...
+     * }
+     *
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(new MyDef());
+     * }
+     * }</pre>
+     *
+     * @param instance the newly created instance.
+     */
+    default void configureInstance(final ServiceInstance instance) {}
 
-    // Todo: doc & test
-    default void started(final ServiceInstance instance) {
-    }
+    /**
+     * An optional callback that is invoked after a service instance is started.
+     *
+     * <p>Overriding this method allows the definition class itself to define what to do with an
+     * instance once its started. The same functionality can be achieved by performing the same
+     * actions on the instance in the code where the service is started:
+     *
+     * <pre>{@code
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(def);
+     *    instance.start();
+     *    instance.execOnInstance("some-command");
+     * }
+     * }</pre>
+     *
+     * <p>Is equivalent to:
+     *
+     * <pre>{@code
+     * class MyDef implements ServiceDefinition {
+     *     ...
+     *     public void instanceStarted(final ServiceInstance instance) {
+     *          instance.execOnInstance("some-command");
+     *     }
+     *     ...
+     * }
+     *
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(new MyDef());
+     *    instance.start();
+     * }
+     * }</pre>
+     *
+     * @param instance the newly created instance.
+     */
+    default void instanceStarted(final ServiceInstance instance) {}
 }
-

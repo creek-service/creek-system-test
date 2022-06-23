@@ -17,6 +17,7 @@
 package org.creekservice.api.system.test.test.util;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
@@ -64,14 +65,16 @@ public final class CreekSystemTestExtensionTester {
      *
      * @return a docker based service container.
      */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     public ServiceContainer dockerServicesContainer() {
         return services;
     }
 
     /**
-     * Remove all services from the service container exposed from {@link #dockerServicesContainer()}.
+     * Remove all services from the service container exposed from {@link
+     * #dockerServicesContainer()}.
      */
     public void clearServices() {
-        services.clear(); /// Todo: test
+        services.clear();
     }
 }

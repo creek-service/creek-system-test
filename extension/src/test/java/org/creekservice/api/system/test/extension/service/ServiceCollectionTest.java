@@ -16,19 +16,16 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceCollectionTest {

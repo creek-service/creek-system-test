@@ -49,7 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 class SystemTestExecutorFunctionalTest {
 
     // Change this to true locally to debug using attach me plugin:
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;// Todo:
 
     private static final Path LIB_DIR =
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
@@ -211,6 +211,8 @@ class SystemTestExecutorFunctionalTest {
         assertThat(exitCode, is(2));
     }
 
+    // Todo: Looks like its not closing down docker containers on failure....
+
     @Test
     void shouldReportTestErrors() {
         // Given:
@@ -325,7 +327,7 @@ class SystemTestExecutorFunctionalTest {
 
             stdErr = Suppliers.memoize(() -> readAll(executor.getErrorStream()));
             stdOut = Suppliers.memoize(() -> readAll(executor.getInputStream()));
-            executor.waitFor(30, TimeUnit.SECONDS);
+            executor.waitFor(90, TimeUnit.SECONDS);
             return executor.exitValue();
         } catch (final Exception e) {
             throw new AssertionError("Error executing: " + cmd, e);
@@ -389,3 +391,8 @@ class SystemTestExecutorFunctionalTest {
                 .reduce((first, second) -> first);
     }
 }
+
+
+// Todo: next: to allow testing, have test extension define dummy input, expectation types that do nothing to the service,
+//   but which inspect their params to see if they should succeed or fail.
+

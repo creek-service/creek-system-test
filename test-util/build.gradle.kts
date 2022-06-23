@@ -18,7 +18,10 @@ plugins {
     `java-library`
 }
 
+val spotBugsVersion : String by extra
+
 dependencies {
     api(project(":executor"))
+    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     implementation(project(":extension"))
 }
