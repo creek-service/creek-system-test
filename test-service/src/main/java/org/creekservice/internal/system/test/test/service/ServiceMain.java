@@ -46,7 +46,7 @@ public final class ServiceMain {
         LOGGER.error("LOGGER.error logging");
 
         // Log the line the system tests is waiting for to indicate the service has started:
-        // Todo: LOGGER.info(BasicLifecycle.started.logMessage(BasicLifecycle.SERVICE_TYPE));
+        LOGGER.info(BasicLifecycle.started.logMessage(BasicLifecycle.SERVICE_TYPE));
     }
 
     @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})

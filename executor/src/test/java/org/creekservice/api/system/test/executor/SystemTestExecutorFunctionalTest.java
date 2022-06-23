@@ -49,7 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 class SystemTestExecutorFunctionalTest {
 
     // Change this to true locally to debug using attach me plugin:
-    private static final boolean DEBUG = true;// Todo:
+    private static final boolean DEBUG = false;
 
     private static final Path LIB_DIR =
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
@@ -327,7 +327,7 @@ class SystemTestExecutorFunctionalTest {
 
             stdErr = Suppliers.memoize(() -> readAll(executor.getErrorStream()));
             stdOut = Suppliers.memoize(() -> readAll(executor.getInputStream()));
-            executor.waitFor(90, TimeUnit.SECONDS);
+            executor.waitFor(30, TimeUnit.SECONDS);
             return executor.exitValue();
         } catch (final Exception e) {
             throw new AssertionError("Error executing: " + cmd, e);
