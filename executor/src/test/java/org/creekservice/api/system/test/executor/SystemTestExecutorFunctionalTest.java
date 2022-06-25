@@ -389,4 +389,3 @@ class SystemTestExecutorFunctionalTest {
                 .reduce((first, second) -> first);
     }
 }
-
