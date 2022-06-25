@@ -30,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ServiceDefinitionTest {
 
-    @Mock private ServiceInstance instance;
+    @Mock private ConfigurableServiceInstance instance;
     private ServiceDefinition def;
 
     @BeforeEach
@@ -65,10 +65,13 @@ class ServiceDefinitionTest {
 
     @Test
     void shouldNoNothingInInstanceStarted() {
+        // Given:
+        final ServiceInstance nonConfigurableInstance = instance;
+
         // When:
-        def.instanceStarted(instance);
+        def.instanceStarted(nonConfigurableInstance);
 
         // Then:
-        verifyNoInteractions(instance);
+        verifyNoInteractions(nonConfigurableInstance);
     }
 }

@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.base.type.RuntimeIOException;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.service.ServiceInstance.ConfigureInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -266,7 +266,8 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final Exception e = assertThrows(IllegalStateException.class, instance::internalHostName);
+        final Exception e =
+                assertThrows(IllegalStateException.class, instance::serviceNetworkHostname);
 
         // Then:
         assertThat(
@@ -281,7 +282,7 @@ class ContainerInstanceTest {
         givenRunning();
 
         // Then:
-        assertThat(instance.internalHostName(), is(instance.name()));
+        assertThat(instance.serviceNetworkHostname(), is(instance.name()));
     }
 
     @Test
@@ -290,7 +291,7 @@ class ContainerInstanceTest {
         when(container.getHost()).thenReturn("some-external-host");
 
         // Then:
-        assertThat(instance.externalHostName(), is("some-external-host"));
+        assertThat(instance.testNetworkHostname(), is("some-external-host"));
     }
 
     @Test
@@ -358,65 +359,12 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldThrowOnConfigureIfRunning() {
-        // Given:
-        givenRunning();
-
-        // When:
-        final Exception e = assertThrows(IllegalStateException.class, instance::configure);
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "A service can not be modified when running. "
-                                + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
-    }
-
-    @SuppressWarnings("unused")
-    @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
-    @MethodSource("configureMethods")
-    void shouldThrowOnConfigureMethodsIfRunning(
-            final String ignored, final Consumer<ConfigureInstance> method) {
-        // Given:
-        final ConfigureInstance configure = instance.configure();
-        givenRunning();
-
-        // When:
-        final Exception e =
-                assertThrows(IllegalStateException.class, () -> method.accept(configure));
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "A service can not be modified when running. "
-                                + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
-    }
-
-    @Test
-    void shouldHaveThrowingTestForEachConfigureMethod() {
-        final List<String> methodNames = configureMethodNames();
-        final List<String> tested = testedConfigureNames();
-        final List<String> notTested = notTested(methodNames, tested);
-        assertThat(
-                "Not tested:\n"
-                        + String.join(System.lineSeparator(), notTested)
-                        + "\n\nMethods:\n"
-                        + String.join(System.lineSeparator(), methodNames)
-                        + "\n\nTested methods:\n"
-                        + String.join(System.lineSeparator(), tested),
-                tested,
-                hasSize(methodNames.size()));
-    }
-
-    @Test
     void shouldAddEnv() {
         // Given:
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result = instance.configure().addEnv("k0", "v0").addEnv("k1", "v1");
+        final ConfigurableServiceInstance result = instance.addEnv("k0", "v0").addEnv("k1", "v1");
 
         // Then:
         verify(container).withEnv("k0", "v0");
@@ -430,10 +378,8 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result =
-                instance.configure()
-                        .addEnv(Map.of("k0", "v0", "k1", "v1"))
-                        .addEnv(Map.of("k2", "v2"));
+        final ConfigurableServiceInstance result =
+                instance.addEnv(Map.of("k0", "v0", "k1", "v1")).addEnv(Map.of("k2", "v2"));
 
         // Then:
         verify(container).withEnv("k0", "v0");
@@ -448,8 +394,8 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result =
-                instance.configure().addExposedPorts(10, 11).addExposedPorts(12);
+        final ConfigurableServiceInstance result =
+                instance.addExposedPorts(10, 11).addExposedPorts(12);
 
         // Then:
         verify(container).addExposedPorts(10, 11);
@@ -463,7 +409,7 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result = instance.configure().setCommand("a", "b", "c");
+        final ConfigurableServiceInstance result = instance.setCommand("a", "b", "c");
 
         // Then:
         verify(container).withCommand("a", "b", "c");
@@ -476,8 +422,7 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result =
-                instance.configure().setStartupLogMessage(".*started.*", 2);
+        final ConfigurableServiceInstance result = instance.setStartupLogMessage(".*started.*", 2);
 
         // Then:
         verify(container).setWaitStrategy(isA(LogMessageWaitStrategy.class));
@@ -491,7 +436,7 @@ class ContainerInstanceTest {
         final Duration timeout = Duration.ofHours(33);
 
         // When:
-        final ConfigureInstance result = instance.configure().setStartupTimeout(timeout);
+        final ConfigurableServiceInstance result = instance.setStartupTimeout(timeout);
 
         // Then:
         verify(container).withStartupTimeout(timeout);
@@ -504,12 +449,11 @@ class ContainerInstanceTest {
         // Given:
         givenNotRunning();
         final Duration timeout = Duration.ofHours(33);
-        instance.configure().setStartupTimeout(timeout);
+        instance.setStartupTimeout(timeout);
         clearInvocations(container);
 
         // When:
-        final ConfigureInstance result =
-                instance.configure().setStartupLogMessage(".*started.*", 2);
+        final ConfigurableServiceInstance result = instance.setStartupLogMessage(".*started.*", 2);
 
         // Then:
         verify(container).withStartupTimeout(timeout);
@@ -522,7 +466,7 @@ class ContainerInstanceTest {
         givenNotRunning();
 
         // When:
-        final ConfigureInstance result = instance.configure().setStartupAttempts(23);
+        final ConfigurableServiceInstance result = instance.setStartupAttempts(23);
 
         // Then:
         verify(container).withStartupAttempts(23);
@@ -531,7 +475,7 @@ class ContainerInstanceTest {
 
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
-    @MethodSource("publicMethods")
+    @MethodSource("methods")
     void shouldThrowIfWrongThread(final String ignored, final Consumer<ContainerInstance> method) {
         // Given:
         instance =
@@ -548,9 +492,45 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldHaveThreadingTestForEachPublicMethod() {
-        final List<String> methodNames = publicMethodNames();
+    void shouldHaveThreadingTestForEachNonConfigureMethod() {
+        final List<String> methodNames = methodNames();
         final List<String> tested = testedMethodNames();
+        final List<String> notTested = notTested(methodNames, tested);
+        assertThat(
+                "Not tested:\n"
+                        + String.join(System.lineSeparator(), notTested)
+                        + "\n\nMethods:\n"
+                        + String.join(System.lineSeparator(), methodNames)
+                        + "\n\nTested methods:\n"
+                        + String.join(System.lineSeparator(), tested),
+                tested,
+                hasSize(methodNames.size()));
+    }
+
+    @SuppressWarnings("unused")
+    @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
+    @MethodSource("configureMethods")
+    void shouldThrowOnConfigureMethodsIfRunning(
+            final String ignored, final Consumer<ConfigurableServiceInstance> method) {
+        // Given:
+        givenRunning();
+
+        // When:
+        final Exception e =
+                assertThrows(IllegalStateException.class, () -> method.accept(instance));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is(
+                        "A service can not be modified when running. "
+                                + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
+    }
+
+    @Test
+    void shouldHaveThrowingTestForEachConfigureMethod() {
+        final List<String> methodNames = configureMethodNames();
+        final List<String> tested = testedConfigureMethodNames();
         final List<String> notTested = notTested(methodNames, tested);
         assertThat(
                 "Not tested:\n"
@@ -571,7 +551,7 @@ class ContainerInstanceTest {
         when(container.getContainerId()).thenReturn(null);
     }
 
-    public static Stream<Arguments> publicMethods() {
+    public static Stream<Arguments> methods() {
         return Streams.concat(
                 configureMethods(),
                 Stream.of(
@@ -583,67 +563,74 @@ class ContainerInstanceTest {
                                 "running",
                                 (Consumer<ContainerInstance>) ContainerInstance::running),
                         Arguments.of(
-                                "internalHostName",
-                                (Consumer<ContainerInstance>) ContainerInstance::internalHostName),
+                                "serviceNetworkHostname",
+                                (Consumer<ContainerInstance>)
+                                        ContainerInstance::serviceNetworkHostname),
                         Arguments.of(
-                                "externalHostName",
-                                (Consumer<ContainerInstance>) ContainerInstance::externalHostName),
+                                "testNetworkHostname",
+                                (Consumer<ContainerInstance>)
+                                        ContainerInstance::testNetworkHostname),
                         Arguments.of(
                                 "descriptor",
                                 (Consumer<ContainerInstance>) ContainerInstance::descriptor),
                         Arguments.of(
+                                "containerId",
+                                (Consumer<ContainerInstance>) ContainerInstance::containerId),
+                        Arguments.of(
                                 "mappedPort", (Consumer<ContainerInstance>) i -> i.mappedPort(9)),
                         Arguments.of(
-                                "execInContainer",
-                                (Consumer<ContainerInstance>) ContainerInstance::execOnInstance),
-                        Arguments.of(
-                                "configure",
-                                (Consumer<ContainerInstance>) ContainerInstance::configure)));
+                                "execOnInstance",
+                                (Consumer<ContainerInstance>) ContainerInstance::execOnInstance)));
     }
 
     private static List<String> testedMethodNames() {
-        return publicMethods()
-                .map(a -> (String) a.get()[0])
-                .collect(Collectors.toUnmodifiableList());
+        return methods().map(a -> (String) a.get()[0]).collect(Collectors.toUnmodifiableList());
     }
 
-    private List<String> publicMethodNames() {
+    private List<String> methodNames() {
         return Arrays.stream(ContainerInstance.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .filter(m -> !m.isSynthetic())
                 .map(Method::getName)
                 .collect(Collectors.toUnmodifiableList());
     }
 
     public static Stream<Arguments> configureMethods() {
         return Stream.of(
-                Arguments.of("addEnv", (Consumer<ConfigureInstance>) i -> i.addEnv("k", "v")),
                 Arguments.of(
-                        "addEnv", (Consumer<ConfigureInstance>) i -> i.addEnv(Map.of("k", "v"))),
+                        "addEnv", (Consumer<ConfigurableServiceInstance>) i -> i.addEnv("k", "v")),
+                Arguments.of(
+                        "addEnv",
+                        (Consumer<ConfigurableServiceInstance>) i -> i.addEnv(Map.of("k", "v"))),
                 Arguments.of(
                         "setStartupAttempts",
-                        (Consumer<ConfigureInstance>) i -> i.setStartupAttempts(1)),
+                        (Consumer<ConfigurableServiceInstance>) i -> i.setStartupAttempts(1)),
                 Arguments.of(
                         "setStartupLogMessage",
-                        (Consumer<ConfigureInstance>) i -> i.setStartupLogMessage("", 1)),
+                        (Consumer<ConfigurableServiceInstance>) i -> i.setStartupLogMessage("", 1)),
                 Arguments.of(
                         "setStartupTimeout",
-                        (Consumer<ConfigureInstance>) i -> i.setStartupTimeout(Duration.ZERO)),
+                        (Consumer<ConfigurableServiceInstance>)
+                                i -> i.setStartupTimeout(Duration.ZERO)),
                 Arguments.of(
                         "addExposedPorts",
-                        (Consumer<ConfigureInstance>) ConfigureInstance::addExposedPorts),
+                        (Consumer<ConfigurableServiceInstance>)
+                                ConfigurableServiceInstance::addExposedPorts),
                 Arguments.of(
-                        "setCommand", (Consumer<ConfigureInstance>) ConfigureInstance::setCommand));
+                        "setCommand",
+                        (Consumer<ConfigurableServiceInstance>)
+                                ConfigurableServiceInstance::setCommand));
     }
 
-    private static List<String> testedConfigureNames() {
+    private static List<String> testedConfigureMethodNames() {
         return configureMethods()
                 .map(a -> (String) a.get()[0])
                 .collect(Collectors.toUnmodifiableList());
     }
 
     private List<String> configureMethodNames() {
-        return Arrays.stream(ConfigureInstance.class.getMethods())
-                .filter(m -> !m.getDeclaringClass().equals(Object.class))
+        return Arrays.stream(ConfigurableServiceInstance.class.getDeclaredMethods())
+                .filter(m -> !m.isSynthetic())
                 .map(Method::getName)
                 .collect(Collectors.toUnmodifiableList());
     }

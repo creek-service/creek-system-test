@@ -19,15 +19,19 @@ package org.creekservice.api.system.test.test.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
+import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
 
 /** A test helper for testing Creek system test extensions. */
 public final class CreekSystemTestExtensionTester {
 
-    private DockerServiceContainer services;
+    private final DockerServiceContainer services;
 
     private CreekSystemTestExtensionTester() {
         this.services = new DockerServiceContainer();
@@ -68,6 +72,15 @@ public final class CreekSystemTestExtensionTester {
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     public ServiceContainer dockerServicesContainer() {
         return services;
+    }
+
+    /** @return the ids of running containers, keyed on the instance name. */
+    public Map<String, String> runningContainerIds() {
+        return services.stream()
+                .filter(ServiceInstance::running)
+                .collect(
+                        Collectors.toMap(
+                                ServiceInstance::name, i -> ((ContainerInstance) i).containerId()));
     }
 
     /**

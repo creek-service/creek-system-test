@@ -35,6 +35,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.hamcrest.Description;
@@ -255,10 +256,10 @@ class DockerServiceContainerFunctionalTest {
     @Test
     void shouldSetEnvOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ConfigurableServiceInstance instance = instances.add(serviceDef);
 
         // When:
-        instance.configure().addEnv("CREEK_TEST_ENV_KEY_0", "expected value");
+        instance.addEnv("CREEK_TEST_ENV_KEY_0", "expected value");
 
         // Then:
         instance.start();
@@ -271,12 +272,11 @@ class DockerServiceContainerFunctionalTest {
     @Test
     void shouldSetExposedPortOnInstance() {
         // Given:
-        final ServiceInstance instance = instances.add(serviceDef);
-        final ServiceInstance.ConfigureInstance configure = instance.configure();
-        configure.setStartupLogMessage(".*started.*", 1);
+        final ConfigurableServiceInstance instance = instances.add(serviceDef);
+        instance.setStartupLogMessage(".*started.*", 1);
 
         // When:
-        configure.addExposedPorts(8080);
+        instance.addExposedPorts(8080);
 
         // Then:
         instance.start();

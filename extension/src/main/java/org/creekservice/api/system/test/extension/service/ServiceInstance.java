@@ -18,8 +18,6 @@ package org.creekservice.api.system.test.extension.service;
 
 import static java.util.Objects.requireNonNull;
 
-import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
@@ -58,31 +56,33 @@ public interface ServiceInstance {
     int mappedPort(int original);
 
     /**
-     * The host name the instance can be reached on from the host network.
+     * The hostname the instance can be reached on from the test-network.
      *
-     * <p>The host network is the network accessible to the system test process itself. The external
-     * host name is the host name the system test process can use to access the instance.
+     * <p>The test-network is the network accessible to the system test process itself. The
+     * test-network hostname is the hostname the system test process can use to access the instance.
      *
-     * <p>For example, if services are running in local docker containers, then the external host
-     * name will be {@code localhost}, i.e. the current machine, where all the containers are
-     * running.
+     * <p>For example, if services are running in local docker containers, then the test-network
+     * hostname will likely be {@code localhost}, i.e. the current machine, where all the containers
+     * are running.
      *
-     * @return the host name the instance can be reached on from the host network.
+     * @return the hostname the instance can be reached on from the test-network.
      */
-    String externalHostName();
+    String testNetworkHostname();
 
     /**
-     * The host name the instance can be reach on from the internal network.
+     * The hostname the instance can be reach on from the service-network.
      *
-     * <p>The internal network is the network service instances are using to communicate. The
-     * internal host name is the host name other services instances can use to access the instance.
+     * <p>The service-network is the network the service instances are using to communicate with
+     * each other. The service-network hostname is the hostname other services instances can use to
+     * access this instance.
      *
-     * <p>For example, if services are running in local docker containers, then the internal host
-     * name will be a docker-generated host name for the container the service is running on.
+     * <p>For example, if services are running in local docker containers, then the service-network
+     * hostname will be a network alias derived from the service's definition's {@link
+     * ServiceDefinition#name() name}. For example, {@code kafka-default-0}.
      *
-     * @return the host name the instance can be reach on from the internal network.
+     * @return the hostname the instance can be reach on from the service-network.
      */
-    String internalHostName();
+    String serviceNetworkHostname();
 
     /**
      * Run a command on the instance host.
@@ -96,86 +96,6 @@ public interface ServiceInstance {
      * @return the result of the execution.
      */
     ExecResult execOnInstance(String... cmd);
-
-    /**
-     * Configure the service instance.
-     *
-     * <p>**Note**: this method can not be called while the instance is running.
-     *
-     * @return type used to configure the instance.
-     */
-    // Todo: instead have a ConfigurableServiceInstance that is derived from ServiceInstance
-    ConfigureInstance configure();
-
-    interface ConfigureInstance {
-
-        /**
-         * Set an environment variable on the instance.
-         *
-         * @param name the name of the environment variable.
-         * @param value the value of the environment variable.
-         * @return self, for method chaining.
-         */
-        ConfigureInstance addEnv(String name, String value);
-
-        /**
-         * Set environment variables on the instance.
-         *
-         * @param env the map of environment variables to add.
-         * @return self, for method chaining.
-         */
-        default ConfigureInstance addEnv(Map<String, String> env) {
-            env.forEach(this::addEnv);
-            return this;
-        }
-
-        /**
-         * Add exposed ports to the container instance.
-         *
-         * @param ports the ports to expose.
-         * @return self, for method chaining.
-         */
-        ConfigureInstance addExposedPorts(int... ports);
-
-        /**
-         * Set the command to be run
-         *
-         * @param cmdParts the parts of the command.
-         * @return self, for method chaining.
-         */
-        ConfigureInstance setCommand(String... cmdParts);
-
-        /**
-         * Set a log message to wait for before considering the instance available.
-         *
-         * <p>If not set, the instance is considered available once any mapped ports are open.
-         *
-         * @param regex the regex pattern to check for
-         * @param times the number of times the pattern is expected
-         * @return self, for method chaining.
-         */
-        ConfigureInstance setStartupLogMessage(String regex, int times);
-
-        /**
-         * Set a startup timeout after which the instance will be considered failed.
-         *
-         * <p>Failed containers may result in another attempt, or cause the test suite to fail.
-         *
-         * @param timeout the timeout
-         * @return self, for method chaining.
-         */
-        ConfigureInstance setStartupTimeout(Duration timeout);
-
-        /**
-         * Set how many attempts should be made to start the instance.
-         *
-         * <p>If the max attempts is exceeded the test suite will fail.
-         *
-         * @param attempts the max attempts.
-         * @return self, for method chaining.
-         */
-        ConfigureInstance setStartupAttempts(int attempts);
-    }
 
     /** Stores the result of {@link #execOnInstance}. */
     final class ExecResult {

@@ -211,8 +211,6 @@ class SystemTestExecutorFunctionalTest {
         assertThat(exitCode, is(2));
     }
 
-    // Todo: Looks like its not closing down docker containers on failure....
-
     @Test
     void shouldReportTestErrors() {
         // Given:

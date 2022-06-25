@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
@@ -61,22 +62,24 @@ public final class DockerServiceContainer implements ServiceContainer {
         this.containerFactory = requireNonNull(containerFactory, "containerFactory");
     }
 
-    // Todo: do not allow add to be called if there is no active test suite.
+    // Todo: next: do not allow add to be called if there is no active test suite.
     @Override
-    public ServiceInstance add(final ServiceDefinition def) {
+    public ConfigurableServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
 
         final String instanceName = naming.instanceName(def.name());
         final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
         final GenericContainer<?> container = createContainer(imageName, instanceName);
-        final ContainerInstance instance =
+        final ConfigurableServiceInstance instance =
                 new ContainerInstance(
-                        instanceName, imageName, container, def.descriptor(), def::instanceStarted);
-
-        instance.configure()
-                .setStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
-                .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
+                                instanceName,
+                                imageName,
+                                container,
+                                def.descriptor(),
+                                def::instanceStarted)
+                        .setStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
+                        .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
 
         def.configureInstance(instance);
 

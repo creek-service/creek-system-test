@@ -40,6 +40,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,7 +113,7 @@ class DockerServiceContainerTest {
     @Test
     void shouldInvokeConfigureCallbackOnAdd() {
         // When:
-        final ServiceInstance instance = instances.add(serviceDef);
+        final ConfigurableServiceInstance instance = instances.add(serviceDef);
 
         // Then:
         verify(serviceDef).configureInstance(instance);

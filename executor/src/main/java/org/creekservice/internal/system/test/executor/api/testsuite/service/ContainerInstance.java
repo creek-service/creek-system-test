@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ import org.testcontainers.utility.DockerImageName;
 
 /** An instance of a service running in a local docker container. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public final class ContainerInstance implements ServiceInstance, ServiceInstance.ConfigureInstance {
+public final class ContainerInstance implements ConfigurableServiceInstance {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerInstance.class);
 
@@ -125,13 +126,13 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public String externalHostName() {
+    public String testNetworkHostname() {
         throwIfNotOnCorrectThread();
         return container.getHost();
     }
 
     @Override
-    public String internalHostName() {
+    public String serviceNetworkHostname() {
         throwIfNotOnCorrectThread();
         throwIfNotRunning();
         // Internal network has the instance name as its network alias
@@ -177,14 +178,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance configure() {
-        throwIfNotOnCorrectThread();
-        throwIfRunning();
-        return this;
-    }
-
-    @Override
-    public ConfigureInstance addEnv(final String name, final String value) {
+    public ContainerInstance addEnv(final String name, final String value) {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         container.withEnv(requireNonNull(name, "name"), requireNonNull(value, "value"));
@@ -192,7 +186,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance addExposedPorts(final int... ports) {
+    public ContainerInstance addExposedPorts(final int... ports) {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         container.addExposedPorts(requireNonNull(ports, "ports"));
@@ -200,7 +194,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance setCommand(final String... cmdParts) {
+    public ContainerInstance setCommand(final String... cmdParts) {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         container.withCommand(requireNonNull(cmdParts, "cmdParts"));
@@ -208,7 +202,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance setStartupLogMessage(final String regex, final int times) {
+    public ContainerInstance setStartupLogMessage(final String regex, final int times) {
         requireNonNull(regex, "regex");
         throwIfNotOnCorrectThread();
         throwIfRunning();
@@ -218,7 +212,7 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance setStartupTimeout(final Duration timeout) {
+    public ContainerInstance setStartupTimeout(final Duration timeout) {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         startUpTimeOut = requireNonNull(timeout, "timeout");
@@ -227,14 +221,16 @@ public final class ContainerInstance implements ServiceInstance, ServiceInstance
     }
 
     @Override
-    public ConfigureInstance setStartupAttempts(final int attempts) {
+    public ContainerInstance setStartupAttempts(final int attempts) {
         throwIfNotOnCorrectThread();
         throwIfRunning();
         container.withStartupAttempts(attempts);
         return this;
     }
 
-    String containerId() {
+    @VisibleForTesting
+    public String containerId() {
+        throwIfNotOnCorrectThread();
         return container.getContainerId();
     }
 

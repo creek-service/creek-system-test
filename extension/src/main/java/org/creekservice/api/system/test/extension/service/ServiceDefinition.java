@@ -52,13 +52,13 @@ public interface ServiceDefinition {
      * definition.
      *
      * <p>Overriding this method allows the definition class itself to define how to configure the
-     * instance. The same functionality can be achieved by configuring the instance at the point of
-     * creation, e.g.
+     * instance. The same functionality can be achieved by configuring the instance returned from
+     * {@link ServiceContainer#add}, e.g.
      *
      * <pre>{@code
      * void foo(final SystemTest api) {
-     *    final ServiceInstance instance = api.testSuite().services().add(def);
-     *    instance.configure()
+     *    final ConfigurableServiceInstance instance = api.testSuite().services().add(def);
+     *    instance
      *       .addExposedPort(22)
      *       .addEnv("key", "value");
      * }
@@ -69,8 +69,8 @@ public interface ServiceDefinition {
      * <pre>{@code
      * class MyDef implements ServiceDefinition {
      *     ...
-     *     public void configureInstance(final ServiceInstance instance) {
-     *          instance.configure()
+     *     public void configureInstance(final ConfigurableServiceInstance instance) {
+     *          instance
      *             .addExposedPort(22)
      *             .addEnv("key", "value");
      *     }
@@ -84,8 +84,7 @@ public interface ServiceDefinition {
      *
      * @param instance the newly created instance.
      */
-    // Todo: ConfigurableServiceInstance
-    default void configureInstance(final ServiceInstance instance) {}
+    default void configureInstance(final ConfigurableServiceInstance instance) {}
 
     /**
      * An optional callback that is invoked after a service instance is started.

@@ -29,7 +29,7 @@ public interface ServiceContainer extends ServiceCollection {
      * start} on the returned instance to start the service.
      *
      * @param def the def of the service to start.
-     * @return the service instance that was added.
+     * @return the configurable service instance that was added.
      */
-    ServiceInstance add(ServiceDefinition def);
+    ConfigurableServiceInstance add(ServiceDefinition def);
 }

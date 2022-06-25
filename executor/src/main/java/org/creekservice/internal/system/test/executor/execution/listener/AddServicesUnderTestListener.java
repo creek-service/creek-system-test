@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
@@ -61,9 +62,9 @@ public final class AddServicesUnderTestListener implements TestLifecycleListener
 
     private ServiceInstance addServiceUnderTest(final String serviceName) {
         final ServiceDefinition def = api.services().get(serviceName);
-        final ServiceInstance instance = api.testSuite().services().add(def);
+        final ConfigurableServiceInstance instance = api.testSuite().services().add(def);
 
-        instance.configure().setStartupLogMessage(STARTED_LOG_LINE_PATTERN, 1);
+        instance.setStartupLogMessage(STARTED_LOG_LINE_PATTERN, 1);
 
         return instance;
     }
