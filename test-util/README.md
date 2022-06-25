@@ -2,6 +2,6 @@
 
 Defines some helpers to make testing a system test extension a little easier.
 
-Todo: flesh out.
-Todo: Also mention leveraging CreekTestExtensions to test accessible.
+[`CreekSystemTestExtensionTester`][1] can be used to test system-test extensions. See the javadocs for more info. 
 
+[1]: src/main/java/org/creekservice/api/system/test/test/util/CreekSystemTestExtensionTester.java
