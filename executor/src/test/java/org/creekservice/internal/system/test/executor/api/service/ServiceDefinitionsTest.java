@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.api.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.startsWith;
@@ -124,11 +125,25 @@ class ServiceDefinitionsTest {
     }
 
     @Test
-    void shouldGetByServiceName() {
+    void shouldGetServiceName() {
         assertThat(services.get("service-0").name(), is("service-0"));
         assertThat(
                 services.get(TestServiceDescriptor.SERVICE_NAME).name(),
                 is(TestServiceDescriptor.SERVICE_NAME));
+    }
+
+    @Test
+    void shouldGetDockerImageName() {
+        assertThat(
+                services.get(TestServiceDescriptor.SERVICE_NAME).dockerImage(),
+                is("ghcr.io/creekservice/test-service:latest"));
+    }
+
+    @Test
+    void shouldGetServiceDescriptor() {
+        assertThat(
+                services.get(TestServiceDescriptor.SERVICE_NAME).descriptor().orElse(null),
+                is(instanceOf(TestServiceDescriptor.class)));
     }
 
     @Test

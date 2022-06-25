@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-plugins {
-    `java-library`
-}
+package org.creekservice;
 
-val creekBaseVersion : String by extra
-val creekMetaVersion : String by extra
 
-dependencies {
-    api("org.creekservice:creek-platform-metadata:$creekMetaVersion")
-    // Otherwise, non-test dependency free
+import org.creekservice.api.test.conformity.ConformityTester;
+import org.junit.jupiter.api.Test;
 
-    testImplementation(project(":test-extension"))
-    testImplementation("org.creekservice:creek-base-type:$creekBaseVersion")
+class ModuleTest {
+
+    @Test
+    void shouldConform() {
+        ConformityTester.test(ModuleTest.class);
+    }
 }

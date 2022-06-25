@@ -17,6 +17,7 @@
 package org.creekservice.internal.system.test.test.service;
 
 
+import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,8 @@ public final class ServiceMain {
         LOGGER.info("LOGGER.info logging");
         LOGGER.error("LOGGER.error logging");
 
-        LOGGER.info("some.lifecycle.event=started");
+        // Log the line the system tests is waiting for to indicate the service has started:
+        LOGGER.info(BasicLifecycle.started.logMessage(BasicLifecycle.SERVICE_TYPE));
     }
 
     @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})

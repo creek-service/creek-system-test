@@ -26,6 +26,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -153,7 +154,14 @@ public final class ServiceDefinitions implements ServiceDefinitionCollection {
 
         @Override
         public String dockerImage() {
-            return descriptor.dockerImage();
+            // Default to latest for now. See
+            // https://github.com/creek-service/creek-system-test/issues/78.
+            return descriptor.dockerImage() + ":latest";
+        }
+
+        @Override
+        public Optional<ServiceDescriptor> descriptor() {
+            return Optional.of(descriptor);
         }
     }
 }

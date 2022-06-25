@@ -17,4 +17,7 @@
   creek.system.test.extension/org.creekservice.api.system.test.extension.model=org.mockito
 
 --add-opens
+  creek.system.test.extension/org.creekservice.api.system.test.extension.service=org.mockito
+
+--add-opens
   creek.system.test.extension/org.creekservice.api.system.test.extension.testsuite=org.mockito

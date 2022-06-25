@@ -16,14 +16,27 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+import static java.util.Objects.requireNonNull;
 
-import java.util.Map;
+import java.util.Optional;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
 
 /** An instance of a {@link ServiceDefinition} */
 public interface ServiceInstance {
 
     /** The unique name of the instance. */
     String name();
+
+    /**
+     * An optional service descriptor.
+     *
+     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the
+     * test suite, will have an associated service definition. 3rd-party services started by
+     * extensions to facilitate testing will not.
+     *
+     * @return the service definition, if present.
+     */
+    Optional<ServiceDescriptor> descriptor();
 
     /** Start the instance. No-op if already started. */
     void start();
@@ -35,42 +48,83 @@ public interface ServiceInstance {
     void stop();
 
     /**
-     * Amend the definition of the service instance.
+     * Retrieve the port a service's port can be reached on from the host network.
+     *
+     * <p>This may be the same port, or a different port, depending on where the instance is
+     * running.
+     */
+    int mappedPort(int original);
+
+    /**
+     * The hostname the instance can be reached on from the test-network.
+     *
+     * <p>The test-network is the network accessible to the system test process itself. The
+     * test-network hostname is the hostname the system test process can use to access the instance.
+     *
+     * <p>For example, if services are running in local docker containers, then the test-network
+     * hostname will likely be {@code localhost}, i.e. the current machine, where all the containers
+     * are running.
+     *
+     * @return the hostname the instance can be reached on from the test-network.
+     */
+    String testNetworkHostname();
+
+    /**
+     * The hostname the instance can be reach on from the service-network.
+     *
+     * <p>The service-network is the network the service instances are using to communicate with
+     * each other. The service-network hostname is the hostname other services instances can use to
+     * access this instance.
+     *
+     * <p>For example, if services are running in local docker containers, then the service-network
+     * hostname will be a network alias derived from the service's definition's {@link
+     * ServiceDefinition#name() name}. For example, {@code kafka-default-0}.
+     *
+     * @return the hostname the instance can be reach on from the service-network.
+     */
+    String serviceNetworkHostname();
+
+    /**
+     * Run a command on the instance host.
      *
      * <p>**Note**: this method can not be called while the instance is running.
      *
-     * @return type used to modify the instance.
+     * <p>If services are running in docker containers this is the same as using {@code docker
+     * exec}.
+     *
+     * @param cmd the command to run.
+     * @return the result of the execution.
      */
-    Modifier modify();
+    ExecResult execOnInstance(String... cmd);
 
-    interface Modifier {
+    /** Stores the result of {@link #execOnInstance}. */
+    final class ExecResult {
 
-        /**
-         * Set an environment variable on the instance.
-         *
-         * @param name the name of the environment variable.
-         * @param value the value of the environment variable.
-         * @return self, for method chaining.
-         */
-        Modifier withEnv(String name, String value);
+        private final int exitCode;
+        private final String stdout;
+        private final String stderr;
 
-        /**
-         * Set environment variables on the instance.
-         *
-         * @param env the map of environment variables to add.
-         * @return self, for method chaining.
-         */
-        default Modifier withEnv(Map<String, String> env) {
-            env.forEach(this::withEnv);
-            return this;
+        public static ExecResult execResult(
+                final int exitCode, final String stdout, final String stderr) {
+            return new ExecResult(exitCode, stdout, stderr);
         }
 
-        /**
-         * Add exposed ports to the container instance.
-         *
-         * @param ports the ports to expose.
-         * @return self, for method chaining.
-         */
-        Modifier withExposedPorts(int... ports);
+        private ExecResult(final int exitCode, final String stdout, final String stderr) {
+            this.exitCode = exitCode;
+            this.stdout = requireNonNull(stdout, "stdout");
+            this.stderr = requireNonNull(stderr, "stderr");
+        }
+
+        public int exitCode() {
+            return exitCode;
+        }
+
+        public String stdout() {
+            return stdout;
+        }
+
+        public String stderr() {
+            return stderr;
+        }
     }
 }

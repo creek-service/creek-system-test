@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,8 +36,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ class AddServicesUnderTestListenerTest {
     @Mock private CreekTestSuite suite;
     private AddServicesUnderTestListener listener;
     private final Map<String, ServiceDefinition> defs = new HashMap<>();
-    private final Map<String, ServiceInstance> instances = new HashMap<>();
+    private final Map<String, ConfigurableServiceInstance> instances = new HashMap<>();
 
     @BeforeEach
     void setUp() {
@@ -80,6 +81,19 @@ class AddServicesUnderTestListenerTest {
         inOrder.verify(api.testSuite().services()).add(defs.get("b"));
         inOrder.verify(api.services()).get("c");
         inOrder.verify(api.testSuite().services()).add(defs.get("c"));
+    }
+
+    @Test
+    void shouldConfigureStartUpLogMessage() {
+        // Given:
+        givenSuiteHasServices("a");
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(instances.get("a:0"))
+                .setStartupLogMessage(".*\\Qcreek.lifecycle.service.started\\E.*", 1);
     }
 
     @Test
@@ -135,12 +149,17 @@ class AddServicesUnderTestListenerTest {
         final String serviceName = serviceNames.get(0);
         final ServiceDefinition def = setUpDefMock(serviceName);
 
-        ServiceInstance first = null;
-        final ServiceInstance[] others = new ServiceInstance[serviceNames.size() - 1];
+        ConfigurableServiceInstance first = null;
+        final ConfigurableServiceInstance[] others =
+                new ConfigurableServiceInstance[serviceNames.size() - 1];
 
         for (int i = 0; i != serviceNames.size(); ++i) {
             final String instanceName = serviceName + ":" + i;
-            final ServiceInstance instance = mock(ServiceInstance.class, instanceName);
+            final ConfigurableServiceInstance instance =
+                    mock(
+                            ConfigurableServiceInstance.class,
+                            withSettings().name(instanceName).defaultAnswer(RETURNS_DEEP_STUBS));
+
             instances.put(instanceName, instance);
 
             if (i == 0) {

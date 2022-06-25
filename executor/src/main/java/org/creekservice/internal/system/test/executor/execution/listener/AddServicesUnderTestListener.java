@@ -17,10 +17,14 @@
 package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.observability.lifecycle.LoggableLifecycle.SERVICE_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
@@ -35,6 +39,9 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
  * suite.
  */
 public final class AddServicesUnderTestListener implements TestLifecycleListener {
+
+    private static final String STARTED_LOG_LINE_PATTERN =
+            ".*" + Pattern.quote(BasicLifecycle.started.logMessage(SERVICE_TYPE)) + ".*";
 
     private final SystemTest api;
     private final List<ServiceInstance> added = new ArrayList<>();
@@ -55,6 +62,10 @@ public final class AddServicesUnderTestListener implements TestLifecycleListener
 
     private ServiceInstance addServiceUnderTest(final String serviceName) {
         final ServiceDefinition def = api.services().get(serviceName);
-        return api.testSuite().services().add(def);
+        final ConfigurableServiceInstance instance = api.testSuite().services().add(def);
+
+        instance.setStartupLogMessage(STARTED_LOG_LINE_PATTERN, 1);
+
+        return instance;
     }
 }

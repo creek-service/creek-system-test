@@ -18,13 +18,10 @@ plugins {
     `java-library`
 }
 
-val creekBaseVersion : String by extra
-val creekMetaVersion : String by extra
+val spotBugsVersion : String by extra
 
 dependencies {
-    api("org.creekservice:creek-platform-metadata:$creekMetaVersion")
-    // Otherwise, non-test dependency free
-
-    testImplementation(project(":test-extension"))
-    testImplementation("org.creekservice:creek-base-type:$creekBaseVersion")
+    api(project(":executor"))
+    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    implementation(project(":extension"))
 }

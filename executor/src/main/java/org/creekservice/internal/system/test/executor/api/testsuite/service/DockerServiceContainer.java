@@ -16,53 +16,72 @@
 
 package org.creekservice.internal.system.test.executor.api.testsuite.service;
 
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /** A local, docker based, implementation of {@link ServiceContainer}. */
-public final class LocalServiceInstances implements ServiceContainer {
+public final class DockerServiceContainer implements ServiceContainer {
 
+    // See https://github.com/creek-service/creek-system-test/issues/79 for making these
+    // configurable:
     private static final int CONTAINER_START_UP_ATTEMPTS = 3;
-    private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofSeconds(90);
+    private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofMinutes(1);
 
     private final long threadId;
+    private final Function<DockerImageName, GenericContainer<?>> containerFactory;
     private final Network network = Network.newNetwork();
     private final List<ServiceInstance> instances = new ArrayList<>();
     private final InstanceNaming naming = new InstanceNaming();
 
-    public LocalServiceInstances() {
-        this(Thread.currentThread().getId());
+    public DockerServiceContainer() {
+        this(Thread.currentThread().getId(), GenericContainer::new);
     }
 
     @VisibleForTesting
-    LocalServiceInstances(final long threadId) {
+    DockerServiceContainer(
+            final long threadId,
+            final Function<DockerImageName, GenericContainer<?>> containerFactory) {
         this.threadId = threadId;
+        this.containerFactory = requireNonNull(containerFactory, "containerFactory");
     }
 
     @Override
-    public ServiceInstance add(final String serviceName, final String dockerImageName) {
+    public ConfigurableServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();
 
-        final String instanceName = naming.instanceName(serviceName);
-        final DockerImageName imageName = DockerImageName.parse(dockerImageName);
+        final String instanceName = naming.instanceName(def.name());
+        final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
         final GenericContainer<?> container = createContainer(imageName, instanceName);
-        final ComponentInstance instance =
-                new ComponentInstance(instanceName, imageName, container);
+        final ConfigurableServiceInstance instance =
+                new ContainerInstance(
+                                instanceName,
+                                imageName,
+                                container,
+                                def.descriptor(),
+                                def::instanceStarted)
+                        .setStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
+                        .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
+
+        def.configureInstance(instance);
+
         instances.add(instance);
         return instance;
     }
@@ -83,16 +102,14 @@ public final class LocalServiceInstances implements ServiceContainer {
 
     private GenericContainer<?> createContainer(
             final DockerImageName imageName, final String instanceName) {
-        final GenericContainer<?> container = new GenericContainer<>(imageName);
+        final GenericContainer<?> container = containerFactory.apply(imageName);
 
-        return container
+        container
                 .withNetwork(network)
                 .withNetworkAliases(instanceName)
-                .withStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)))
-                .waitingFor(
-                        Wait.forLogMessage(".*lifecycle.*started.*", 1)
-                                .withStartupTimeout(CONTAINER_START_UP_TIMEOUT));
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)));
+
+        return container;
     }
 
     private void throwOnRunningServices() {

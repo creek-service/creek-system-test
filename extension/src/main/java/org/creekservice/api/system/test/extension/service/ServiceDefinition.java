@@ -16,6 +16,10 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+
+import java.util.Optional;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+
 /** Information required by Creek System Test to start a service */
 public interface ServiceDefinition {
     /**
@@ -29,4 +33,92 @@ public interface ServiceDefinition {
 
     /** @return the docker image name, without version info. */
     String dockerImage();
+
+    /**
+     * An optional service descriptor.
+     *
+     * <p>Any service that is being tested, i.e. defined in the {@code services} property of the
+     * test suite, will have an associated service definition. 3rd-party services started by
+     * extensions to facilitate testing will not.
+     *
+     * @return the service definition, if present.
+     */
+    default Optional<ServiceDescriptor> descriptor() {
+        return Optional.empty();
+    }
+
+    /**
+     * An optional callback that is invoked after a service instance if created from this
+     * definition.
+     *
+     * <p>Overriding this method allows the definition class itself to define how to configure the
+     * instance. The same functionality can be achieved by configuring the instance returned from
+     * {@link ServiceContainer#add}, e.g.
+     *
+     * <pre>{@code
+     * void foo(final SystemTest api) {
+     *    final ConfigurableServiceInstance instance = api.testSuite().services().add(def);
+     *    instance
+     *       .addExposedPort(22)
+     *       .addEnv("key", "value");
+     * }
+     * }</pre>
+     *
+     * <p>Is equivalent to:
+     *
+     * <pre>{@code
+     * class MyDef implements ServiceDefinition {
+     *     ...
+     *     public void configureInstance(final ConfigurableServiceInstance instance) {
+     *          instance
+     *             .addExposedPort(22)
+     *             .addEnv("key", "value");
+     *     }
+     *     ...
+     * }
+     *
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(new MyDef());
+     * }
+     * }</pre>
+     *
+     * @param instance the newly created instance.
+     */
+    default void configureInstance(final ConfigurableServiceInstance instance) {}
+
+    /**
+     * An optional callback that is invoked after a service instance is started.
+     *
+     * <p>Overriding this method allows the definition class itself to define what to do with an
+     * instance once its started. The same functionality can be achieved by performing the same
+     * actions on the instance in the code where the service is started:
+     *
+     * <pre>{@code
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(def);
+     *    instance.start();
+     *    instance.execOnInstance("some-command");
+     * }
+     * }</pre>
+     *
+     * <p>Is equivalent to:
+     *
+     * <pre>{@code
+     * class MyDef implements ServiceDefinition {
+     *     ...
+     *     public void instanceStarted(final ServiceInstance instance) {
+     *          instance.execOnInstance("some-command");
+     *     }
+     *     ...
+     * }
+     *
+     * void foo(final SystemTest api) {
+     *    final ServiceInstance instance = api.testSuite().services().add(new MyDef());
+     *    instance.start();
+     * }
+     * }</pre>
+     *
+     * @param instance the newly created instance.
+     */
+    default void instanceStarted(final ServiceInstance instance) {}
 }

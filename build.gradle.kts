@@ -49,7 +49,8 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "org.javamodularity.moduleplugin")
 
-    if (!name.startsWith("test-")) {
+    val shouldPublish = !name.startsWith("test-") || name == "test-util"
+    if (shouldPublish) {
         apply(plugin = "jacoco")
     }
 
@@ -57,7 +58,9 @@ subprojects {
 
     extra.apply {
         set("creekBaseVersion", "0.2.0-SNAPSHOT")
+        set("creekMetaVersion", "0.2.0-SNAPSHOT")
         set("creekTestVersion", "0.2.0-SNAPSHOT")
+        set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("testContainersVersion", "1.17.2")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.7.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.13.3")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
@@ -96,7 +99,7 @@ subprojects {
     }
 
     tasks.compileJava {
-        options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic")
+        options.compilerArgs.add("-Xlint:all,-serial,-requires-automatic,-requires-transitive-automatic,-module")
         options.compilerArgs.add("-Werror")
     }
 
@@ -155,7 +158,7 @@ subprojects {
         dependsOn("checkstyleMain", "checkstyleTest", "spotbugsMain", "spotbugsTest")
     }
 
-    if (!project.name.startsWith("test-")) {
+    if (shouldPublish) {
         publishing {
             repositories {
                 maven {

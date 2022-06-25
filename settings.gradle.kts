@@ -7,5 +7,6 @@ include(
     "parser",
     "test-extension",
     "test-service",
-    "test-services"
+    "test-services",
+    "test-util"
 )
