@@ -49,5 +49,3 @@ public final class LoggingTestLifecycleListener implements TestLifecycleListener
     }
 }
 
-// Todo: next: Log results?
-// Todo: next: Test.

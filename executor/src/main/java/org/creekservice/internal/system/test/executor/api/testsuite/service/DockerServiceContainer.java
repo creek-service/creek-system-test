@@ -62,7 +62,6 @@ public final class DockerServiceContainer implements ServiceContainer {
         this.containerFactory = requireNonNull(containerFactory, "containerFactory");
     }
 
-    // Todo: next: do not allow add to be called if there is no active test suite.
     @Override
     public ConfigurableServiceInstance add(final ServiceDefinition def) {
         throwIfNotOnCorrectThread();

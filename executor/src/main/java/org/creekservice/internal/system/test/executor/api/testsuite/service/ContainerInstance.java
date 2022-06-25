@@ -121,7 +121,6 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     @Override
     public boolean running() {
         throwIfNotOnCorrectThread();
-        // Todo: next: death detection.
         return container.getContainerId() != null;
     }
 

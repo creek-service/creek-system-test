@@ -43,7 +43,6 @@ public final class TestCaseExecutor {
     }
 
     private void runTest(final TestCase testCase) {
-        // Todo: next:
     }
 
     private void afterTest(final TestCase testCase) {
