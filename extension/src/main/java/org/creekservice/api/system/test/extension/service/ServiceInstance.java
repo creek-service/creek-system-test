@@ -48,12 +48,18 @@ public interface ServiceInstance {
     void stop();
 
     /**
-     * Retrieve the port a service's port can be reached on from the host network.
+     * Retrieve the port reachable from the test-network for a service's port.
      *
      * <p>This may be the same port, or a different port, depending on where the instance is
      * running.
+     *
+     * <p>For example, if services are running in local docker containers, then the test-network
+     * port will be a locally mapped port.
+     *
+     * @param serviceNetworkPort the port exposed by the service.
+     * @return the port the instance can be reached on from the test-network.
      */
-    int mappedPort(int original);
+    int testNetworkPort(int serviceNetworkPort);
 
     /**
      * The hostname the instance can be reached on from the test-network.
@@ -125,6 +131,20 @@ public interface ServiceInstance {
 
         public String stderr() {
             return stderr;
+        }
+
+        @Override
+        public String toString() {
+            return "ExecResult{"
+                    + "exitCode="
+                    + exitCode
+                    + ", stderr='"
+                    + stderr
+                    + '\''
+                    + ", stdout='"
+                    + stdout
+                    + '\''
+                    + '}';
         }
     }
 }

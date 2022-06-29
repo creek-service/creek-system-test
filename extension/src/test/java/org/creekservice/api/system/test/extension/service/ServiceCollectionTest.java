@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.extension.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,18 +31,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ServiceCollectionTest {
 
-    @Mock private ServiceInstance instance0;
-    @Mock private ServiceInstance instance1;
+    @Mock private ConfigurableServiceInstance instance0;
+    @Mock private ConfigurableServiceInstance instance1;
 
     @Test
     void shouldStream() {
         // Given:
-        final ServiceCollection services = () -> List.of(instance0, instance1).iterator();
+        final ServiceCollection services = new TestServiceCollection();
 
         // When:
-        final Stream<ServiceInstance> s = services.stream();
+        final Stream<ConfigurableServiceInstance> s = services.stream();
 
         // Then:
         assertThat(s.collect(Collectors.toList()), is(List.of(instance0, instance1)));
+    }
+
+    private final class TestServiceCollection implements ServiceCollection {
+
+        @Override
+        public ConfigurableServiceInstance get(final String name) {
+            return null;
+        }
+
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public Iterator<ConfigurableServiceInstance> iterator() {
+            return List.of(instance0, instance1).iterator();
+        }
     }
 }

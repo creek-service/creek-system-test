@@ -20,6 +20,7 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.verify;
 
 import java.util.function.Consumer;
+import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,7 @@ class SuiteCleanUpListenerTest {
     private SystemTest api;
 
     private SuiteCleanUpListener listener;
-    @Mock private ServiceInstance service;
+    @Mock private ConfigurableServiceInstance service;
     @Captor private ArgumentCaptor<Consumer<? super ServiceInstance>> actionCaptor;
 
     @BeforeEach

@@ -21,14 +21,24 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /** A collection of service instances */
-public interface ServiceCollection extends Iterable<ServiceInstance> {
+public interface ServiceCollection extends Iterable<ConfigurableServiceInstance> {
+
+    /**
+     * Get an instance by name.
+     *
+     * @param name the name of the instance.
+     * @return the instance.
+     * @throws IllegalArgumentException on unknown instance.
+     */
+    ConfigurableServiceInstance get(String name);
+
     /**
      * Returns a sequential {@link Stream} with this collection as its source.
      *
      * @return a sequential {@link Stream} over the {@link ServiceInstance instance's} in this
      *     collection.
      */
-    default Stream<ServiceInstance> stream() {
+    default Stream<ConfigurableServiceInstance> stream() {
         return StreamSupport.stream(spliterator(), false);
     }
 }

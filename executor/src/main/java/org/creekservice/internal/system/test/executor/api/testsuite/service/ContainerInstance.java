@@ -133,7 +133,6 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     @Override
     public String serviceNetworkHostname() {
         throwIfNotOnCorrectThread();
-        throwIfNotRunning();
         // Internal network has the instance name as its network alias
         return name();
     }
@@ -171,9 +170,9 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     }
 
     @Override
-    public int mappedPort(final int original) {
+    public int testNetworkPort(final int serviceNetworkPort) {
         throwIfNotOnCorrectThread();
-        return container.getMappedPort(original);
+        return container.getMappedPort(serviceNetworkPort);
     }
 
     @Override
