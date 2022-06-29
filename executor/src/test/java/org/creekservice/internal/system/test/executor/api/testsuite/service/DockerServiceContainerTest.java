@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.api.testsuite.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -140,6 +141,28 @@ class DockerServiceContainerTest {
         verify(serviceDef).instanceStarted(instance);
     }
 
+    @Test
+    void shouldGetByName() {
+        // Given:
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // When:
+        final ConfigurableServiceInstance result = instances.get(instance.name());
+
+        // Then:
+        assertThat(result, is(sameInstance(instance)));
+    }
+
+    @Test
+    void shouldThrowOnGetWithUnknownName() {
+        // When:
+        final Exception e =
+                assertThrows(IllegalArgumentException.class, () -> instances.get("some name"));
+
+        // Then:
+        assertThat(e.getMessage(), is("No instance found with name: some name"));
+    }
+
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
@@ -184,6 +207,7 @@ class DockerServiceContainerTest {
                         "add",
                         (Consumer<DockerServiceContainer>)
                                 si -> si.add(mock(ServiceDefinition.class))),
+                Arguments.of("get", (Consumer<DockerServiceContainer>) si -> si.get("")),
                 Arguments.of(
                         "forEach",
                         (Consumer<DockerServiceContainer>) si -> si.forEach(mock(Consumer.class))));

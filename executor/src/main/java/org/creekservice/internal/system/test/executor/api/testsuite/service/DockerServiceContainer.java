@@ -19,10 +19,10 @@ package org.creekservice.internal.system.test.executor.api.testsuite.service;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
@@ -47,7 +47,7 @@ public final class DockerServiceContainer implements ServiceContainer {
     private final long threadId;
     private final Function<DockerImageName, GenericContainer<?>> containerFactory;
     private final Network network = Network.newNetwork();
-    private final List<ServiceInstance> instances = new ArrayList<>();
+    private final Map<String, ConfigurableServiceInstance> instances = new HashMap<>();
     private final InstanceNaming naming = new InstanceNaming();
 
     public DockerServiceContainer() {
@@ -82,15 +82,26 @@ public final class DockerServiceContainer implements ServiceContainer {
 
         def.configureInstance(instance);
 
-        instances.add(instance);
+        instances.put(instance.name(), instance);
+        return instance;
+    }
+
+    @Override
+    public ConfigurableServiceInstance get(final String name) {
+        requireNonNull(name, "name");
+        throwIfNotOnCorrectThread();
+        final ConfigurableServiceInstance instance = instances.get(name);
+        if (instance == null) {
+            throw new IllegalArgumentException("No instance found with name: " + name);
+        }
         return instance;
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public Iterator<ServiceInstance> iterator() {
+    public Iterator<ConfigurableServiceInstance> iterator() {
         throwIfNotOnCorrectThread();
-        return instances.iterator();
+        return instances.values().iterator();
     }
 
     public void clear() {
@@ -114,9 +125,10 @@ public final class DockerServiceContainer implements ServiceContainer {
 
     private void throwOnRunningServices() {
         final String running =
-                instances.stream()
+                instances.values().stream()
                         .filter(ServiceInstance::running)
                         .map(ServiceInstance::name)
+                        .sorted()
                         .collect(Collectors.joining(", "));
 
         if (!running.isEmpty()) {

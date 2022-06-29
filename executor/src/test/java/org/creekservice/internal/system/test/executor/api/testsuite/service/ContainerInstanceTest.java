@@ -247,13 +247,13 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldExposeMappedPorts() {
+    void shouldExposeTestNetworkPorts() {
         // Given:
         final int port = 253;
         final int mapped = 11253;
         when(container.getMappedPort(anyInt())).thenReturn(mapped);
         // When:
-        final int result = instance.mappedPort(port);
+        final int result = instance.testNetworkPort(port);
 
         // Then:
         verify(container).getMappedPort(port);
@@ -261,32 +261,12 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldThrowOnInternalHostNameIfNotRunning() {
-        // Given:
-        givenNotRunning();
-
-        // When:
-        final Exception e =
-                assertThrows(IllegalStateException.class, instance::serviceNetworkHostname);
-
-        // Then:
-        assertThat(
-                e.getMessage(),
-                is(
-                        "Container not running. service: a-0 (ghcr.io/creekservice/test-service:latest)"));
-    }
-
-    @Test
-    void shouldExposeInstanceNameAsInternalHostName() {
-        // Given:
-        givenRunning();
-
-        // Then:
+    void shouldExposeInstanceNameAsServiceNetworkHostName() {
         assertThat(instance.serviceNetworkHostname(), is(instance.name()));
     }
 
     @Test
-    void shouldExposeExternalHostName() {
+    void shouldExposeTestNetworkHostName() {
         // Given:
         when(container.getHost()).thenReturn("some-external-host");
 
@@ -577,7 +557,8 @@ class ContainerInstanceTest {
                                 "containerId",
                                 (Consumer<ContainerInstance>) ContainerInstance::containerId),
                         Arguments.of(
-                                "mappedPort", (Consumer<ContainerInstance>) i -> i.mappedPort(9)),
+                                "mappedPort",
+                                (Consumer<ContainerInstance>) i -> i.testNetworkPort(9)),
                         Arguments.of(
                                 "execOnInstance",
                                 (Consumer<ContainerInstance>) ContainerInstance::execOnInstance)));
