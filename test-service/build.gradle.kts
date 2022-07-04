@@ -41,7 +41,7 @@ val buildAppImage = tasks.create("buildAppImage", DockerBuildImage::class) {
     dependsOn("prepareDocker")
     buildArgs.put("APP_NAME", project.name)
     buildArgs.put("APP_VERSION", "${project.version}")
-    images.add("ghcr.io/creekservice/${project.name}:latest")
+    images.add("ghcr.io/creekservice/${rootProject.name}-${project.name}:latest")
 }
 
 tasks.register<Copy>("prepareDocker") {

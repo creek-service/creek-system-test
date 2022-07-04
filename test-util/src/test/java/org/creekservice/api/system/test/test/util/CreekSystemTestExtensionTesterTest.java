@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +32,7 @@ import java.util.Map;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
 import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +53,19 @@ class CreekSystemTestExtensionTesterTest {
         tester = CreekSystemTestExtensionTester.extensionTester();
 
         when(serviceDef.name()).thenReturn("bob");
-        when(serviceDef.dockerImage()).thenReturn("ghcr.io/creekservice/test-service");
+        when(serviceDef.dockerImage())
+                .thenReturn("ghcr.io/creekservice/creek-system-test-test-service");
     }
 
     @Test
     void shouldLoadExtensions() {
         assertThat(tester.accessibleExtensions(), is(empty()));
+    }
+
+    @Test
+    void shouldExposeServiceDefinitions() {
+        assertThat(tester.serviceDefinitions(), is(instanceOf(ServiceDefinitions.class)));
+        assertThat(tester.serviceDefinitions().get("test-service"), is(notNullValue()));
     }
 
     @Test
