@@ -24,4 +24,6 @@ dependencies {
     api(project(":executor"))
     api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     implementation(project(":extension"))
+
+    testImplementation(project(":test-services"))
 }
