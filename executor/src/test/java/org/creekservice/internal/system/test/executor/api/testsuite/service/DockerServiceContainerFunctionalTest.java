@@ -53,7 +53,8 @@ import org.testcontainers.DockerClientFactory;
 class DockerServiceContainerFunctionalTest {
 
     private static final String SERVICE_NAME = "test-service";
-    private static final String SERVICE_IMAGE = "ghcr.io/creekservice/test-service";
+    private static final String SERVICE_IMAGE =
+            "ghcr.io/creekservice/creek-system-test-test-service";
 
     private DockerServiceContainer instances;
 

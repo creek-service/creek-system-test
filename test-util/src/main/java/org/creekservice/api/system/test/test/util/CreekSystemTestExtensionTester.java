@@ -21,10 +21,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.creekservice.api.platform.metadata.ComponentDescriptors;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.extension.service.ServiceContainer;
+import org.creekservice.api.system.test.extension.service.ServiceDefinitionCollection;
 import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
 import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
 
@@ -32,9 +35,11 @@ import org.creekservice.internal.system.test.executor.api.testsuite.service.Dock
 public final class CreekSystemTestExtensionTester {
 
     private final DockerServiceContainer services;
+    private final ServiceDefinitions serviceDefinitions;
 
     private CreekSystemTestExtensionTester() {
         this.services = new DockerServiceContainer();
+        this.serviceDefinitions = new ServiceDefinitions(ComponentDescriptors.load());
     }
 
     public static CreekSystemTestExtensionTester extensionTester() {
@@ -42,7 +47,7 @@ public final class CreekSystemTestExtensionTester {
     }
 
     /**
-     * Loads accessible extensions from the module and class paths.
+     * Loads accessible test extensions from the module and class paths.
      *
      * <p>Extension implementations can call this method to ensure the extension is correctly
      * registered and accessible to Creek.
@@ -57,6 +62,20 @@ public final class CreekSystemTestExtensionTester {
      */
     public List<CreekTestExtension> accessibleExtensions() {
         return CreekTestExtensions.load();
+    }
+
+    /**
+     * Load accessible service extensions from the module and class paths and use them to initialize
+     * the service definitions' collection.
+     *
+     * <p>The returned collection can be queried to get {@link
+     * org.creekservice.api.system.test.extension.service.ServiceDefinition service definitions}
+     * that can be used to create service instances.
+     *
+     * @return service definition collection.
+     */
+    public ServiceDefinitionCollection serviceDefinitions() {
+        return serviceDefinitions;
     }
 
     /**
@@ -84,10 +103,11 @@ public final class CreekSystemTestExtensionTester {
     }
 
     /**
-     * Remove all services from the service container exposed from {@link
+     * Stop and remove all services from the service container exposed from {@link
      * #dockerServicesContainer()}.
      */
     public void clearServices() {
+        services.forEach(ServiceInstance::stop);
         services.clear();
     }
 }

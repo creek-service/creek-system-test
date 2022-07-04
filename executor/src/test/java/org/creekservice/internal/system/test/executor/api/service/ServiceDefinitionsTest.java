@@ -136,7 +136,7 @@ class ServiceDefinitionsTest {
     void shouldGetDockerImageName() {
         assertThat(
                 services.get(TestServiceDescriptor.SERVICE_NAME).dockerImage(),
-                is("ghcr.io/creekservice/test-service:latest"));
+                is("ghcr.io/creekservice/creek-system-test-test-service:latest"));
     }
 
     @Test

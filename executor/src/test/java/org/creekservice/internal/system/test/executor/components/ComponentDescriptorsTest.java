@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import java.util.List;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.ComponentDescriptors;
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.junit.jupiter.api.Test;
 

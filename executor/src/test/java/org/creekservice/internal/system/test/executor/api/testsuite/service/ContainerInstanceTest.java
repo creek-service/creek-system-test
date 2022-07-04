@@ -70,7 +70,7 @@ import org.testcontainers.utility.DockerImageName;
 class ContainerInstanceTest {
 
     private static final DockerImageName IMAGE_NAME =
-            DockerImageName.parse("ghcr.io/creekservice/test-service:latest");
+            DockerImageName.parse("ghcr.io/creekservice/creek-system-test-test-service:latest");
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private GenericContainer<?> container;
@@ -204,7 +204,7 @@ class ContainerInstanceTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Failed to start service: a-0, image: ghcr.io/creekservice/test-service:latest"));
+                        "Failed to start service: a-0, image: ghcr.io/creekservice/creek-system-test-test-service:latest"));
         assertThat(e.getCause(), is(sameInstance(cause)));
     }
 
@@ -286,7 +286,7 @@ class ContainerInstanceTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Container not running. service: a-0 (ghcr.io/creekservice/test-service:latest)"));
+                        "Container not running. service: a-0 (ghcr.io/creekservice/creek-system-test-test-service:latest)"));
     }
 
     @Test
@@ -504,7 +504,7 @@ class ContainerInstanceTest {
                 e.getMessage(),
                 is(
                         "A service can not be modified when running. "
-                                + "service: a-0 (ghcr.io/creekservice/test-service:latest) with container-id bob"));
+                                + "service: a-0 (ghcr.io/creekservice/creek-system-test-test-service:latest) with container-id bob"));
     }
 
     @Test
