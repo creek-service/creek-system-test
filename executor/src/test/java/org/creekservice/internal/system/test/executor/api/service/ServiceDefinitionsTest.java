@@ -186,7 +186,10 @@ class ServiceDefinitionsTest {
                 Arguments.of("get", (Consumer<ServiceDefinitions>) s -> s.get("name")),
                 Arguments.of(
                         "iterator", (Consumer<ServiceDefinitions>) ServiceDefinitions::iterator),
-                Arguments.of("spliterator", (Consumer<ServiceDefinitions>) Iterable::spliterator),
+                Arguments.of(
+                        "spliterator",
+                        (Consumer<ServiceDefinitions>) ServiceDefinitions::spliterator),
+                Arguments.of("stream", (Consumer<ServiceDefinitions>) ServiceDefinitions::stream),
                 Arguments.of(
                         "forEach",
                         (Consumer<ServiceDefinitions>) s -> s.forEach(mock(Consumer.class))));

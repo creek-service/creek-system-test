@@ -16,6 +16,25 @@
 
 package org.creekservice.api.system.test.extension.service;
 
+
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 public interface ServiceDefinitionCollection extends Iterable<ServiceDefinition> {
+
+    /**
+     * Get a service by name.
+     *
+     * @param serviceName the service name to get.
+     * @return the service def
+     * @throws RuntimeException on unknown service name.
+     */
     ServiceDefinition get(String serviceName);
+
+    /**
+     * @return stream of the defs the collection contains.
+     */
+    default Stream<ServiceDefinition> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }
