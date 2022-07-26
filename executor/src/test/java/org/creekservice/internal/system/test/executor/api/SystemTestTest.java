@@ -19,8 +19,18 @@ package org.creekservice.internal.system.test.executor.api;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.testing.NullPointerTester;
+import java.util.Optional;
+import java.util.stream.Stream;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.platform.resource.ComponentValidator;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.internal.system.test.executor.api.model.Model;
 import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
 import org.creekservice.internal.system.test.executor.api.testsuite.TestSuiteEnv;
@@ -36,11 +46,14 @@ class SystemTestTest {
     @Mock private Model model;
     @Mock private TestSuiteEnv testEnv;
     @Mock private ServiceDefinitions services;
+    @Mock private ComponentValidator validator;
+    @Mock private ServiceDefinition serviceDefinition;
+    @Mock private ServiceDescriptor serviceDescriptor;
     private SystemTest api;
 
     @BeforeEach
     void setUp() {
-        api = new SystemTest(model, testEnv, services);
+        api = new SystemTest(model, testEnv, services, validator);
     }
 
     @Test
@@ -64,5 +77,31 @@ class SystemTestTest {
     @Test
     void shouldExposeServiceRegistry() {
         assertThat(api.services(), is(sameInstance(services)));
+    }
+
+    @Test
+    void shouldValidateDescriptors() {
+        // Given:
+        when(serviceDefinition.descriptor()).thenReturn(Optional.of(serviceDescriptor));
+        when(services.stream()).thenReturn(Stream.of(serviceDefinition));
+
+        // When:
+        new SystemTest(model, testEnv, services, validator);
+
+        // Then:
+        verify(validator).validate(serviceDescriptor);
+    }
+
+    @Test
+    void shouldHandleServicesWithoutDescriptors() {
+        // Given:
+        when(serviceDefinition.descriptor()).thenReturn(Optional.empty());
+        when(services.stream()).thenReturn(Stream.of(serviceDefinition));
+
+        // When:
+        new SystemTest(model, testEnv, services, validator);
+
+        // Then: did not blow up
+        verify(validator, never()).validate(any(ComponentDescriptor[].class));
     }
 }

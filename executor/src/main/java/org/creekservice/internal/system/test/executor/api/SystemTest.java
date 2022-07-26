@@ -17,12 +17,16 @@
 package org.creekservice.internal.system.test.executor.api;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.api.platform.resource.ComponentValidator.componentValidator;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collection;
+import java.util.Optional;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.resource.ComponentValidator;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
+import org.creekservice.api.system.test.extension.service.ServiceDefinition;
 import org.creekservice.internal.system.test.executor.api.model.Model;
 import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
 import org.creekservice.internal.system.test.executor.api.testsuite.TestSuiteEnv;
@@ -34,14 +38,24 @@ public final class SystemTest implements CreekSystemTest {
     private final ServiceDefinitions services;
 
     public SystemTest(final Collection<? extends ComponentDescriptor> components) {
-        this(new Model(), new TestSuiteEnv(), new ServiceDefinitions(components));
+        this(
+                new Model(),
+                new TestSuiteEnv(),
+                new ServiceDefinitions(components),
+                componentValidator());
     }
 
     @VisibleForTesting
-    SystemTest(final Model model, final TestSuiteEnv testEnv, final ServiceDefinitions services) {
+    SystemTest(
+            final Model model,
+            final TestSuiteEnv testEnv,
+            final ServiceDefinitions services,
+            final ComponentValidator componentValidator) {
         this.model = requireNonNull(model, "model");
         this.testEnv = requireNonNull(testEnv, "testEnv");
         this.services = requireNonNull(services, "services");
+
+        validateDescriptors(requireNonNull(componentValidator, "componentValidator"));
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
@@ -60,5 +74,12 @@ public final class SystemTest implements CreekSystemTest {
     @Override
     public ServiceDefinitions services() {
         return services;
+    }
+
+    private void validateDescriptors(final ComponentValidator validator) {
+        services.stream()
+                .map(ServiceDefinition::descriptor)
+                .flatMap(Optional::stream)
+                .forEach(validator::validate);
     }
 }

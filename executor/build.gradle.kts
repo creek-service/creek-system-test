@@ -20,6 +20,7 @@ plugins {
 }
 
 val creekBaseVersion : String by extra
+val creekPlatformVersion : String by extra
 val creekObsVersion : String by extra
 val testContainersVersion : String by extra
 val picocliVersion : String by extra
@@ -30,7 +31,8 @@ dependencies {
     implementation(project(":extension"))
     implementation(project(":parser"))
     implementation("org.creekservice:creek-base-type:$creekBaseVersion")
-    implementation("org.creekservice:creek-platform-metadata:$creekBaseVersion")
+    implementation("org.creekservice:creek-platform-metadata:$creekPlatformVersion")
+    implementation("org.creekservice:creek-platform-resource:$creekPlatformVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     implementation("org.testcontainers:testcontainers:$testContainersVersion")
