@@ -31,9 +31,7 @@ public interface ServiceDefinitionCollection extends Iterable<ServiceDefinition>
      */
     ServiceDefinition get(String serviceName);
 
-    /**
-     * @return stream of the defs the collection contains.
-     */
+    /** @return stream of the defs the collection contains. */
     default Stream<ServiceDefinition> stream() {
         return StreamSupport.stream(spliterator(), false);
     }
