@@ -28,11 +28,11 @@ import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstanceContainer;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
-import org.creekservice.internal.system.test.executor.api.test.suite.service.ContainerInstance;
-import org.creekservice.internal.system.test.executor.api.test.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerInstance;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
 
 /** A test helper for testing Creek system test extensions. */
 public final class CreekSystemTestExtensionTester {

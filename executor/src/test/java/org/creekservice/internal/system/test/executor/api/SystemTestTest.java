@@ -25,8 +25,8 @@ import org.creekservice.api.system.test.extension.component.definition.Aggregate
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.internal.service.api.ComponentModel;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
+import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
-import org.creekservice.internal.system.test.executor.api.test.suite.TestSuiteEnv;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +38,7 @@ class SystemTestTest {
 
     @Mock private TestModel testModel;
     @Mock private ComponentModel componentModel;
-    @Mock private TestSuiteEnv testEnv;
+    @Mock private TestEnv testEnv;
     @Mock private ComponentDefinitions<ServiceDefinition> services;
     @Mock private ComponentDefinitions<AggregateDefinition> aggregates;
     private SystemTest api;
@@ -63,7 +63,7 @@ class SystemTestTest {
 
     @Test
     void shouldExposeTestEnv() {
-        assertThat(api.test().suite(), is(sameInstance(testEnv)));
+        assertThat(api.test().env(), is(sameInstance(testEnv)));
     }
 
     @Test

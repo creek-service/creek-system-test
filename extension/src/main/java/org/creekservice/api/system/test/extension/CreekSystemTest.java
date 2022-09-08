@@ -23,8 +23,8 @@ import org.creekservice.api.system.test.extension.component.definition.Aggregate
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.env.TestEnvironment;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
-import org.creekservice.api.system.test.extension.test.suite.TestSuiteEnvironment;
 
 /** API to the system tests exposed to extensions */
 public interface CreekSystemTest {
@@ -57,11 +57,11 @@ public interface CreekSystemTest {
         TestModelContainer model();
 
         /**
-         * The test suite being executed.
+         * The environment in which tests execute.
          *
-         * @return the test container.
+         * @return the test environment.
          */
-        TestSuiteEnvironment suite();
+        TestEnvironment env();
     }
 
     interface ComponentAccessor {

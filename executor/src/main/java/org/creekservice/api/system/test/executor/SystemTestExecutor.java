@@ -129,7 +129,7 @@ public final class SystemTestExecutor {
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api.test().suite().listener()),
+                new TestSuiteExecutor(api.test().env().listener()),
                 new ResultsWriter(options.resultDirectory()));
     }
 

@@ -18,16 +18,16 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
 
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
  * A test lifecycle listener that resets theServiceContainer and stops any services left running at
  * the end of a test suite.
  */
-public final class SuiteCleanUpListener implements TestLifecycleListener {
+public final class SuiteCleanUpListener implements TestEnvironmentListener {
 
     private final SystemTest api;
 
@@ -37,11 +37,11 @@ public final class SuiteCleanUpListener implements TestLifecycleListener {
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
-        api.test().suite().services().clear();
+        api.test().env().currentSuite().services().clear();
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
-        api.test().suite().services().forEach(ServiceInstance::stop);
+        api.test().env().currentSuite().services().forEach(ServiceInstance::stop);
     }
 }

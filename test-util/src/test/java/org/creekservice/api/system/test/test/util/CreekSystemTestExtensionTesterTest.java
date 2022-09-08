@@ -30,10 +30,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstanceContainer;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
-import org.creekservice.internal.system.test.executor.api.test.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

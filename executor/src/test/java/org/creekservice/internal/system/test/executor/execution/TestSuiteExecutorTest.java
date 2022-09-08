@@ -28,8 +28,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.test.suite.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,8 +49,8 @@ class TestSuiteExecutorTest {
     @Mock private TestSuite testSuite;
     @Mock private TestCase testCase0;
     @Mock private TestCase testCase1;
-    @Mock private TestLifecycleListener listener;
-    @Captor private ArgumentCaptor<Consumer<TestLifecycleListener>> actionCaptor;
+    @Mock private TestEnvironmentListener listener;
+    @Captor private ArgumentCaptor<Consumer<TestEnvironmentListener>> actionCaptor;
     private TestSuiteExecutor suiteExecutor;
 
     @BeforeEach

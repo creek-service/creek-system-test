@@ -27,8 +27,8 @@ import org.creekservice.api.system.test.extension.component.definition.Aggregate
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.internal.service.api.ComponentModel;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
+import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
-import org.creekservice.internal.system.test.executor.api.test.suite.TestSuiteEnv;
 
 public final class SystemTest implements CreekSystemTest {
 
@@ -39,7 +39,7 @@ public final class SystemTest implements CreekSystemTest {
         this(
                 new TestModel(),
                 new ComponentModel(),
-                new TestSuiteEnv(),
+                new TestEnv(),
                 ComponentDefinitions.serviceDefinitions(components),
                 ComponentDefinitions.aggregateDefinitions(components));
     }
@@ -48,7 +48,7 @@ public final class SystemTest implements CreekSystemTest {
     SystemTest(
             final TestModel testModel,
             final ComponentModel componentModel,
-            final TestSuiteEnv testEnv,
+            final TestEnv testEnv,
             final ComponentDefinitions<ServiceDefinition> serviceDefinitions,
             final ComponentDefinitions<AggregateDefinition> aggregateDefinitions) {
         this.test = new Test(testModel, testEnv);
@@ -68,9 +68,9 @@ public final class SystemTest implements CreekSystemTest {
     public static final class Test implements CreekSystemTest.TestAccessor {
 
         private final TestModel testModel;
-        private final TestSuiteEnv testEnv;
+        private final TestEnv testEnv;
 
-        Test(final TestModel testModel, final TestSuiteEnv testEnv) {
+        Test(final TestModel testModel, final TestEnv testEnv) {
             this.testModel = requireNonNull(testModel, "testModel");
             this.testEnv = requireNonNull(testEnv, "testEnv");
         }
@@ -83,7 +83,7 @@ public final class SystemTest implements CreekSystemTest {
 
         @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         @Override
-        public TestSuiteEnv suite() {
+        public TestEnv env() {
             return testEnv;
         }
     }

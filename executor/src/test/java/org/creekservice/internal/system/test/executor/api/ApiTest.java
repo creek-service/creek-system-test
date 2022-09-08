@@ -33,7 +33,7 @@ import org.creekservice.internal.system.test.executor.execution.listener.AddServ
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
-import org.creekservice.internal.system.test.executor.observation.LoggingTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.observation.LoggingTestEnvironmentListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -57,7 +57,7 @@ class ApiTest {
         initializeApi(api, List.of());
 
         // Then:
-        verify(api.test().suite().listener()).append(isA(LoggingTestLifecycleListener.class));
+        verify(api.test().env().listener()).append(isA(LoggingTestEnvironmentListener.class));
     }
 
     @Test
@@ -66,12 +66,11 @@ class ApiTest {
         initializeApi(api, List.of());
 
         // Then:
-        final InOrder inOrder = inOrder(api.test().suite().listener());
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(LoggingTestLifecycleListener.class));
-        inOrder.verify(api.test().suite().listener()).append(isA(SuiteCleanUpListener.class));
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(AddServicesUnderTestListener.class));
+        final InOrder inOrder = inOrder(api.test().env().listener());
+        inOrder.verify(api.test().env().listener())
+                .append(isA(LoggingTestEnvironmentListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(SuiteCleanUpListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(AddServicesUnderTestListener.class));
     }
 
     @Test
@@ -80,12 +79,10 @@ class ApiTest {
         initializeApi(api, List.of());
 
         // Then:
-        final InOrder inOrder = inOrder(api.test().suite().listener());
-        inOrder.verify(api.test().suite().listener()).append(isA(SuiteCleanUpListener.class));
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(AddServicesUnderTestListener.class));
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(InitializeResourcesListener.class));
+        final InOrder inOrder = inOrder(api.test().env().listener());
+        inOrder.verify(api.test().env().listener()).append(isA(SuiteCleanUpListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(AddServicesUnderTestListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(InitializeResourcesListener.class));
     }
 
     @Test
@@ -94,11 +91,9 @@ class ApiTest {
         initializeApi(api, List.of(ext0));
 
         // Then:
-        final InOrder inOrder = inOrder(api.test().suite().listener(), ext0);
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(AddServicesUnderTestListener.class));
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(InitializeResourcesListener.class));
+        final InOrder inOrder = inOrder(api.test().env().listener(), ext0);
+        inOrder.verify(api.test().env().listener()).append(isA(AddServicesUnderTestListener.class));
+        inOrder.verify(api.test().env().listener()).append(isA(InitializeResourcesListener.class));
         inOrder.verify(ext0).initialize(api);
     }
 
@@ -108,12 +103,11 @@ class ApiTest {
         initializeApi(api, List.of(ext0, ext1));
 
         // Then:
-        final InOrder inOrder = inOrder(api.test().suite().listener(), ext0, ext1);
-        inOrder.verify(api.test().suite().listener())
-                .append(isA(InitializeResourcesListener.class));
+        final InOrder inOrder = inOrder(api.test().env().listener(), ext0, ext1);
+        inOrder.verify(api.test().env().listener()).append(isA(InitializeResourcesListener.class));
         inOrder.verify(ext0).initialize(api);
         inOrder.verify(ext1).initialize(api);
-        inOrder.verify(api.test().suite().listener())
+        inOrder.verify(api.test().env().listener())
                 .append(isA(StartServicesUnderTestListener.class));
     }
 
@@ -153,9 +147,9 @@ class ApiTest {
         initializeApi(api, List.of(ext0));
 
         // Then:
-        final InOrder inOrder = inOrder(api.test().suite().listener(), ext0);
+        final InOrder inOrder = inOrder(api.test().env().listener(), ext0);
         inOrder.verify(ext0).initialize(api);
-        inOrder.verify(api.test().suite().listener())
+        inOrder.verify(api.test().env().listener())
                 .append(isA(StartServicesUnderTestListener.class));
     }
 }
