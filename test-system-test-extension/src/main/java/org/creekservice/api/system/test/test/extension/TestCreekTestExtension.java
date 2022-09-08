@@ -59,7 +59,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
     private static final class TestResourceHandler implements ResourceHandler<TestResource> {
 
         @Override
-        public void validate(final Collection<TestResource> resourceGroup) {
+        public void validate(final Collection<? extends TestResource> resourceGroup) {
             if (resourceGroup.isEmpty()) {
                 throw new AssertionError("Validate called with empty resourceGroup");
             }
@@ -75,7 +75,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
         }
 
         @Override
-        public void ensure(final Collection<TestResource> resources) {
+        public void ensure(final Collection<? extends TestResource> resources) {
             if (resources.isEmpty()) {
                 throw new AssertionError("ensure called with empty resources");
             }
@@ -88,7 +88,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
             System.out.println("Ensuring resources: " + ids);
         }
 
-        private URI validateAllMatchingIds(final Collection<TestResource> resourceGroup) {
+        private URI validateAllMatchingIds(final Collection<? extends TestResource> resourceGroup) {
             final Set<URI> ids =
                     resourceGroup.stream().map(TestResource::id).collect(Collectors.toSet());
             if (ids.size() != 1) {
@@ -97,7 +97,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
             return ids.iterator().next();
         }
 
-        private static List<URI> ids(final Collection<TestResource> resourceGroup) {
+        private static List<URI> ids(final Collection<? extends TestResource> resourceGroup) {
             return resourceGroup.stream().map(ResourceDescriptor::id).collect(Collectors.toList());
         }
 
