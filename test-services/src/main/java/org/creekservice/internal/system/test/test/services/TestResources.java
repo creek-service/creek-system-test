@@ -22,9 +22,14 @@ import org.creekservice.api.system.test.test.service.extension.TestResource;
 import org.creekservice.api.system.test.test.service.extension.TestResourceInput;
 import org.creekservice.api.system.test.test.service.extension.TestResourceInternal;
 import org.creekservice.api.system.test.test.service.extension.TestResourceOutput;
+import org.creekservice.api.system.test.test.service.extension.TestResourceShared;
 
 public final class TestResources {
     private TestResources() {}
+
+    public static TestResourceShared shared(final String name) {
+        return new Shared(name);
+    }
 
     public static TestResourceInternal internal(final String name) {
         return new Internal(name);
@@ -50,6 +55,12 @@ public final class TestResources {
 
         public TestResourceInput toInput() {
             return new UnownedInput(name);
+        }
+    }
+
+    private static class Shared extends Base implements TestResourceShared {
+        Shared(final String name) {
+            super(name);
         }
     }
 

@@ -320,7 +320,7 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldValidateResourceGroupsDuringTestInitialization() {
+    void shouldValidateResourceGroupsDuring() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
 
@@ -328,6 +328,8 @@ class SystemTestExecutorFunctionalTest {
         runExecutor(minimalArgs());
 
         // Then:
+        assertThat(
+                stdOut.get(), containsString("Validating resource group: test://shared, count: 1"));
         assertThat(
                 stdOut.get(),
                 containsString("Validating resource group: test://internal, count: 1"));
@@ -355,7 +357,19 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldInitialiseSharedAndUnownedResources() {
+    void shouldInitialiseSharedResources() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Ensuring resources: [test://shared]"));
+    }
+
+    @Test
+    void shouldInitialiseUnownedResources() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
 
