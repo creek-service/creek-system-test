@@ -23,9 +23,9 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import org.creekservice.api.system.test.extension.model.CreekTestCase;
-import org.creekservice.api.system.test.extension.model.Expectation;
-import org.creekservice.api.system.test.extension.model.Input;
+import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.Input;
 
 /** A single test case. */
 public final class TestCase implements CreekTestCase {

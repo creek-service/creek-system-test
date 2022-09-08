@@ -18,9 +18,9 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
 
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
@@ -37,11 +37,11 @@ public final class SuiteCleanUpListener implements TestLifecycleListener {
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
-        api.testSuite().services().clear();
+        api.test().suite().services().clear();
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
-        api.testSuite().services().forEach(ServiceInstance::stop);
+        api.test().suite().services().forEach(ServiceInstance::stop);
     }
 }

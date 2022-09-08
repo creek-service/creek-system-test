@@ -17,7 +17,7 @@
 package org.creekservice.internal.system.test.parser;
 
 
-import org.creekservice.api.system.test.extension.model.Ref;
+import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.model.LocationAware;
 
 public class MissingDependencyException extends TestLoadFailedException {

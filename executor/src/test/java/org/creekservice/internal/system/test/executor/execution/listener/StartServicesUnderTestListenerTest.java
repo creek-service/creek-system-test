@@ -29,8 +29,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Supplier;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

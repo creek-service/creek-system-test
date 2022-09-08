@@ -25,8 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.EqualsTester;
 import java.net.URI;
 import java.util.List;
-import org.creekservice.api.system.test.extension.model.ExpectationRef;
-import org.creekservice.api.system.test.extension.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
 import org.creekservice.internal.system.test.parser.SystemTestMapper;
 import org.junit.jupiter.api.Test;
 

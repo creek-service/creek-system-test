@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 
 /** A suite of test cases */
 public final class TestSuite implements CreekTestSuite {

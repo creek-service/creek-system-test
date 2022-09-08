@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
+import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,13 +74,14 @@ class AddServicesUnderTestListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        final InOrder inOrder = inOrder(api.services(), api.testSuite().services());
-        inOrder.verify(api.services()).get("a");
-        inOrder.verify(api.testSuite().services()).add(defs.get("a"));
-        inOrder.verify(api.services()).get("b");
-        inOrder.verify(api.testSuite().services()).add(defs.get("b"));
-        inOrder.verify(api.services()).get("c");
-        inOrder.verify(api.testSuite().services()).add(defs.get("c"));
+        final InOrder inOrder =
+                inOrder(api.component().definitions().service(), api.test().suite().services());
+        inOrder.verify(api.component().definitions().service()).get("a");
+        inOrder.verify(api.test().suite().services()).add(defs.get("a"));
+        inOrder.verify(api.component().definitions().service()).get("b");
+        inOrder.verify(api.test().suite().services()).add(defs.get("b"));
+        inOrder.verify(api.component().definitions().service()).get("c");
+        inOrder.verify(api.test().suite().services()).add(defs.get("c"));
     }
 
     @Test
@@ -119,7 +120,7 @@ class AddServicesUnderTestListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        verify(api.testSuite().services(), times(2)).add(defs.get("a"));
+        verify(api.test().suite().services(), times(2)).add(defs.get("a"));
         assertThat(listener.added(), contains(instances.get("a:0"), instances.get("a:1")));
     }
 
@@ -127,7 +128,8 @@ class AddServicesUnderTestListenerTest {
     void shouldThrowOnUnknownService() {
         // Given:
         when(suite.services()).thenReturn(List.of("misspelled-service"));
-        when(api.services().get(any())).thenThrow(new RuntimeException("unknown service"));
+        when(api.component().definitions().service().get(any()))
+                .thenThrow(new RuntimeException("unknown service"));
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, () -> listener.beforeSuite(suite));
@@ -169,7 +171,7 @@ class AddServicesUnderTestListenerTest {
             }
         }
 
-        when(api.testSuite().services().add(def)).thenReturn(first, others);
+        when(api.test().suite().services().add(def)).thenReturn(first, others);
     }
 
     private ServiceDefinition setUpDefMock(final String serviceName) {
@@ -177,7 +179,7 @@ class AddServicesUnderTestListenerTest {
                 serviceName,
                 name -> {
                     final ServiceDefinition def = mock(ServiceDefinition.class, serviceName);
-                    when(api.services().get(name)).thenReturn(def);
+                    when(api.component().definitions().service().get(name)).thenReturn(def);
                     return def;
                 });
     }

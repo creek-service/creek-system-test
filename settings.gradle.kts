@@ -5,7 +5,8 @@ include(
     "extension",
     "model",
     "parser",
-    "test-extension",
+    "test-system-test-extension",
+    "test-service-extension-metadata",
     "test-service",
     "test-services",
     "test-util"

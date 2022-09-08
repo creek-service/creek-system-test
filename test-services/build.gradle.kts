@@ -21,5 +21,6 @@ plugins {
 val creekBaseVersion : String by extra
 
 dependencies {
-    implementation("org.creekservice:creek-platform-metadata:$creekBaseVersion")
+    api(project(":test-service-extension-metadata"))
+    api("org.creekservice:creek-platform-metadata:$creekBaseVersion")
 }

@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import org.creekservice.api.system.test.extension.model.Ref;
+import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.model.LocationAware;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

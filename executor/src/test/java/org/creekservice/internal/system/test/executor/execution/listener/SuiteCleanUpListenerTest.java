@@ -20,8 +20,8 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.verify;
 
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class SuiteCleanUpListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.testSuite().services()).clear();
+        verify(api.test().suite().services()).clear();
     }
 
     @Test
@@ -61,7 +61,7 @@ class SuiteCleanUpListenerTest {
         listener.afterSuite(null);
 
         // Then:
-        verify(api.testSuite().services()).forEach(actionCaptor.capture());
+        verify(api.test().suite().services()).forEach(actionCaptor.capture());
         actionCaptor.getValue().accept(service);
         verify(service).stop();
     }

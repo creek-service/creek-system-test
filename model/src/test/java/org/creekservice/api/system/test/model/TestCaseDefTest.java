@@ -16,9 +16,9 @@
 
 package org.creekservice.api.system.test.model;
 
-import static org.creekservice.api.system.test.extension.model.ModelType.expectationRef;
-import static org.creekservice.api.system.test.extension.model.ModelType.inputRef;
-import static org.creekservice.api.system.test.extension.model.ModelType.ref;
+import static org.creekservice.api.system.test.extension.test.model.ModelType.expectationRef;
+import static org.creekservice.api.system.test.extension.test.model.ModelType.inputRef;
+import static org.creekservice.api.system.test.extension.test.model.ModelType.ref;
 import static org.creekservice.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
 import static org.creekservice.api.system.test.model.SimpleRef.simpleRef;
 import static org.creekservice.api.system.test.model.TestCaseDef.testCase;
@@ -39,8 +39,8 @@ import com.google.common.testing.EqualsTester;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import org.creekservice.api.system.test.extension.model.ExpectationRef;
-import org.creekservice.api.system.test.extension.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
 import org.creekservice.internal.system.test.parser.SystemTestMapper;
 import org.junit.jupiter.api.Test;
 

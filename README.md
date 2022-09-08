@@ -50,7 +50,11 @@ First, let's define the terminology we'll be using:
 * **[extension](extension):** defines types required to implement extensions to the system tests.
 * **[model](model):** system test model.
 * **[parser](parser):** code for parsing system tests.
-* **[test-extension](test-extension):** a system test extension used internally during testing.
+* **[test-service](test-service):** creates a docker image container a simple microservice used for testing within this repo
+* **[test-services](test-services):** creates a jar containing the metadata for [test-service](test-service), i.e. the service descriptor. 
+* **[test-service-extension-metadata](test-service-extension-metadata):** the metadata types for a fictitious service extension used internally during testing.
+* **[test-system-test-extension](test-system-test-extension):** a system test extension used internally during testing.
+* **[test-util](test-util)**: contains some utilities to help test system test extensions.
 
 ## Writing system tests
 

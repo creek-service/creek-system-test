@@ -29,11 +29,11 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
-import org.creekservice.api.system.test.extension.service.ServiceContainer;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
+import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstanceContainer;
+import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
+import org.creekservice.internal.system.test.executor.api.test.suite.service.DockerServiceContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,8 +64,14 @@ class CreekSystemTestExtensionTesterTest {
 
     @Test
     void shouldExposeServiceDefinitions() {
-        assertThat(tester.serviceDefinitions(), is(instanceOf(ServiceDefinitions.class)));
+        assertThat(tester.serviceDefinitions(), is(instanceOf(ComponentDefinitions.class)));
         assertThat(tester.serviceDefinitions().get("test-service"), is(notNullValue()));
+    }
+
+    @Test
+    void shouldExposeAggregateDefinitions() {
+        assertThat(tester.aggregateDefinitions(), is(instanceOf(ComponentDefinitions.class)));
+        assertThat(tester.aggregateDefinitions().get("test-agg"), is(notNullValue()));
     }
 
     @Test
@@ -88,7 +94,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldReturnRunningContainerIds() {
         // Given:
-        final ServiceContainer services = tester.dockerServicesContainer();
+        final ServiceInstanceContainer services = tester.dockerServicesContainer();
         final ServiceInstance instance = services.add(serviceDef);
         instance.start();
 
@@ -109,7 +115,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldClear() {
         // Given:
-        final ServiceContainer services = tester.dockerServicesContainer();
+        final ServiceInstanceContainer services = tester.dockerServicesContainer();
         services.add(serviceDef);
         assertThat(services.iterator().hasNext(), is(true));
 

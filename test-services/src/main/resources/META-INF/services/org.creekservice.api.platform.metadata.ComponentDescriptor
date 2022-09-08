@@ -15,3 +15,4 @@
 #
 
 org.creekservice.api.system.test.test.services.TestServiceDescriptor
+org.creekservice.api.system.test.test.services.TestAggregateDescriptor
