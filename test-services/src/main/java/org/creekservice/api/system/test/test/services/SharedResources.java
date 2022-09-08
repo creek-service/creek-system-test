@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.test.service.extension;
+package org.creekservice.api.system.test.test.services;
 
+import static org.creekservice.internal.system.test.test.services.TestResources.shared;
 
-import org.creekservice.api.platform.metadata.ComponentInput;
-import org.creekservice.api.platform.metadata.SharedResource;
+import org.creekservice.api.system.test.test.service.extension.TestResourceShared;
 
-public interface TestResourceShared extends SharedResource, TestResource, ComponentInput {
-    TestResourceInput toInput();
+/** Example shared resources (which would normally live in a different jar) */
+public final class SharedResources {
+
+    private SharedResources() {}
+
+    public static final TestResourceShared SHARED = shared("shared");
 }
