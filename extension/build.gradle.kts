@@ -20,11 +20,13 @@ plugins {
 
 val creekBaseVersion : String by extra
 val creekPlatformVersion : String by extra
+val creekServiceVersion : String by extra
 
 dependencies {
     api("org.creekservice:creek-platform-metadata:$creekPlatformVersion")
+    api("org.creekservice:creek-service-extension:$creekServiceVersion")
     // Otherwise, non-test dependency free
 
-    testImplementation(project(":test-extension"))
+    testImplementation(project(":test-system-test-extension"))
     testImplementation("org.creekservice:creek-base-type:$creekBaseVersion")
 }

@@ -16,13 +16,16 @@
 
 
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.system.test.test.services.TestAggregateDescriptor;
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 
 module creek.system.test.test.services {
     requires transitive creek.platform.metadata;
+    requires transitive creek.system.test.test.service.extension;
 
     exports org.creekservice.api.system.test.test.services;
 
     provides ComponentDescriptor with
-            TestServiceDescriptor;
+            TestServiceDescriptor,
+            TestAggregateDescriptor;
 }

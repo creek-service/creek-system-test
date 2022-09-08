@@ -26,8 +26,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.testsuite.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.suite.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -17,69 +17,126 @@
 package org.creekservice.internal.system.test.executor.api;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.api.platform.resource.ComponentValidator.componentValidator;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collection;
-import java.util.Optional;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.resource.ComponentValidator;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
-import org.creekservice.api.system.test.extension.service.ServiceDefinition;
-import org.creekservice.internal.system.test.executor.api.model.Model;
-import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
-import org.creekservice.internal.system.test.executor.api.testsuite.TestSuiteEnv;
+import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
+import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.internal.service.api.ComponentModel;
+import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
+import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
+import org.creekservice.internal.system.test.executor.api.test.suite.TestSuiteEnv;
 
 public final class SystemTest implements CreekSystemTest {
 
-    private final Model model;
-    private final TestSuiteEnv testEnv;
-    private final ServiceDefinitions services;
+    private final Test test;
+    private final Components components;
 
     public SystemTest(final Collection<? extends ComponentDescriptor> components) {
         this(
-                new Model(),
+                new TestModel(),
+                new ComponentModel(),
                 new TestSuiteEnv(),
-                new ServiceDefinitions(components),
-                componentValidator());
+                ComponentDefinitions.serviceDefinitions(components),
+                ComponentDefinitions.aggregateDefinitions(components));
     }
 
     @VisibleForTesting
     SystemTest(
-            final Model model,
+            final TestModel testModel,
+            final ComponentModel componentModel,
             final TestSuiteEnv testEnv,
-            final ServiceDefinitions services,
-            final ComponentValidator componentValidator) {
-        this.model = requireNonNull(model, "model");
-        this.testEnv = requireNonNull(testEnv, "testEnv");
-        this.services = requireNonNull(services, "services");
-
-        validateDescriptors(requireNonNull(componentValidator, "componentValidator"));
+            final ComponentDefinitions<ServiceDefinition> serviceDefinitions,
+            final ComponentDefinitions<AggregateDefinition> aggregateDefinitions) {
+        this.test = new Test(testModel, testEnv);
+        this.components = new Components(componentModel, serviceDefinitions, aggregateDefinitions);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public Model model() {
-        return model;
+    public Test test() {
+        return test;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public TestSuiteEnv testSuite() {
-        return testEnv;
+    public Components component() {
+        return components;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
-    @Override
-    public ServiceDefinitions services() {
-        return services;
+    public static final class Test implements CreekSystemTest.TestAccessor {
+
+        private final TestModel testModel;
+        private final TestSuiteEnv testEnv;
+
+        Test(final TestModel testModel, final TestSuiteEnv testEnv) {
+            this.testModel = requireNonNull(testModel, "testModel");
+            this.testEnv = requireNonNull(testEnv, "testEnv");
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public TestModel model() {
+            return testModel;
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public TestSuiteEnv suite() {
+            return testEnv;
+        }
     }
 
-    private void validateDescriptors(final ComponentValidator validator) {
-        services.stream()
-                .map(ServiceDefinition::descriptor)
-                .flatMap(Optional::stream)
-                .forEach(validator::validate);
+    public static final class Components implements ComponentAccessor {
+
+        private final ComponentModel componentModel;
+        private final Definitions definitions;
+
+        Components(
+                final ComponentModel componentModel,
+                final ComponentDefinitions<ServiceDefinition> serviceDefinitions,
+                final ComponentDefinitions<AggregateDefinition> aggregateDefinitions) {
+            this.componentModel = requireNonNull(componentModel, "componentModel");
+            this.definitions = new Definitions(serviceDefinitions, aggregateDefinitions);
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public ComponentModel model() {
+            return componentModel;
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public Definitions definitions() {
+            return definitions;
+        }
+    }
+
+    public static final class Definitions implements ComponentDefinitionAccessor {
+
+        private final ComponentDefinitions<ServiceDefinition> serviceDefinitions;
+        private final ComponentDefinitions<AggregateDefinition> aggregateDefinitions;
+
+        Definitions(
+                final ComponentDefinitions<ServiceDefinition> serviceDefinitions,
+                final ComponentDefinitions<AggregateDefinition> aggregateDefinitions) {
+            this.serviceDefinitions = requireNonNull(serviceDefinitions, "serviceDefinitions");
+            this.aggregateDefinitions =
+                    requireNonNull(aggregateDefinitions, "aggregateDefinitions");
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public ComponentDefinitions<AggregateDefinition> aggregate() {
+            return aggregateDefinitions;
+        }
+
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        @Override
+        public ComponentDefinitions<ServiceDefinition> service() {
+            return serviceDefinitions;
+        }
     }
 }

@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import java.util.List;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
+import org.creekservice.api.system.test.test.services.TestAggregateDescriptor;
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,10 @@ class ComponentDescriptorsTest {
         final List<ComponentDescriptor> result = ComponentDescriptors.load();
 
         // Then:
-        assertThat(result, containsInAnyOrder(instanceOf(TestServiceDescriptor.class)));
+        assertThat(
+                result,
+                containsInAnyOrder(
+                        instanceOf(TestServiceDescriptor.class),
+                        instanceOf(TestAggregateDescriptor.class)));
     }
 }

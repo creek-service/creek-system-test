@@ -34,12 +34,12 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.util.Collection;
-import org.creekservice.api.system.test.extension.model.Expectation;
-import org.creekservice.api.system.test.extension.model.ExpectationRef;
-import org.creekservice.api.system.test.extension.model.Input;
-import org.creekservice.api.system.test.extension.model.InputRef;
-import org.creekservice.api.system.test.extension.model.ModelType;
-import org.creekservice.api.system.test.extension.model.Ref;
+import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.Input;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.ModelType;
+import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.model.LocationAware;
 
 public final class SystemTestMapper {

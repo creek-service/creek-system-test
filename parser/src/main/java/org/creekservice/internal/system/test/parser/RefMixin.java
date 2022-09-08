@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.creekservice.api.system.test.model.SimpleRef;
 
 /**
- * {@link org.creekservice.api.system.test.extension.model.Ref} model types as being polymorphic,
- * with {@link SimpleRef} as its default impl.
+ * {@link org.creekservice.api.system.test.extension.test.model.Ref} model types as being
+ * polymorphic, with {@link SimpleRef} as its default impl.
  *
  * <p>The use of mixins avoids the need for the {@code extension} model to depend on Jackson
  * annotations.

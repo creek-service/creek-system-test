@@ -18,7 +18,7 @@ package org.creekservice.internal.system.test.executor.execution;
 
 import static java.util.Objects.requireNonNull;
 
-import org.creekservice.api.system.test.extension.testsuite.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.suite.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
 
 public final class TestCaseExecutor {

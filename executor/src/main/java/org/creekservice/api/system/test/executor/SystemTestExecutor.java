@@ -18,25 +18,17 @@ package org.creekservice.api.system.test.executor;
 
 import static org.creekservice.api.system.test.parser.TestPackageParsers.yamlParser;
 import static org.creekservice.api.system.test.parser.TestPackagesLoader.testPackagesLoader;
+import static org.creekservice.internal.system.test.executor.api.Api.initializeApi;
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
-import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.ComponentDescriptors;
-import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
-import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
-import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
-import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
-import org.creekservice.internal.system.test.executor.observation.LoggingTestLifecycleListener;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
@@ -124,44 +116,20 @@ public final class SystemTestExecutor {
                 .collect(Collectors.joining(" "));
     }
 
-    private static SystemTest initializeApi() {
-        final SystemTest api = new SystemTest(loadComponents());
-        api.testSuite().listener().append(new LoggingTestLifecycleListener());
-        api.testSuite().listener().append(new SuiteCleanUpListener(api));
-        final AddServicesUnderTestListener addServicesListener =
-                new AddServicesUnderTestListener(api);
-        api.testSuite().listener().append(addServicesListener);
-        loadExtensions().forEach(ext -> ext.initialize(api));
-        api.testSuite()
-                .listener()
-                .append(new StartServicesUnderTestListener(addServicesListener::added));
-        return api;
-    }
-
-    private static List<CreekTestExtension> loadExtensions() {
-        final List<CreekTestExtension> extensions = CreekTestExtensions.load();
-        extensions.forEach(ext -> LOGGER.debug("Loaded extension: " + ext.name()));
-        return extensions;
-    }
-
-    private static List<ComponentDescriptor> loadComponents() {
-        final List<ComponentDescriptor> components = ComponentDescriptors.load();
-        components.forEach(comp -> LOGGER.debug("Loaded components: " + comp.name()));
-        return components;
-    }
-
     private static TestPackagesExecutor executor(
             final ExecutorOptions options, final SystemTest api) {
 
         final TestPackagesLoader loader =
                 testPackagesLoader(
                         options.testDirectory(),
-                        yamlParser(api.model().modelTypes(), new TestPackageParserObserver(LOGGER)),
+                        yamlParser(
+                                api.test().model().modelTypes(),
+                                new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api.testSuite().listener()),
+                new TestSuiteExecutor(api.test().suite().listener()),
                 new ResultsWriter(options.resultDirectory()));
     }
 

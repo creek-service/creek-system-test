@@ -28,7 +28,7 @@ import com.google.common.testing.EqualsTester;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import org.creekservice.api.system.test.extension.model.Input;
+import org.creekservice.api.system.test.extension.test.model.Input;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

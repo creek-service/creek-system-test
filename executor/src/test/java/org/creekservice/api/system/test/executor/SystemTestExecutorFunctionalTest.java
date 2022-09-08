@@ -17,6 +17,7 @@
 package org.creekservice.api.system.test.executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.OwnedOutput;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.creekservice.api.test.util.debug.RemoteDebug.remoteDebugArguments;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,9 +32,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -41,6 +45,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.creekservice.api.base.type.Suppliers;
+import org.creekservice.api.system.test.test.extension.TestCreekTestExtension;
+import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +61,14 @@ class SystemTestExecutorFunctionalTest {
             TestPaths.moduleRoot("executor").resolve("build/install/executor/lib").toAbsolutePath();
 
     private static final Path TEST_EXT_LIB_DIR =
-            TestPaths.moduleRoot("test-extension").resolve("build/libs").toAbsolutePath();
+            TestPaths.moduleRoot("test-system-test-extension")
+                    .resolve("build/libs")
+                    .toAbsolutePath();
+
+    private static final Path SERVICE_EXT_LIB_DIR =
+            TestPaths.moduleRoot("test-service-extension-metadata")
+                    .resolve("build/libs")
+                    .toAbsolutePath();
 
     private static final Path TEST_SERVICES_LIB_DIR =
             TestPaths.moduleRoot("test-services").resolve("build/libs").toAbsolutePath();
@@ -67,16 +80,30 @@ class SystemTestExecutorFunctionalTest {
 
     private static final String VALID_EXPECTATION = "---\n'@type': test\noutput: output stuff";
 
+    private enum ExpectedResult {
+        ERRORS(1),
+        FAILURES(2),
+        SUCCESS(3);
+
+        public final int numTestCases;
+
+        ExpectedResult(final int numTestCases) {
+            this.numTestCases = numTestCases;
+        }
+    }
+
     @TempDir private Path root;
     private Path testDir;
     private Path resultDir;
     private Supplier<String> stdErr;
     private Supplier<String> stdOut;
+    private Map<String, String> env;
 
     @BeforeEach
     void setUp() {
         testDir = root.resolve("tests");
         resultDir = root.resolve("results");
+        env = new HashMap<>();
     }
 
     @Test
@@ -215,7 +242,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportTestErrors() {
         // Given:
         final String[] args = minimalArgs();
-        givenTestCaseCount(1);
+        givenResult(ExpectedResult.ERRORS);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -231,7 +258,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportTestFailures() {
         // Given:
         final String[] args = minimalArgs();
-        givenTestCaseCount(2);
+        givenResult(ExpectedResult.FAILURES);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -247,7 +274,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportSuccess() {
         // Given:
         final String[] args = minimalArgs();
-        givenTestCaseCount(3);
+        givenResult(ExpectedResult.SUCCESS);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -261,7 +288,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldLogTestLifecycle() {
         // Given:
         final String[] args = minimalArgs();
-        givenTestCaseCount(3);
+        givenResult(ExpectedResult.SUCCESS);
 
         // When:
         runExecutor(args);
@@ -278,7 +305,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldLogOnUnusedDependency() {
         // Given:
         final String[] args = minimalArgs();
-        givenTestCaseCount(3);
+        givenResult(ExpectedResult.SUCCESS);
         final Path unused = testDir.resolve("expectations/unused-expectation.yml");
         TestPaths.write(unused, VALID_EXPECTATION);
 
@@ -293,6 +320,72 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
+    void shouldValidateResourceGroupsDuringTestInitialization() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdOut.get(),
+                containsString("Validating resource group: test://internal, count: 1"));
+        assertThat(
+                stdOut.get(), containsString("Validating resource group: test://output, count: 1"));
+        assertThat(
+                stdOut.get(),
+                containsString("Validating resource group: test://upstream, count: 2"));
+    }
+
+    @Test
+    void shouldReportReportValidationFailure() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+        givenEnv(TestCreekTestExtension.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdErr.get(),
+                containsString("Validation failed for resource group: " + OwnedOutput.id()));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldInitialiseSharedAndUnownedResources() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Ensuring resources: [test://upstream]"));
+    }
+
+    @Test
+    void shouldReportReportEnsureFailure() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+        givenEnv(
+                TestCreekTestExtension.ENV_FAIL_ENSURE_RESOURCE_ID,
+                TestServiceDescriptor.UnownedInput1.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdErr.get(),
+                containsString(
+                        "Ensure failed for resource: " + TestServiceDescriptor.UnownedInput1.id()));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
     void shouldNotCheckInWithDebuggingEnabled() {
         assertThat("Do not check in with debugging enabled", !DEBUG);
     }
@@ -304,6 +397,9 @@ class SystemTestExecutorFunctionalTest {
                         + "/*"
                         + SEPARATOR
                         + TEST_EXT_LIB_DIR
+                        + "/*"
+                        + SEPARATOR
+                        + SERVICE_EXT_LIB_DIR
                         + "/*"
                         + SEPARATOR
                         + TEST_SERVICES_LIB_DIR
@@ -321,7 +417,9 @@ class SystemTestExecutorFunctionalTest {
         final List<String> cmd = buildCommand(javaArgs, cmdArgs);
 
         try {
-            final Process executor = new ProcessBuilder().command(cmd).start();
+            final ProcessBuilder builder = new ProcessBuilder().command(cmd);
+            builder.environment().putAll(env);
+            final Process executor = builder.start();
 
             stdErr = Suppliers.memoize(() -> readAll(executor.getErrorStream()));
             stdOut = Suppliers.memoize(() -> readAll(executor.getInputStream()));
@@ -352,9 +450,9 @@ class SystemTestExecutorFunctionalTest {
         return args.toArray(String[]::new);
     }
 
-    private void givenTestCaseCount(final int numberTestCases) {
+    private void givenResult(final ExpectedResult result) {
         TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), VALID_EXPECTATION);
-        TestPaths.write(testDir.resolve("suite.yml"), suiteContent(numberTestCases));
+        TestPaths.write(testDir.resolve("suite.yml"), suiteContent(result.numTestCases));
     }
 
     private String suiteContent(final int numberTestCases) {
@@ -379,6 +477,10 @@ class SystemTestExecutorFunctionalTest {
         return new BufferedReader(new InputStreamReader(stdErr, UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
+    }
+
+    private void givenEnv(final String envName, final URI id) {
+        this.env.put(envName, id.toString());
     }
 
     private static Optional<String> findConvergeAgentCmdLineArg() {

@@ -21,25 +21,31 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
-import org.creekservice.api.system.test.extension.service.ServiceContainer;
-import org.creekservice.api.system.test.extension.service.ServiceDefinitionCollection;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.service.ServiceDefinitions;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.ContainerInstance;
-import org.creekservice.internal.system.test.executor.api.testsuite.service.DockerServiceContainer;
+import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
+import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
+import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstanceContainer;
+import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
+import org.creekservice.internal.system.test.executor.api.test.suite.service.ContainerInstance;
+import org.creekservice.internal.system.test.executor.api.test.suite.service.DockerServiceContainer;
 
 /** A test helper for testing Creek system test extensions. */
 public final class CreekSystemTestExtensionTester {
 
     private final DockerServiceContainer services;
-    private final ServiceDefinitions serviceDefinitions;
+    private final ComponentDefinitions<ServiceDefinition> serviceDefinitions;
+    private final ComponentDefinitions<AggregateDefinition> aggregateDefinitions;
 
     private CreekSystemTestExtensionTester() {
         this.services = new DockerServiceContainer();
-        this.serviceDefinitions = new ServiceDefinitions(ComponentDescriptors.load());
+        final List<ComponentDescriptor> components = ComponentDescriptors.load();
+        this.serviceDefinitions = ComponentDefinitions.serviceDefinitions(components);
+        this.aggregateDefinitions = ComponentDefinitions.aggregateDefinitions(components);
     }
 
     public static CreekSystemTestExtensionTester extensionTester() {
@@ -65,17 +71,25 @@ public final class CreekSystemTestExtensionTester {
     }
 
     /**
-     * Load accessible service extensions from the module and class paths and use them to initialize
-     * the service definitions' collection.
+     * Collection of all service definitions that could be loaded from the class and module paths.
      *
      * <p>The returned collection can be queried to get {@link
-     * org.creekservice.api.system.test.extension.service.ServiceDefinition service definitions}
-     * that can be used to create service instances.
+     * org.creekservice.api.system.test.extension.component.definition.ServiceDefinition service
+     * definitions} that can be used to create service instances.
      *
      * @return service definition collection.
      */
-    public ServiceDefinitionCollection serviceDefinitions() {
+    public ComponentDefinitionCollection<ServiceDefinition> serviceDefinitions() {
         return serviceDefinitions;
+    }
+
+    /**
+     * Collection of all aggregate definitions that could be loaded from the class and module paths.
+     *
+     * @return aggregate definition collection.
+     */
+    public ComponentDefinitionCollection<AggregateDefinition> aggregateDefinitions() {
+        return aggregateDefinitions;
     }
 
     /**
@@ -89,7 +103,7 @@ public final class CreekSystemTestExtensionTester {
      * @return a docker based service container.
      */
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
-    public ServiceContainer dockerServicesContainer() {
+    public ServiceInstanceContainer dockerServicesContainer() {
         return services;
     }
 

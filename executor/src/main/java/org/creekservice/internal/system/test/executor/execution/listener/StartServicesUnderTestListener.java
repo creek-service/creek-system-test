@@ -22,9 +22,9 @@ import static org.creekservice.api.base.type.Iterators.reverseIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.service.ServiceInstance;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 
 /**
  * A test lifecycle listener that is responsible for starting and stopping the services under test.

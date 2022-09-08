@@ -32,6 +32,6 @@ class CreekTestExtensionsTest {
 
         // Then:
         assertThat(result, hasSize(1));
-        assertThat(result.get(0).name(), is("test"));
+        assertThat(result.get(0).name(), is("test system test extension"));
     }
 }

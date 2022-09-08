@@ -28,8 +28,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Consumer;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.testsuite.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.suite.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;

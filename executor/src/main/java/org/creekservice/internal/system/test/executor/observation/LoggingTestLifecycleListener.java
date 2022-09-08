@@ -17,9 +17,9 @@
 package org.creekservice.internal.system.test.executor.observation;
 
 
-import org.creekservice.api.system.test.extension.model.CreekTestCase;
-import org.creekservice.api.system.test.extension.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.testsuite.TestLifecycleListener;
+import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

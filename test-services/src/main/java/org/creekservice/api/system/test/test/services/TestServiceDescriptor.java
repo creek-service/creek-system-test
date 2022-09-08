@@ -16,11 +16,34 @@
 
 package org.creekservice.api.system.test.test.services;
 
+import static org.creekservice.internal.system.test.test.services.TestResources.internal;
+import static org.creekservice.internal.system.test.test.services.TestResources.output;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.creekservice.api.platform.metadata.ComponentInput;
+import org.creekservice.api.platform.metadata.ComponentInternal;
+import org.creekservice.api.platform.metadata.ComponentOutput;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.test.service.extension.TestResourceInput;
+import org.creekservice.api.system.test.test.service.extension.TestResourceInternal;
+import org.creekservice.api.system.test.test.service.extension.TestResourceOutput;
 
 public final class TestServiceDescriptor implements ServiceDescriptor {
     public static final String SERVICE_NAME = "test-service";
+
+    private static final List<ComponentInput> INPUTS = new ArrayList<>();
+    private static final List<ComponentInternal> INTERNALS = new ArrayList<>();
+    private static final List<ComponentOutput> OUTPUTS = new ArrayList<>();
+
+    public static final TestResourceInput UnownedInput1 =
+            register(TestAggregateDescriptor.OUTPUT.toInput());
+
+    @SuppressWarnings("unused")
+    private static final TestResourceInternal UnmanagedInternal = register(internal("internal"));
+
+    public static final TestResourceOutput OwnedOutput = register(output("output"));
 
     @Override
     public String name() {
@@ -30,5 +53,35 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
     @Override
     public String dockerImage() {
         return "ghcr.io/creekservice/creek-system-test-" + name();
+    }
+
+    @Override
+    public Collection<ComponentInput> inputs() {
+        return List.copyOf(INPUTS);
+    }
+
+    @Override
+    public Collection<ComponentInternal> internals() {
+        return List.copyOf(INTERNALS);
+    }
+
+    @Override
+    public Collection<ComponentOutput> outputs() {
+        return List.copyOf(OUTPUTS);
+    }
+
+    private static <T extends ComponentInput> T register(final T input) {
+        INPUTS.add(input);
+        return input;
+    }
+
+    private static <T extends ComponentInternal> T register(final T internal) {
+        INTERNALS.add(internal);
+        return internal;
+    }
+
+    private static <T extends ComponentOutput> T register(final T output) {
+        OUTPUTS.add(output);
+        return output;
     }
 }

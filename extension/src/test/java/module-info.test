@@ -14,10 +14,13 @@
   java.base/java.util=org.junitpioneer
 
 --add-opens
-  creek.system.test.extension/org.creekservice.api.system.test.extension.model=org.mockito
+  creek.system.test.extension/org.creekservice.api.system.test.extension.test.model=org.mockito
 
 --add-opens
-  creek.system.test.extension/org.creekservice.api.system.test.extension.service=org.mockito
+  creek.system.test.extension/org.creekservice.api.system.test.extension.component.definition=org.mockito
 
 --add-opens
-  creek.system.test.extension/org.creekservice.api.system.test.extension.testsuite=org.mockito
+  creek.system.test.extension/org.creekservice.api.system.test.extension.test.suite=org.mockito
+
+--add-opens
+  creek.system.test.extension/org.creekservice.api.system.test.extension.test.suite.service=org.mockito

@@ -27,8 +27,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.creekservice.api.system.test.extension.model.ExpectationRef;
-import org.creekservice.api.system.test.extension.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
 
 /** Serialisable definition of a test case. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

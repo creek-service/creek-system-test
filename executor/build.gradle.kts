@@ -22,6 +22,7 @@ plugins {
 val creekBaseVersion : String by extra
 val creekPlatformVersion : String by extra
 val creekObsVersion : String by extra
+val creekServiceVersion : String by extra
 val testContainersVersion : String by extra
 val picocliVersion : String by extra
 val log4jVersion : String by extra
@@ -34,13 +35,14 @@ dependencies {
     implementation("org.creekservice:creek-platform-metadata:$creekPlatformVersion")
     implementation("org.creekservice:creek-platform-resource:$creekPlatformVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
+    implementation("org.creekservice:creek-service-api:$creekServiceVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     implementation("org.testcontainers:testcontainers:$testContainersVersion")
     implementation("info.picocli:picocli:$picocliVersion")
     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j18-impl:$log4jVersion")
 
-    testImplementation(project(":test-extension"))
+    testImplementation(project(":test-system-test-extension"))
     testImplementation(project(":test-services"))
 }
 
@@ -51,7 +53,8 @@ application {
 
 tasks.test {
     dependsOn("installDist")
-    dependsOn(":test-extension:jar")
+    dependsOn(":test-system-test-extension:jar")
+    dependsOn(":test-service-extension-metadata:jar")
     dependsOn(":test-services:jar")
     dependsOn(":test-service:buildAppImage")
 }
