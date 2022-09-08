@@ -15,7 +15,7 @@ module creek.system.test.executor {
     requires docker.java.api;
 
     exports org.creekservice.api.system.test.executor;
-    exports org.creekservice.internal.system.test.executor.api.test.suite.service to
+    exports org.creekservice.internal.system.test.executor.api.test.env.suite.service to
             creek.system.test.test.util;
     exports org.creekservice.internal.system.test.executor.api.component.definition to
             creek.system.test.test.util;

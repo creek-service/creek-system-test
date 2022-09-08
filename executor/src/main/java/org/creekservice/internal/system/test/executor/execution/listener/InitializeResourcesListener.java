@@ -30,11 +30,11 @@ import org.creekservice.api.platform.resource.ResourceInitializer;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
-public final class InitializeResourcesListener implements TestLifecycleListener {
+public final class InitializeResourcesListener implements TestEnvironmentListener {
 
     private final SystemTest api;
     private final ResourceInitializer initializer;

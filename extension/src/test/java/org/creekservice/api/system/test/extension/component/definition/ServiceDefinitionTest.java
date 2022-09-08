@@ -21,8 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Optional;
-import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

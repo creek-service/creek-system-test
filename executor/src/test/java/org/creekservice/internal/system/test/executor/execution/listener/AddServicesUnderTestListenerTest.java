@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,13 +75,15 @@ class AddServicesUnderTestListenerTest {
 
         // Then:
         final InOrder inOrder =
-                inOrder(api.component().definitions().service(), api.test().suite().services());
+                inOrder(
+                        api.component().definitions().service(),
+                        api.test().env().currentSuite().services());
         inOrder.verify(api.component().definitions().service()).get("a");
-        inOrder.verify(api.test().suite().services()).add(defs.get("a"));
+        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("a"));
         inOrder.verify(api.component().definitions().service()).get("b");
-        inOrder.verify(api.test().suite().services()).add(defs.get("b"));
+        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("b"));
         inOrder.verify(api.component().definitions().service()).get("c");
-        inOrder.verify(api.test().suite().services()).add(defs.get("c"));
+        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("c"));
     }
 
     @Test
@@ -120,7 +122,7 @@ class AddServicesUnderTestListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        verify(api.test().suite().services(), times(2)).add(defs.get("a"));
+        verify(api.test().env().currentSuite().services(), times(2)).add(defs.get("a"));
         assertThat(listener.added(), contains(instances.get("a:0"), instances.get("a:1")));
     }
 
@@ -171,7 +173,7 @@ class AddServicesUnderTestListenerTest {
             }
         }
 
-        when(api.test().suite().services().add(def)).thenReturn(first, others);
+        when(api.test().env().currentSuite().services().add(def)).thenReturn(first, others);
     }
 
     private ServiceDefinition setUpDefMock(final String serviceName) {

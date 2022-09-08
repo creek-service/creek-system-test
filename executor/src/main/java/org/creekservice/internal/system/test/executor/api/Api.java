@@ -28,7 +28,7 @@ import org.creekservice.internal.system.test.executor.execution.listener.AddServ
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
-import org.creekservice.internal.system.test.executor.observation.LoggingTestLifecycleListener;
+import org.creekservice.internal.system.test.executor.observation.LoggingTestEnvironmentListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,15 +45,15 @@ public final class Api {
     @VisibleForTesting
     static SystemTest initializeApi(
             final SystemTest api, final List<CreekTestExtension> creekTestExtensions) {
-        api.test().suite().listener().append(new LoggingTestLifecycleListener());
-        api.test().suite().listener().append(new SuiteCleanUpListener(api));
+        api.test().env().listener().append(new LoggingTestEnvironmentListener());
+        api.test().env().listener().append(new SuiteCleanUpListener(api));
         final AddServicesUnderTestListener addServicesListener =
                 new AddServicesUnderTestListener(api);
-        api.test().suite().listener().append(addServicesListener);
-        api.test().suite().listener().append(new InitializeResourcesListener(api));
+        api.test().env().listener().append(addServicesListener);
+        api.test().env().listener().append(new InitializeResourcesListener(api));
         creekTestExtensions.forEach(ext -> initializeExt(api, ext));
         api.test()
-                .suite()
+                .env()
                 .listener()
                 .append(new StartServicesUnderTestListener(addServicesListener::added));
         return api;

@@ -28,7 +28,5 @@ public interface AggregateDefinition extends ComponentDefinition {
      *
      * @return the aggregate descriptor.
      */
-    default Optional<? extends AggregateDescriptor> descriptor() {
-        return Optional.empty();
-    }
+    Optional<? extends AggregateDescriptor> descriptor();
 }

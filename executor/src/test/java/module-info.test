@@ -17,19 +17,19 @@
   creek.system.test.executor/org.creekservice.internal.system.test.executor.api=guava.testlib
 
 --add-exports
-  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.model=guava.testlib
-
---add-exports
   creek.system.test.executor/org.creekservice.internal.system.test.executor.api.component.definition=guava.testlib
 
 --add-exports
-  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.suite=guava.testlib
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.env=guava.testlib
 
 --add-exports
-  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.suite.listeners=guava.testlib
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.env.listener=guava.testlib
 
 --add-exports
-  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.suite.service=guava.testlib
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.env.suite=guava.testlib
 
---add-opens
-  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.suite.service=guava.testlib
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.env.suite.service=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.model=guava.testlib

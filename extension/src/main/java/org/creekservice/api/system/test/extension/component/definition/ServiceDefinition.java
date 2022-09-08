@@ -19,8 +19,8 @@ package org.creekservice.api.system.test.extension.component.definition;
 
 import java.util.Optional;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
-import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 
 /** Information required by Creek System Test to start a service */
 public interface ServiceDefinition extends ComponentDefinition {
@@ -48,7 +48,7 @@ public interface ServiceDefinition extends ComponentDefinition {
      * <p>Overriding this method allows the definition class itself to define how to configure the
      * instance. The same functionality can be achieved by configuring the instance returned from
      * {@link
-     * org.creekservice.api.system.test.extension.test.suite.service.ServiceInstanceContainer#add},
+     * org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer#add},
      * e.g.
      *
      * <pre>{@code

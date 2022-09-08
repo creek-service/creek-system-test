@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
+import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
-import org.creekservice.api.system.test.extension.test.suite.TestLifecycleListener;
-import org.creekservice.api.system.test.extension.test.suite.service.ConfigurableServiceInstance;
-import org.creekservice.api.system.test.extension.test.suite.service.ServiceInstance;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
@@ -38,7 +38,7 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
  * under the test suites {@code services} property, in the order they are defined, to the test
  * suite.
  */
-public final class AddServicesUnderTestListener implements TestLifecycleListener {
+public final class AddServicesUnderTestListener implements TestEnvironmentListener {
 
     private static final String STARTED_LOG_LINE_PATTERN =
             ".*" + Pattern.quote(BasicLifecycle.started.logMessage(SERVICE_TYPE)) + ".*";
@@ -62,7 +62,8 @@ public final class AddServicesUnderTestListener implements TestLifecycleListener
 
     private ServiceInstance addServiceUnderTest(final String serviceName) {
         final ServiceDefinition def = api.component().definitions().service().get(serviceName);
-        final ConfigurableServiceInstance instance = api.test().suite().services().add(def);
+        final ConfigurableServiceInstance instance =
+                api.test().env().currentSuite().services().add(def);
 
         instance.setStartupLogMessage(STARTED_LOG_LINE_PATTERN, 1);
 
