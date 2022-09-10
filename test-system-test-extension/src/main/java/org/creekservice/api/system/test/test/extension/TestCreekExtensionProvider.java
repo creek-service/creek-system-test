@@ -21,8 +21,9 @@ import static java.lang.System.getenv;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtension;
@@ -43,13 +44,24 @@ public final class TestCreekExtensionProvider
 
     @Override
     public TestCreekExtension initialize(final CreekService api) {
+        validate(api.components().descriptors().stream());
         api.components().model().addResource(TestResource.class, new TestResourceHandler());
+        return new TestCreekExtension();
+    }
 
-        return new TestCreekExtension(api);
+    private void validate(final Stream<ComponentDescriptor> components) {
+
+        final boolean fail =
+                components
+                        .flatMap(ComponentDescriptor::resources)
+                        .anyMatch(res -> res.id().toString().equals(VALIDATE_FAIL_ID));
+        if (fail) {
+            throw new TestResourceHandler.ValidateFailedException(VALIDATE_FAIL_ID);
+        }
     }
 
     public static final class TestCreekExtension implements CreekExtension {
-        TestCreekExtension(final CreekService api) {}
+        TestCreekExtension() {}
 
         @Override
         public String name() {
@@ -58,22 +70,6 @@ public final class TestCreekExtensionProvider
     }
 
     private static final class TestResourceHandler implements ResourceHandler<TestResource> {
-
-        @Override
-        public void validate(final Collection<? extends TestResource> resourceGroup) {
-            if (resourceGroup.isEmpty()) {
-                throw new AssertionError("Validate called with empty resourceGroup");
-            }
-
-            final URI id = validateAllMatchingIds(resourceGroup);
-
-            if (id.toString().equals(VALIDATE_FAIL_ID)) {
-                throw new ValidateFailedException(id);
-            }
-
-            System.out.println(
-                    "Validating resource group: " + id + ", count: " + resourceGroup.size());
-        }
 
         @Override
         public void ensure(final Collection<? extends TestResource> resources) {
@@ -89,21 +85,12 @@ public final class TestCreekExtensionProvider
             System.out.println("Ensuring resources: " + ids);
         }
 
-        private URI validateAllMatchingIds(final Collection<? extends TestResource> resourceGroup) {
-            final Set<URI> ids =
-                    resourceGroup.stream().map(TestResource::id).collect(Collectors.toSet());
-            if (ids.size() != 1) {
-                throw new AssertionError("Validate called with multiple ids: " + ids);
-            }
-            return ids.iterator().next();
-        }
-
         private static List<URI> ids(final Collection<? extends TestResource> resourceGroup) {
             return resourceGroup.stream().map(ResourceDescriptor::id).collect(Collectors.toList());
         }
 
         private static final class ValidateFailedException extends RuntimeException {
-            ValidateFailedException(final URI id) {
+            ValidateFailedException(final String id) {
                 super("Validation failed for resource group: " + id);
             }
         }
