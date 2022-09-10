@@ -320,27 +320,6 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldValidateResourceGroupsDuring() {
-        // Given:
-        givenResult(ExpectedResult.SUCCESS);
-
-        // When:
-        runExecutor(minimalArgs());
-
-        // Then:
-        assertThat(
-                stdOut.get(), containsString("Validating resource group: test://shared, count: 1"));
-        assertThat(
-                stdOut.get(),
-                containsString("Validating resource group: test://internal, count: 1"));
-        assertThat(
-                stdOut.get(), containsString("Validating resource group: test://output, count: 1"));
-        assertThat(
-                stdOut.get(),
-                containsString("Validating resource group: test://upstream, count: 2"));
-    }
-
-    @Test
     void shouldReportReportValidationFailure() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
@@ -437,7 +416,7 @@ class SystemTestExecutorFunctionalTest {
 
             stdErr = Suppliers.memoize(() -> readAll(executor.getErrorStream()));
             stdOut = Suppliers.memoize(() -> readAll(executor.getInputStream()));
-            executor.waitFor(30, TimeUnit.SECONDS);
+            executor.waitFor(1, TimeUnit.MINUTES);
             return executor.exitValue();
         } catch (final Exception e) {
             throw new AssertionError("Error executing: " + cmd, e);
