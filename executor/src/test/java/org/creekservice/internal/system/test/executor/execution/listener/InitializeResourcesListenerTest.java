@@ -67,9 +67,9 @@ class InitializeResourcesListenerTest {
 
         when(suite.services()).thenReturn(List.of("duplicate", "service-1", "duplicate"));
 
-        when(api.component().definitions().service().get("duplicate")).thenReturn(def0);
-        when(api.component().definitions().service().get("service-1")).thenReturn(def1);
-        when(api.component().definitions().stream()).thenAnswer(inv -> Stream.of(def0, def1));
+        when(api.components().definitions().services().get("duplicate")).thenReturn(def0);
+        when(api.components().definitions().services().get("service-1")).thenReturn(def1);
+        when(api.components().definitions().stream()).thenAnswer(inv -> Stream.of(def0, def1));
 
         when(def0.name()).thenReturn("duplicate");
         doReturn(Optional.of(desc0)).when(def0).descriptor();
@@ -116,7 +116,7 @@ class InitializeResourcesListenerTest {
     void shouldThrowOnUnknownService() {
         // Given:
         final RuntimeException expected = new RuntimeException("unknown service");
-        when(api.component().definitions().service().get("service-1")).thenThrow(expected);
+        when(api.components().definitions().services().get("service-1")).thenThrow(expected);
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, () -> listener.beforeSuite(suite));
@@ -128,7 +128,7 @@ class InitializeResourcesListenerTest {
     @Test
     void shouldPassOtherComponentDescriptors() {
         // Given:
-        when(api.component().definitions().stream())
+        when(api.components().definitions().stream())
                 .thenAnswer(inv -> Stream.of(def0, def1, def2, def3));
 
         // When:
@@ -142,7 +142,8 @@ class InitializeResourcesListenerTest {
     void shouldPassOtherAggregateComponentDescriptorWithSameNameAsServiceUnderTest() {
         // Given:
         when(def3.name()).thenReturn("duplicate");
-        when(api.component().definitions().stream()).thenAnswer(inv -> Stream.of(def0, def1, def3));
+        when(api.components().definitions().stream())
+                .thenAnswer(inv -> Stream.of(def0, def1, def3));
 
         // When:
         listener.beforeSuite(suite);

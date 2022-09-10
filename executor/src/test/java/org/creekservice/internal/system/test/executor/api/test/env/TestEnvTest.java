@@ -51,7 +51,7 @@ class TestEnvTest {
 
     @Test
     void shouldExposeListeners() {
-        assertThat(testEnv.listener(), is(sameInstance(listeners)));
+        assertThat(testEnv.listeners(), is(sameInstance(listeners)));
     }
 
     @Test

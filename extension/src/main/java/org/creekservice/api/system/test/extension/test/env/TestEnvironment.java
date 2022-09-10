@@ -37,5 +37,5 @@ public interface TestEnvironment {
      *
      * @return test listeners
      */
-    TestListenerContainer listener();
+    TestListenerContainer listeners();
 }

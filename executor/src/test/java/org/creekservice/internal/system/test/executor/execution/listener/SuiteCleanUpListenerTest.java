@@ -52,7 +52,7 @@ class SuiteCleanUpListenerTest {
         listener.beforeSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services()).clear();
+        verify(api.tests().env().currentSuite().services()).clear();
     }
 
     @Test
@@ -61,7 +61,7 @@ class SuiteCleanUpListenerTest {
         listener.afterSuite(null);
 
         // Then:
-        verify(api.test().env().currentSuite().services()).forEach(actionCaptor.capture());
+        verify(api.tests().env().currentSuite().services()).forEach(actionCaptor.capture());
         actionCaptor.getValue().accept(service);
         verify(service).stop();
     }

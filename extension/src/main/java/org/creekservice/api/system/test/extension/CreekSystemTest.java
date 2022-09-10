@@ -18,7 +18,8 @@ package org.creekservice.api.system.test.extension;
 
 
 import java.util.stream.Stream;
-import org.creekservice.api.service.extension.model.ComponentModelContainer;
+import org.creekservice.api.service.extension.CreekExtension;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
@@ -34,7 +35,7 @@ public interface CreekSystemTest {
      *
      * @return accessor of information about tests.
      */
-    TestAccessor test();
+    TestAccessor tests();
 
     /**
      * Information about components, i.e. services and aggregates, and their data model, i.e.
@@ -42,7 +43,30 @@ public interface CreekSystemTest {
      *
      * @return accessor of information about system components.
      */
-    ComponentAccessor component();
+    ComponentAccessor components();
+
+    /**
+     * Used to register Creek service extensions.
+     *
+     * <p>System test extensions will generally want to register their associated service extension,
+     * (https://github.com/creek-service/creek-service/tree/main/extension), as they register
+     * necessary component model extensions and provide functionality test extensions need.
+     *
+     * @return extensions.
+     */
+    ExtensionAccessor extensions();
+
+    interface ExtensionAccessor {
+
+        /**
+         * Initialize a Creek service extension.
+         *
+         * @param provider the extension provider
+         * @param <T> the type of the extension
+         * @return the initialized extension.
+         */
+        <T extends CreekExtension> T initialize(CreekExtensionProvider<T> provider);
+    }
 
     interface TestAccessor {
         /**
@@ -65,14 +89,6 @@ public interface CreekSystemTest {
     }
 
     interface ComponentAccessor {
-        /**
-         * The component data model, i.e. the resource types used by services and aggregates, etc.
-         *
-         * <p>Extensions can extend this model.
-         *
-         * @return the component model.
-         */
-        ComponentModelContainer model();
 
         /**
          * The definitions of the known components, i.e. services and aggregates.
@@ -91,7 +107,7 @@ public interface CreekSystemTest {
          *
          * @return a collection of aggregate definitions.
          */
-        ComponentDefinitionCollection<AggregateDefinition> aggregate();
+        ComponentDefinitionCollection<AggregateDefinition> aggregates();
 
         /**
          * Service component definitions.
@@ -100,11 +116,11 @@ public interface CreekSystemTest {
          *
          * @return a collection of service definitions.
          */
-        ComponentDefinitionCollection<ServiceDefinition> service();
+        ComponentDefinitionCollection<ServiceDefinition> services();
 
         /** @return stream of all the known component definitions. */
         default Stream<ComponentDefinition> stream() {
-            return Stream.concat(aggregate().stream(), service().stream());
+            return Stream.concat(aggregates().stream(), services().stream());
         }
     }
 }

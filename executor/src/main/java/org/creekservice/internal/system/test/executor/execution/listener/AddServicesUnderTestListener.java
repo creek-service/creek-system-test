@@ -61,9 +61,9 @@ public final class AddServicesUnderTestListener implements TestEnvironmentListen
     }
 
     private ServiceInstance addServiceUnderTest(final String serviceName) {
-        final ServiceDefinition def = api.component().definitions().service().get(serviceName);
+        final ServiceDefinition def = api.components().definitions().services().get(serviceName);
         final ConfigurableServiceInstance instance =
-                api.test().env().currentSuite().services().add(def);
+                api.tests().env().currentSuite().services().add(def);
 
         instance.setStartupLogMessage(STARTED_LOG_LINE_PATTERN, 1);
 
