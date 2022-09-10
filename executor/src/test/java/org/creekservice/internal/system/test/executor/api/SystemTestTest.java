@@ -19,17 +19,27 @@ package org.creekservice.internal.system.test.executor.api;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.testing.NullPointerTester;
+import org.creekservice.api.service.extension.CreekExtension;
+import org.creekservice.api.service.extension.CreekExtensionProvider;
+import org.creekservice.api.service.extension.CreekService;
+import org.creekservice.api.service.extension.component.model.ComponentModelCollection;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
-import org.creekservice.internal.service.api.ComponentModel;
+import org.creekservice.internal.service.api.component.model.ComponentModel;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,11 +51,14 @@ class SystemTestTest {
     @Mock private TestEnv testEnv;
     @Mock private ComponentDefinitions<ServiceDefinition> services;
     @Mock private ComponentDefinitions<AggregateDefinition> aggregates;
+    @Mock private CreekExtensionProvider<CreekExtension> provider0;
+    @Mock private CreekExtensionProvider<CreekExtension> provider1;
+    @Captor private ArgumentCaptor<CreekService> serviceApiCaptor;
     private SystemTest api;
 
     @BeforeEach
     void setUp() {
-        api = new SystemTest(testModel, componentModel, testEnv, services, aggregates);
+        api = new SystemTest(testModel, testEnv, services, aggregates, componentModel);
     }
 
     @Test
@@ -58,21 +71,55 @@ class SystemTestTest {
 
     @Test
     void shouldExposeModel() {
-        assertThat(api.test().model(), is(sameInstance(testModel)));
+        assertThat(api.tests().model(), is(sameInstance(testModel)));
     }
 
     @Test
     void shouldExposeTestEnv() {
-        assertThat(api.test().env(), is(sameInstance(testEnv)));
+        assertThat(api.tests().env(), is(sameInstance(testEnv)));
     }
 
     @Test
     void shouldExposeServiceDefinitions() {
-        assertThat(api.component().definitions().service(), is(sameInstance(services)));
+        assertThat(api.components().definitions().services(), is(sameInstance(services)));
     }
 
     @Test
     void shouldExposeAggregateDefinitions() {
-        assertThat(api.component().definitions().aggregate(), is(sameInstance(aggregates)));
+        assertThat(api.components().definitions().aggregates(), is(sameInstance(aggregates)));
+    }
+
+    @Test
+    void shouldInitializeServiceExtensionWithSharedComponentModel() {
+        // Given:
+        final ComponentModelCollection sharedModel = api.extensions().model();
+
+        // When:
+        api.extensions().initialize(provider0);
+        api.extensions().initialize(provider1);
+
+        // Then:
+        verify(provider0).initialize(serviceApiCaptor.capture());
+        verify(provider1).initialize(serviceApiCaptor.capture());
+        serviceApiCaptor
+                .getAllValues()
+                .forEach(
+                        serviceApi ->
+                                assertThat(
+                                        serviceApi.components().model(),
+                                        is(sameInstance(sharedModel))));
+    }
+
+    @Test
+    void shouldReturnInitializedProvider() {
+        // Given:
+        final CreekExtension ext = mock(CreekExtension.class);
+        when(provider0.initialize(any())).thenReturn(ext);
+
+        // When:
+        final CreekExtension result = api.extensions().initialize(provider0);
+
+        // Then:
+        assertThat(result, is(ext));
     }
 }

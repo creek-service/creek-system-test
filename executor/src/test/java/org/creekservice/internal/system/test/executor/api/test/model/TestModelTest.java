@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.NullPointerTester;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -250,6 +251,7 @@ class TestModelTest {
     private List<String> publicMethodNames() {
         return Arrays.stream(TestModel.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
                 .collect(Collectors.toUnmodifiableList());
     }

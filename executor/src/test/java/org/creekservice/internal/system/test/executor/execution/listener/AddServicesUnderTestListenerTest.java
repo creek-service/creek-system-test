@@ -76,14 +76,14 @@ class AddServicesUnderTestListenerTest {
         // Then:
         final InOrder inOrder =
                 inOrder(
-                        api.component().definitions().service(),
-                        api.test().env().currentSuite().services());
-        inOrder.verify(api.component().definitions().service()).get("a");
-        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("a"));
-        inOrder.verify(api.component().definitions().service()).get("b");
-        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("b"));
-        inOrder.verify(api.component().definitions().service()).get("c");
-        inOrder.verify(api.test().env().currentSuite().services()).add(defs.get("c"));
+                        api.components().definitions().services(),
+                        api.tests().env().currentSuite().services());
+        inOrder.verify(api.components().definitions().services()).get("a");
+        inOrder.verify(api.tests().env().currentSuite().services()).add(defs.get("a"));
+        inOrder.verify(api.components().definitions().services()).get("b");
+        inOrder.verify(api.tests().env().currentSuite().services()).add(defs.get("b"));
+        inOrder.verify(api.components().definitions().services()).get("c");
+        inOrder.verify(api.tests().env().currentSuite().services()).add(defs.get("c"));
     }
 
     @Test
@@ -122,7 +122,7 @@ class AddServicesUnderTestListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        verify(api.test().env().currentSuite().services(), times(2)).add(defs.get("a"));
+        verify(api.tests().env().currentSuite().services(), times(2)).add(defs.get("a"));
         assertThat(listener.added(), contains(instances.get("a:0"), instances.get("a:1")));
     }
 
@@ -130,7 +130,7 @@ class AddServicesUnderTestListenerTest {
     void shouldThrowOnUnknownService() {
         // Given:
         when(suite.services()).thenReturn(List.of("misspelled-service"));
-        when(api.component().definitions().service().get(any()))
+        when(api.components().definitions().services().get(any()))
                 .thenThrow(new RuntimeException("unknown service"));
 
         // When:
@@ -173,7 +173,7 @@ class AddServicesUnderTestListenerTest {
             }
         }
 
-        when(api.test().env().currentSuite().services().add(def)).thenReturn(first, others);
+        when(api.tests().env().currentSuite().services().add(def)).thenReturn(first, others);
     }
 
     private ServiceDefinition setUpDefMock(final String serviceName) {
@@ -181,7 +181,7 @@ class AddServicesUnderTestListenerTest {
                 serviceName,
                 name -> {
                     final ServiceDefinition def = mock(ServiceDefinition.class, serviceName);
-                    when(api.component().definitions().service().get(name)).thenReturn(def);
+                    when(api.components().definitions().services().get(name)).thenReturn(def);
                     return def;
                 });
     }

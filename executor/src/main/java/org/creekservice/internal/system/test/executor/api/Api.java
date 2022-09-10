@@ -18,7 +18,6 @@ package org.creekservice.internal.system.test.executor.api;
 
 
 import java.util.List;
-import java.util.Optional;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
@@ -45,27 +44,18 @@ public final class Api {
     @VisibleForTesting
     static SystemTest initializeApi(
             final SystemTest api, final List<CreekTestExtension> creekTestExtensions) {
-        api.test().env().listener().append(new LoggingTestEnvironmentListener());
-        api.test().env().listener().append(new SuiteCleanUpListener(api));
+        api.tests().env().listeners().append(new LoggingTestEnvironmentListener());
+        api.tests().env().listeners().append(new SuiteCleanUpListener(api));
         final AddServicesUnderTestListener addServicesListener =
                 new AddServicesUnderTestListener(api);
-        api.test().env().listener().append(addServicesListener);
-        api.test().env().listener().append(new InitializeResourcesListener(api));
-        creekTestExtensions.forEach(ext -> initializeExt(api, ext));
-        api.test()
+        api.tests().env().listeners().append(addServicesListener);
+        api.tests().env().listeners().append(new InitializeResourcesListener(api));
+        creekTestExtensions.forEach(ext -> ext.initialize(api));
+        api.tests()
                 .env()
-                .listener()
+                .listeners()
                 .append(new StartServicesUnderTestListener(addServicesListener::added));
         return api;
-    }
-
-    private static void initializeExt(final SystemTest api, final CreekTestExtension ext) {
-        api.component().model().initializing(Optional.of(ext));
-        try {
-            ext.initialize(api);
-        } finally {
-            api.component().model().initializing(Optional.empty());
-        }
     }
 
     private static List<ComponentDescriptor> loadComponents() {

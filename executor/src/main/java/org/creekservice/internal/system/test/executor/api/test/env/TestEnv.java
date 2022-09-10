@@ -47,7 +47,7 @@ public final class TestEnv implements TestEnvironment {
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
-    public TestListeners listener() {
+    public TestListeners listeners() {
         return listeners;
     }
 }

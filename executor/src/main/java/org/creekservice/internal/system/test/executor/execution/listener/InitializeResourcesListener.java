@@ -42,7 +42,7 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
     public InitializeResourcesListener(final SystemTest api) {
         this(
                 api,
-                ResourceInitializer.resourceInitializer(api.component().model()::resourceHandler));
+                ResourceInitializer.resourceInitializer(api.extensions().model()::resourceHandler));
     }
 
     @VisibleForTesting
@@ -63,7 +63,7 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
 
     private List<ServiceDescriptor> servicesUnderTest(final Set<String> servicesUnderTest) {
         final ComponentDefinitionCollection<ServiceDefinition> definitions =
-                api.component().definitions().service();
+                api.components().definitions().services();
         return servicesUnderTest.stream()
                 .map(definitions::get)
                 .map(ServiceDefinition::descriptor)
@@ -81,7 +81,7 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
                     return !service || !servicesUnderTest.contains(def.name());
                 };
 
-        return api.component().definitions().stream()
+        return api.components().definitions().stream()
                 .filter(notServiceUnderTest)
                 .map(ComponentDefinition::descriptor)
                 .flatMap(Optional::stream)

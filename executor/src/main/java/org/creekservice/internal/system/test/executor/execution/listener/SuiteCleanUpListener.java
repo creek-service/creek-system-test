@@ -37,11 +37,11 @@ public final class SuiteCleanUpListener implements TestEnvironmentListener {
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
-        api.test().env().currentSuite().services().clear();
+        api.tests().env().currentSuite().services().clear();
     }
 
     @Override
     public void afterSuite(final CreekTestSuite suite) {
-        api.test().env().currentSuite().services().forEach(ServiceInstance::stop);
+        api.tests().env().currentSuite().services().forEach(ServiceInstance::stop);
     }
 }

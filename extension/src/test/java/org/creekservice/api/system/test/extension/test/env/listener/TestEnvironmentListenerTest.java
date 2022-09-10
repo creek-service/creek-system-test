@@ -22,6 +22,7 @@ import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -92,6 +93,7 @@ class TestEnvironmentListenerTest {
     private List<String> publicMethodNames() {
         return Arrays.stream(TestEnvironmentListener.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
                 .collect(Collectors.toUnmodifiableList());
     }

@@ -33,6 +33,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 
 import com.google.common.testing.NullPointerTester;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -223,6 +224,7 @@ class DockerServiceContainerTest {
     private List<String> publicMethodNames() {
         return Arrays.stream(DockerServiceContainer.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
                 .collect(Collectors.toUnmodifiableList());
     }

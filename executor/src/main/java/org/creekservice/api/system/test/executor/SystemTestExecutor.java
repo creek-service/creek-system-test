@@ -123,13 +123,13 @@ public final class SystemTestExecutor {
                 testPackagesLoader(
                         options.testDirectory(),
                         yamlParser(
-                                api.test().model().modelTypes(),
+                                api.tests().model().modelTypes(),
                                 new TestPackageParserObserver(LOGGER)),
                         options.suitesFilter());
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api.test().env().listener()),
+                new TestSuiteExecutor(api.tests().env().listeners()),
                 new ResultsWriter(options.resultDirectory()));
     }
 

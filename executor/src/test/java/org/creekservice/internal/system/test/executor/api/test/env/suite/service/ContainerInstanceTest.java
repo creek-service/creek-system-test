@@ -38,6 +38,7 @@ import com.google.common.collect.Streams;
 import com.google.common.testing.NullPointerTester;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -572,6 +573,7 @@ class ContainerInstanceTest {
         return Arrays.stream(ContainerInstance.class.getMethods())
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !m.isSynthetic())
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::getName)
                 .collect(Collectors.toUnmodifiableList());
     }

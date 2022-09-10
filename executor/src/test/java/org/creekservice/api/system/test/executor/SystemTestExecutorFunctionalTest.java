@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.creekservice.api.base.type.Suppliers;
-import org.creekservice.api.system.test.test.extension.TestCreekTestExtension;
+import org.creekservice.api.system.test.test.extension.TestCreekExtensionProvider;
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
@@ -344,7 +344,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportReportValidationFailure() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
-        givenEnv(TestCreekTestExtension.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
 
         // When:
         final int exitCode = runExecutor(minimalArgs());
@@ -385,7 +385,7 @@ class SystemTestExecutorFunctionalTest {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
         givenEnv(
-                TestCreekTestExtension.ENV_FAIL_ENSURE_RESOURCE_ID,
+                TestCreekExtensionProvider.ENV_FAIL_ENSURE_RESOURCE_ID,
                 TestServiceDescriptor.UnownedInput1.id());
 
         // When:
