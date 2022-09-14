@@ -15,6 +15,7 @@
  */
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import java.nio.file.Paths
 
 plugins {
     application
@@ -52,6 +53,13 @@ tasks.register<Copy>("prepareDocker") {
         layout.buildDirectory.file("distributions/${project.name}-${project.version}.tar"),
         layout.projectDirectory.dir("include")
     )
+
+    // Optionally, include the AttachMe plugin jar is present in user's home directory:
+    from(Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
+        include("**/*.jar")
+        into("agent")
+    }
+
 
     into(buildAppImage.inputDir)
 }

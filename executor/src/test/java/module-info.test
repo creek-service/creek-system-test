@@ -33,3 +33,6 @@
 
 --add-exports
   creek.system.test.executor/org.creekservice.internal.system.test.executor.api.test.model=guava.testlib
+
+--add-exports
+  creek.system.test.executor/org.creekservice.internal.system.test.executor.execution.debug=guava.testlib

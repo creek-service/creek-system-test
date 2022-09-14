@@ -22,13 +22,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.suite.TestSuiteEnvironment;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 public final class TestSuiteEnv implements TestSuiteEnvironment {
 
     private final DockerServiceContainer services;
 
-    public TestSuiteEnv() {
-        this(new DockerServiceContainer());
+    public TestSuiteEnv(final ServiceDebugInfo serviceDebugInfo) {
+        this(new DockerServiceContainer(serviceDebugInfo));
     }
 
     @VisibleForTesting

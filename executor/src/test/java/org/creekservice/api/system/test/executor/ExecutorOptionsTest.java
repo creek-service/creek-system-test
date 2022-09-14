@@ -59,4 +59,9 @@ class ExecutorOptionsTest {
     void shouldDefaultToNotEchoingOnly() {
         assertThat(options.echoOnly(), is(false));
     }
+
+    @Test
+    void shouldDefaultToNoDebugInfo() {
+        assertThat(options.serviceDebugInfo(), is(Optional.empty()));
+    }
 }

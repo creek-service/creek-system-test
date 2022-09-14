@@ -16,14 +16,19 @@
 
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
+import static org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer.containerFactory;
+import static org.creekservice.test.util.CreateOnDifferentThread.createOnDifferentThread;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,13 +44,14 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer.ContainerFactory;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +61,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -62,9 +69,15 @@ import org.testcontainers.utility.DockerImageName;
 @MockitoSettings(strictness = LENIENT)
 class DockerServiceContainerTest {
 
+    public static final DockerImageName TEST_SERVICE_IMAGE_NAME =
+            DockerImageName.parse("ghcr.io/creekservice/creek-system-test-test-service:latest");
+    private static final int ATTACH_ME_PORT = 7857;
+    private static final int BASE_SERVICE_DEBUG_PORT = 9000;
     @Mock private ServiceDefinition serviceDef;
     @Mock private ServiceDescriptor serviceDescriptor;
-    @Mock private Function<DockerImageName, GenericContainer<?>> containerFactory;
+    @Mock private ServiceDebugInfo serviceDebugInfo;
+
+    @Mock private ContainerFactory containerFactory;
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private GenericContainer<?> container;
@@ -74,11 +87,15 @@ class DockerServiceContainerTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @BeforeEach
     void setUp() {
-        instances = new DockerServiceContainer(Thread.currentThread().getId(), containerFactory);
+        when(serviceDebugInfo.baseServicePort()).thenReturn(BASE_SERVICE_DEBUG_PORT);
+
+        instances = new DockerServiceContainer(serviceDebugInfo, containerFactory);
 
         when(serviceDef.name()).thenReturn("bob");
         when(serviceDef.dockerImage()).thenReturn("bob:latest");
-        when(containerFactory.apply(any())).thenReturn((GenericContainer) container);
+        when(containerFactory.create(any(), anyInt(), any()))
+                .thenReturn((GenericContainer) container);
+        when(serviceDebugInfo.attachMePort()).thenReturn(ATTACH_ME_PORT);
     }
 
     @Test
@@ -165,6 +182,49 @@ class DockerServiceContainerTest {
         assertThat(e.getMessage(), is("No instance found with name: some name"));
     }
 
+    @Test
+    void shouldCreateDockerContainerWithUniqueDebugPort() {
+        // Given:
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+        final DockerImageName image = DockerImageName.parse(serviceDef.dockerImage());
+
+        // When:
+        instances.add(serviceDef);
+
+        // Then:
+        verify(containerFactory)
+                .create(image, ATTACH_ME_PORT, Optional.of(BASE_SERVICE_DEBUG_PORT));
+
+        // When:
+        instances.add(serviceDef);
+
+        // Then:
+        verify(containerFactory)
+                .create(image, ATTACH_ME_PORT, Optional.of(BASE_SERVICE_DEBUG_PORT + 1));
+    }
+
+    @Test
+    void shouldCreateNonDebugContainer() {
+        // When:
+        final GenericContainer<?> container =
+                containerFactory(TEST_SERVICE_IMAGE_NAME, ATTACH_ME_PORT, Optional.empty());
+
+        // Then:
+        assertThat(container.getDockerImageName(), is(TEST_SERVICE_IMAGE_NAME.toString()));
+        assertThat(container, not(instanceOf(FixedHostPortGenericContainer.class)));
+    }
+
+    @Test
+    void shouldCreateDebugContainer() {
+        // When:
+        final GenericContainer<?> container =
+                containerFactory(TEST_SERVICE_IMAGE_NAME, ATTACH_ME_PORT, Optional.of(12355));
+
+        // Then:
+        assertThat(container.getDockerImageName(), is(TEST_SERVICE_IMAGE_NAME.toString()));
+        assertThat(container, instanceOf(FixedHostPortGenericContainer.class));
+    }
+
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
     @MethodSource("publicMethods")
@@ -172,7 +232,8 @@ class DockerServiceContainerTest {
             final String ignored, final Consumer<DockerServiceContainer> method) {
         // Given:
         instances =
-                new DockerServiceContainer(Thread.currentThread().getId() + 1, containerFactory);
+                createOnDifferentThread(
+                        () -> new DockerServiceContainer(serviceDebugInfo, containerFactory));
 
         // Then:
         assertThrows(ConcurrentModificationException.class, () -> method.accept(instances));

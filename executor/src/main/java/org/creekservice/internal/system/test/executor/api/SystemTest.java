@@ -38,6 +38,7 @@ import org.creekservice.internal.service.api.component.model.ComponentModel;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 public final class SystemTest implements CreekSystemTest {
 
@@ -45,10 +46,12 @@ public final class SystemTest implements CreekSystemTest {
     private final Components components;
     private final Extensions extensions;
 
-    public SystemTest(final Collection<? extends ComponentDescriptor> components) {
+    public SystemTest(
+            final Collection<? extends ComponentDescriptor> components,
+            final ServiceDebugInfo serviceDebugInfo) {
         this(
                 new TestModel(),
-                new TestEnv(),
+                new TestEnv(serviceDebugInfo),
                 ComponentDefinitions.serviceDefinitions(components),
                 ComponentDefinitions.aggregateDefinitions(components),
                 new ComponentModel());

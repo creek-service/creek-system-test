@@ -16,7 +16,9 @@
 
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNullElse;
+import static org.creekservice.api.test.hamcrest.AssertEventually.assertThatEventually;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -26,18 +28,23 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -60,10 +67,13 @@ class DockerServiceContainerFunctionalTest {
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
     @Mock private ServiceDefinition serviceDef;
+    @Mock private ServiceDebugInfo serviceDebugInfo;
 
     @BeforeEach
     void setUp() {
-        instances = new DockerServiceContainer();
+        when(serviceDebugInfo.attachMePort()).thenReturn(7857);
+        when(serviceDebugInfo.baseServicePort()).thenReturn(8000);
+        instances = new DockerServiceContainer(serviceDebugInfo);
 
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
@@ -284,6 +294,54 @@ class DockerServiceContainerFunctionalTest {
         assertThat(
                 instanceConfig(instance).getExposedPorts(),
                 is(new ExposedPort[] {new ExposedPort(8080, InternetProtocol.TCP)}));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldDebugService() {
+        // Given:
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+        final ConfigurableServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+
+        // Then:
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        final ContainerConfig containerConfig = instanceConfig(instance);
+        assertThat(instanceConfig(instance).getEnv(), is(notNullValue()));
+        assertThat(
+                List.of(containerConfig.getEnv()),
+                hasItem(
+                        "JAVA_TOOL_OPTIONS="
+                                + "-javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar=port:7857,host:host.docker.internal "
+                                + "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000"));
+        assertThat(
+                containerConfig.getExposedPorts(),
+                is(new ExposedPort[] {new ExposedPort(8000, InternetProtocol.TCP)}));
+        assertThatEventually(
+                instanceLogs::toString,
+                containsString("Listening for transport dt_socket at address: 8000"));
+    }
+
+    private StringBuilder trackContainerLogs(
+            final ConfigurableServiceInstance instance, final int start) {
+        final StringBuilder builder = new StringBuilder();
+        dockerClient
+                .logContainerCmd(((ContainerInstance) instance).containerId())
+                .withStdErr(true)
+                .withStdOut(true)
+                .withFollowStream(true)
+                .withSince(start)
+                .exec(
+                        new ResultCallbackTemplate<ResultCallback.Adapter<Frame>, Frame>() {
+                            @Override
+                            public void onNext(final Frame frame) {
+                                builder.append(new String(frame.getPayload(), UTF_8));
+                            }
+                        });
+        return builder;
     }
 
     private Matcher<ServiceInstance> running(
