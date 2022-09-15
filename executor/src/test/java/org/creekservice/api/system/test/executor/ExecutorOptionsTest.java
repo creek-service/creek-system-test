@@ -16,18 +16,22 @@
 
 package org.creekservice.api.system.test.executor;
 
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ExecutorOptionsTest {
 
     private ExecutorOptions options;
+    private ExecutorOptions.ServiceDebugInfo debugInfo;
 
     @BeforeEach
     void setUp() {
@@ -40,6 +44,19 @@ class ExecutorOptionsTest {
 
                     @Override
                     public Path resultDirectory() {
+                        return null;
+                    }
+                };
+
+        debugInfo =
+                new ExecutorOptions.ServiceDebugInfo() {
+                    @Override
+                    public Set<String> serviceNames() {
+                        return null;
+                    }
+
+                    @Override
+                    public Set<String> serviceInstanceNames() {
                         return null;
                     }
                 };
@@ -58,5 +75,20 @@ class ExecutorOptionsTest {
     @Test
     void shouldDefaultToNotEchoingOnly() {
         assertThat(options.echoOnly(), is(false));
+    }
+
+    @Test
+    void shouldDefaultToNoDebugInfo() {
+        assertThat(options.serviceDebugInfo(), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldDefaultAttachMeAgentPort() {
+        assertThat(debugInfo.attachMePort(), is(DEFAULT_ATTACH_ME_PORT));
+    }
+
+    @Test
+    void shouldDefaultBaseServicePort() {
+        assertThat(debugInfo.baseServicePort(), is(DEFAULT_BASE_DEBUG_PORT));
     }
 }

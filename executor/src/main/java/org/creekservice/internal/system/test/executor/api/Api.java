@@ -23,6 +23,7 @@ import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
@@ -37,8 +38,9 @@ public final class Api {
 
     private Api() {}
 
-    public static SystemTest initializeApi() {
-        return initializeApi(new SystemTest(loadComponents()), loadTestExtensions());
+    public static SystemTest initializeApi(final ServiceDebugInfo serviceDebugInfo) {
+        return initializeApi(
+                new SystemTest(loadComponents(), serviceDebugInfo), loadTestExtensions());
     }
 
     @VisibleForTesting

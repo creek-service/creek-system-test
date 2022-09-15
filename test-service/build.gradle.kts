@@ -15,6 +15,7 @@
  */
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import java.nio.file.Paths
 
 plugins {
     application
@@ -47,11 +48,21 @@ val buildAppImage = tasks.create("buildAppImage", DockerBuildImage::class) {
 tasks.register<Copy>("prepareDocker") {
     dependsOn("distTar")
 
-    from(
+    from (
         layout.projectDirectory.file("Dockerfile"),
         layout.buildDirectory.file("distributions/${project.name}-${project.version}.tar"),
         layout.projectDirectory.dir("include")
     )
+
+    // Include the AttachMe agent files if present in user's home directory:
+    from (Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
+        into("agent")
+    }
+
+    // Ensure the agent dir exists even if the agent is not installed
+    from (layout.projectDirectory.file(".ensureAgent")) {
+        into("agent")
+    }
 
     into(buildAppImage.inputDir)
 }

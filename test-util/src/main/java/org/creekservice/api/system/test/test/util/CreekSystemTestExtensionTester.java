@@ -16,13 +16,18 @@
 
 package org.creekservice.api.system.test.test.util;
 
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
+import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
+import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
@@ -33,6 +38,7 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Service
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerInstance;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 /** A test helper for testing Creek system test extensions. */
 public final class CreekSystemTestExtensionTester {
@@ -41,15 +47,48 @@ public final class CreekSystemTestExtensionTester {
     private final ComponentDefinitions<ServiceDefinition> serviceDefinitions;
     private final ComponentDefinitions<AggregateDefinition> aggregateDefinitions;
 
-    private CreekSystemTestExtensionTester() {
-        this.services = new DockerServiceContainer();
+    private CreekSystemTestExtensionTester(final ServiceDebugInfo serviceDebugInfo) {
+        this.services = new DockerServiceContainer(serviceDebugInfo);
         final List<ComponentDescriptor> components = ComponentDescriptors.load();
         this.serviceDefinitions = ComponentDefinitions.serviceDefinitions(components);
         this.aggregateDefinitions = ComponentDefinitions.aggregateDefinitions(components);
     }
 
+    /** @return created instance of the test helper */
     public static CreekSystemTestExtensionTester extensionTester() {
-        return new CreekSystemTestExtensionTester();
+        return new CreekSystemTestExtensionTester(ServiceDebugInfo.none());
+    }
+
+    /**
+     * Initialize the extension tester information on what services to debug.
+     *
+     * @param serviceNames the list of service names to debug.
+     * @return amended test helper with debug info set.
+     * @see <a
+     *     href="https://github.com/creek-service/creek-system-test#debugging-system-tests">Service
+     *     Debugging</a>
+     */
+    public CreekSystemTestExtensionTester withDebugServices(final String... serviceNames) {
+        return withDebugServices(
+                serviceDebugInfo(
+                        DEFAULT_ATTACH_ME_PORT,
+                        DEFAULT_BASE_DEBUG_PORT,
+                        Set.of(serviceNames),
+                        Set.of()));
+    }
+
+    /**
+     * Initialize the extension tester information on what services to debug.
+     *
+     * @param debugInfo the info about the services to debug.
+     * @return amended test helper with debug info set.
+     * @see <a
+     *     href="https://github.com/creek-service/creek-system-test#debugging-system-tests">Service
+     *     Debugging</a>
+     */
+    public CreekSystemTestExtensionTester withDebugServices(
+            final ExecutorOptions.ServiceDebugInfo debugInfo) {
+        return new CreekSystemTestExtensionTester(ServiceDebugInfo.copyOf(debugInfo));
     }
 
     /**

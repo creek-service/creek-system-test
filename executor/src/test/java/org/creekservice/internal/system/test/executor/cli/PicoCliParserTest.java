@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.junit.jupiter.api.Test;
@@ -165,6 +166,154 @@ class PicoCliParserTest {
     }
 
     @Test
+    void shouldDefaultToNoDebugInfo() {
+        // Given:
+        final String[] args = minimalArgs();
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::serviceDebugInfo), is(Optional.of(Optional.empty())));
+    }
+
+    @Test
+    void shouldHaveNoDebugInfoIfOnlyBasePortIsSet() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service-port=4000");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::serviceDebugInfo), is(Optional.of(Optional.empty())));
+    }
+
+    @Test
+    void shouldParseDebugInfo() {
+        // Given:
+        final String[] args =
+                minimalArgs(
+                        "--debug-attachme-port=2000",
+                        "--debug-service-port=4000",
+                        "--debug-service=a,b",
+                        "--debug-service=c",
+                        "--debug-service-instance=d-0,e-0",
+                        "--debug-service-instance=f-0");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        final Optional<ExecutorOptions.ServiceDebugInfo> debugInfo =
+                result.flatMap(ExecutorOptions::serviceDebugInfo);
+        assertThat(
+                debugInfo.map(ExecutorOptions.ServiceDebugInfo::attachMePort),
+                is(Optional.of(2000)));
+        assertThat(
+                debugInfo.map(ExecutorOptions.ServiceDebugInfo::baseServicePort),
+                is(Optional.of(4000)));
+        assertThat(
+                debugInfo.map(ExecutorOptions.ServiceDebugInfo::serviceNames),
+                is(Optional.of(Set.of("a", "b", "c"))));
+        assertThat(
+                debugInfo.map(ExecutorOptions.ServiceDebugInfo::serviceInstanceNames),
+                is(Optional.of(Set.of("d-0", "e-0", "f-0"))));
+    }
+
+    @Test
+    void shouldDefaultAttachMePort() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::attachMePort),
+                is(Optional.of(7857)));
+    }
+
+    @Test
+    void shouldThrowOnInvalidAttachMaPort() {
+        // Given:
+        final String[] args = minimalArgs("--debug-attachme-port=0", "--debug-service=a");
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Invalid value '0' for option '--debug-attachme-port': value must be positive."));
+    }
+
+    @Test
+    void shouldDefaultBaseServicePort() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::baseServicePort),
+                is(Optional.of(8000)));
+    }
+
+    @Test
+    void shouldThrowOnInvalidBaseServicePort() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service-port=0", "--debug-service=a");
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Invalid value '0' for option '--debug-service-port': value must be positive."));
+    }
+
+    @Test
+    void shouldDeduplicateServiceNames() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service=a,a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::serviceNames),
+                is(Optional.of(Set.of("a"))));
+    }
+
+    @Test
+    void shouldDeduplicateInstanceNames() {
+        // Given:
+        final String[] args = minimalArgs("--debug-service-instance=a,a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::serviceInstanceNames),
+                is(Optional.of(Set.of("a"))));
+    }
+
+    @Test
     void shouldImplementToStringOnMinimalOptions() {
         // Given:
         final String[] args = minimalArgs();
@@ -183,14 +332,28 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--verifier-timeout-seconds=<Not Set>"
                                         + lineSeparator()
-                                        + "--include-suites=<Not Set>")));
+                                        + "--include-suites=<Not Set>"
+                                        + lineSeparator()
+                                        + "--debug-attachme-port=<Not Set>"
+                                        + lineSeparator()
+                                        + "--debug-service-port=<Not Set>"
+                                        + lineSeparator()
+                                        + "--debug-service=<Not Set>"
+                                        + lineSeparator()
+                                        + "--debug-service-instance=<Not Set>")));
     }
 
     @Test
     void shouldImplementToStringOnFullOptions() {
         // Given:
         final String[] args =
-                minimalArgs("--verifier-timeout-seconds=90", "--include-suites=.*include.*");
+                minimalArgs(
+                        "--verifier-timeout-seconds=90",
+                        "--include-suites=.*include.*",
+                        "-dap=54321",
+                        "-dsp=12345",
+                        "-ds=a,b",
+                        "-dsi=a-0,b-1");
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -206,7 +369,15 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--verifier-timeout-seconds=90"
                                         + lineSeparator()
-                                        + "--include-suites=.*include.*")));
+                                        + "--include-suites=.*include.*"
+                                        + lineSeparator()
+                                        + "--debug-attachme-port=54321"
+                                        + lineSeparator()
+                                        + "--debug-service-port=12345"
+                                        + lineSeparator()
+                                        + "--debug-service=[a, b]"
+                                        + lineSeparator()
+                                        + "--debug-service-instance=[a-0, b-1]")));
     }
 
     private static String[] minimalArgs(final String... additional) {

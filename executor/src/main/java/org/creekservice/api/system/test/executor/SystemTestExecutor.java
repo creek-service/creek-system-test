@@ -29,6 +29,7 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
 import org.creekservice.internal.system.test.executor.execution.TestPackagesExecutor;
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
@@ -78,7 +79,11 @@ public final class SystemTestExecutor {
                     "Not a directory: " + options.testDirectory().toUri());
         }
 
-        final SystemTest api = initializeApi();
+        final SystemTest api =
+                initializeApi(
+                        options.serviceDebugInfo()
+                                .map(ServiceDebugInfo::copyOf)
+                                .orElse(ServiceDebugInfo.none()));
 
         final TestExecutionResult result = executor(options, api).execute();
         if (result.isEmpty()) {

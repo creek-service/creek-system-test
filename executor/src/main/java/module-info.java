@@ -19,6 +19,8 @@ module creek.system.test.executor {
             creek.system.test.test.util;
     exports org.creekservice.internal.system.test.executor.api.component.definition to
             creek.system.test.test.util;
+    exports org.creekservice.internal.system.test.executor.execution.debug to
+            creek.system.test.test.util;
 
     opens org.creekservice.internal.system.test.executor.cli to
             info.picocli;

@@ -23,14 +23,15 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.TestEnvironment;
 import org.creekservice.internal.system.test.executor.api.test.env.listener.TestListeners;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.TestSuiteEnv;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 public final class TestEnv implements TestEnvironment {
 
     private final TestListeners listeners;
     private final TestSuiteEnv suite;
 
-    public TestEnv() {
-        this(new TestListeners(), new TestSuiteEnv());
+    public TestEnv(final ServiceDebugInfo serviceDebugInfo) {
+        this(new TestListeners(), new TestSuiteEnv(serviceDebugInfo));
     }
 
     @VisibleForTesting

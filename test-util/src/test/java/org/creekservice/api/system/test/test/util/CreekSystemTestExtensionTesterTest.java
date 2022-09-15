@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.test.util;
 
+import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.empty;
@@ -29,11 +30,13 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.Set;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -80,7 +83,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldNotReturnContainerIdOfNonRunning() {
+    void shouldNotReturnContainerIdIfNonRunning() {
         // Given:
         tester.dockerServicesContainer().add(serviceDef);
 
@@ -124,5 +127,25 @@ class CreekSystemTestExtensionTesterTest {
 
         // Then:
         assertThat(services.iterator().hasNext(), is(false));
+    }
+
+    @Test
+    void shouldDefaultToNoServicesBeingDebug() {
+        assertThat(
+                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
+                is(ServiceDebugInfo.none()));
+    }
+
+    @Test
+    void shouldSupportConfiguringServicesForDebugging() {
+        // Given:
+        final ServiceDebugInfo debugServiceInfo =
+                serviceDebugInfo(123, 321, Set.of("a"), Set.of("b"));
+        tester = tester.withDebugServices(debugServiceInfo);
+
+        // Then:
+        assertThat(
+                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
+                is(debugServiceInfo));
     }
 }

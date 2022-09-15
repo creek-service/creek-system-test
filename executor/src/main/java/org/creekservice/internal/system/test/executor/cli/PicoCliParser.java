@@ -17,19 +17,28 @@
 package org.creekservice.internal.system.test.executor.cli;
 
 import static java.lang.System.lineSeparator;
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
 
 public final class PicoCliParser {
 
@@ -63,9 +72,12 @@ public final class PicoCliParser {
         }
     }
 
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "FieldMayBeFinal"})
     @CommandLine.Command(name = "SystemTestExecutor", mixinStandardHelpOptions = true)
     public static final class Options implements ExecutorOptions {
+
+        @Spec CommandSpec spec;
+
         @Option(
                 names = {"-td", "--test-directory"},
                 required = true,
@@ -108,6 +120,62 @@ public final class PicoCliParser {
                                 + "standard out and exit.")
         private boolean echoOnly;
 
+        private int debugAttachMePort = DEFAULT_ATTACH_ME_PORT;
+
+        @Option(
+                names = {"-dap", "--debug-attachme-port"},
+                description = "The port the attachMe plugin will be listening on.")
+        public void setDebugAttachMePort(final int port) {
+            if (port <= 0) {
+                throw new ParameterException(
+                        spec.commandLine(),
+                        "Invalid value '"
+                                + port
+                                + "' for option '--debug-attachme-port': "
+                                + "value must be positive.");
+            }
+            this.debugAttachMePort = port;
+        }
+
+        private int debugServicePort = DEFAULT_BASE_DEBUG_PORT;
+
+        @Option(
+                names = {"-dsp", "--debug-service-port"},
+                description =
+                        "The port the first service being debugged will listen on for the debugger to attach. "
+                                + "Subsequent services being debugged will use sequential port numbers.")
+        public void setDebugServicePort(final int port) {
+            if (port <= 0) {
+                throw new ParameterException(
+                        spec.commandLine(),
+                        "Invalid value '"
+                                + port
+                                + "' for option '--debug-service-port': "
+                                + "value must be positive.");
+            }
+            this.debugServicePort = port;
+        }
+
+        private Set<String> debugServices = Set.of();
+
+        @Option(
+                names = {"-ds", "--debug-service"},
+                split = ",",
+                description = "Comma seperated list of services to debug.")
+        public void setDebugServices(final String[] names) {
+            this.debugServices = Set.copyOf(new HashSet<>(Arrays.asList(names)));
+        }
+
+        private Set<String> debugInstances = Set.of();
+
+        @Option(
+                names = {"-dsi", "--debug-service-instance"},
+                split = ",",
+                description = "Comma seperated list of service instances to debug.")
+        public void setDebugServiceInstances(final String[] names) {
+            this.debugInstances = Set.copyOf(new HashSet<>(Arrays.asList(names)));
+        }
+
         @Override
         public Path testDirectory() {
             return testDir;
@@ -139,6 +207,21 @@ public final class PicoCliParser {
         }
 
         @Override
+        public Optional<ServiceDebugInfo> serviceDebugInfo() {
+            if (debugServices.isEmpty() && debugInstances.isEmpty()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(
+                    org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo
+                            .serviceDebugInfo(
+                                    debugAttachMePort,
+                                    debugServicePort,
+                                    debugServices,
+                                    debugInstances));
+        }
+
+        @Override
         public String toString() {
             return "--test-directory="
                     + testDir
@@ -150,7 +233,29 @@ public final class PicoCliParser {
                     + verifierTimeout.map(String::valueOf).orElse("<Not Set>")
                     + lineSeparator()
                     + "--include-suites="
-                    + suitePattern.map(Pattern::pattern).orElse("<Not Set>");
+                    + suitePattern.map(Pattern::pattern).orElse("<Not Set>")
+                    + lineSeparator()
+                    + "--debug-attachme-port="
+                    + (debugAttachMePort == DEFAULT_ATTACH_ME_PORT
+                            ? "<Not Set>"
+                            : debugAttachMePort)
+                    + lineSeparator()
+                    + "--debug-service-port="
+                    + (debugServicePort == DEFAULT_BASE_DEBUG_PORT ? "<Not Set>" : debugServicePort)
+                    + lineSeparator()
+                    + "--debug-service="
+                    + (debugServices.isEmpty()
+                            ? "<Not Set>"
+                            : debugServices.stream()
+                                    .sorted()
+                                    .collect(Collectors.joining(", ", "[", "]")))
+                    + lineSeparator()
+                    + "--debug-service-instance="
+                    + (debugInstances.isEmpty()
+                            ? "<Not Set>"
+                            : debugInstances.stream()
+                                    .sorted()
+                                    .collect(Collectors.joining(", ", "[", "]")));
         }
     }
 
