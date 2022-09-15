@@ -25,8 +25,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -41,9 +43,11 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.InternetProtocol;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.execution.debug.DebugToolOptions;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -300,6 +304,11 @@ class DockerServiceContainerFunctionalTest {
     @Test
     void shouldDebugService() {
         // Given:
+        assumeThat(
+                "Skipping as attachMe agent not installed",
+                DebugToolOptions.agentJarFile(),
+                is(not(Optional.empty())));
+
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
         final ConfigurableServiceInstance instance = instances.add(serviceDef);
         final int start = (int) System.currentTimeMillis() / 1000;

@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,7 +34,7 @@ class DebugToolOptionsTest {
     void shouldBuildJavaToolOptionsIfAgentJarPresent() {
         assertThat(
                 DebugToolOptions.javaToolOptions(
-                        7857, 8000, Optional.of("attachme-agent-1.1.0.jar")),
+                        7857, 8000, Optional.of(Paths.get("attachme-agent-1.1.0.jar"))),
                 is(
                         Optional.of(
                                 "-javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar="
@@ -50,7 +51,12 @@ class DebugToolOptionsTest {
 
     @Test
     void shouldReturnEmptyIfNoAttachMeDir() {
-        assertThat(DebugToolOptions.attacheMeJarPath(testDir), is(Optional.empty()));
+        assertThat(DebugToolOptions.findAttacheMeAgentJar(testDir), is(Optional.empty()));
+    }
+
+    @Test
+    void shouldReturnEmptyIfNoAgentDir() {
+        assertThat(DebugToolOptions.findAttacheMeAgentJar(testDir), is(Optional.empty()));
     }
 
     @Test
@@ -59,7 +65,7 @@ class DebugToolOptionsTest {
         Files.createDirectories(testDir.resolve(".attachme"));
 
         // Then:
-        assertThat(DebugToolOptions.attacheMeJarPath(testDir), is(Optional.empty()));
+        assertThat(DebugToolOptions.findAttacheMeAgentJar(testDir), is(Optional.empty()));
     }
 
     @Test
@@ -72,9 +78,10 @@ class DebugToolOptionsTest {
         Files.createFile(attachMe.resolve("attachme-agent-1.1.0.jar"));
         Files.createFile(attachMe.resolve("bbb.jar"));
 
+        // When:
+        final Optional<Path> result = DebugToolOptions.findAttacheMeAgentJar(testDir);
+
         // Then:
-        assertThat(
-                DebugToolOptions.attacheMeJarPath(testDir),
-                is(Optional.of("attachme-agent-1.1.0.jar")));
+        assertThat(result, is(Optional.of(Paths.get("attachme-agent-1.1.0.jar"))));
     }
 }

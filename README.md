@@ -340,23 +340,6 @@ the container image locally and passing the service name(s) on the command line 
 [creek-system-test-gradle-plugin/issue/#63](https://github.com/creek-service/creek-system-test-gradle-plugin/issues/63)
 covers extending the Gradle plugin to support debugging microservies.
 
-### Known failures to debug
-
-#### Error opening zip file or JAR manifest missing
-
-If you see an error like the following:
-
-```
-Picked up JAVA_TOOL_OPTIONS: -javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar=port:7857,host:host.docker.internal -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
-Error opening zip file or JAR manifest missing : /opt/creek/agent/attachme-agent-1.0.0.jar
-```
-...then the docker image is missing the AttacheMe agent jar. Causes of this are generally:
-1. The image has not been built locally while the agent jar was installed.
-  * Running the AttachMe run configuration in IntelliJ will pull the agent jar locally.
-  * Running `gradlle :<service>:buildAppImage` will rebuild the image with the agent jar available.
-2. The service is not correctly configured for debugging.
-   See [Configuring a service for debugging](#configuring-a-service-for-debugging)
-
 ### Configuring a service for debugging
 
 > ## NOTE Template repos, such as [Aggregate Template][5] are correctly preconfigured for service debugging
@@ -365,22 +348,26 @@ To be able to debug a Creek Service the docker image must be built on a develope
 
 1. The `~/.attachme/attacheme-agent-x.x.x.jar` present.
    Running an AttachMe run configuration in IntelliJ will cause the plugin to download the agent jar to your home directory.
-2. The service's `prepareDocker` Gradle task needs to be configured to optionally include the agent jar.
+2. The service's `prepareDocker` Gradle task needs to be configured to include the agent jar, if present:
    ```kotlin
    tasks.register<Copy>("prepareDocker") {
     // ... 
    
-    // Optionally, include the AttachMe plugin jar is present in user's home directory:
-    from(Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
-        include("**/*.jar")
+    // Include the AttachMe agent files if present in user's home directory:
+    from (Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
+        into("agent")
+    }
+
+    // Ensure the agent dir exists even if the agent is not installed
+    from (layout.projectDirectory.file(".ensureAgent")) {
         into("agent")
     }
 
     // ...
    }
    ```
-3. The service's `DockerFile` needs to be tweaked to support the agent.
-   This includes installing the `lsof` command, as this is required by the agent, and copying the agent jar
+3. The service's `DockerFile` needs to be tweaked to handle the agent.
+   This includes installing the `lsof` command, as this is required by the agent.
    ```dockerfile
    RUN yum update -y
    RUN yum install -y tar lsof
@@ -397,12 +384,46 @@ To use AttachMe normally, a user would create and run an `AttachMe` configuratio
 in a terminal window to set the `JAVA_TOOL_OPTIONS` environment variable to install the agent and set up the
 debugging parameters. Any java process started from the terminal, or any child processes it starts, will
 automatically pick up the `JAVA_TOOL_OPTIONS` and spawn a new debug window in IntelliJ.  
-This is very cool and useful in itself and I'd recommend you read the [blog post][4] on the topic to learn more.
+This is very cool and useful in itself, and I'd recommend you read the [blog post][4] on the topic to learn more.
 
-To enable debugging of services running within containers, the docker image is built locally and picks up the agent
-jar from your home directory. When creating the docker container of a service the system tests set the appropriate 
-`JAVA_TOOL_OPTIONS` and configures ports to both allow the AttachMe agent to call out to the AttachMe plugin to 
-request the debugger to attach, and to allow the debugger to call into the container and attach to the service.
+To enable debugging of services running within containers, the docker image built locally picks up the AttachMe agent
+files from your home directory and Creek sets the appropriate `JAVA_TOOLS_OPTIONS` when creating the container.
+When the service starts up, the AttachMe agent calls out to the AttachMe plugin, letting it know what port
+the service is listening on for the debugger to attach. The plugin passes this on to the IntelliJ debugger, which
+then connects to the service.
+
+> ## NOTE the service is configured to wait for the debugger to attach, so if the AttachMe plugin is not running
+> the service will timeout on startup.
+
+### Known failures to debug
+
+#### Error opening zip file or JAR manifest missing
+
+If you see an error like the following:
+
+```
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar=port:7857,host:host.docker.internal -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
+Error opening zip file or JAR manifest missing : /opt/creek/agent/attachme-agent-1.0.0.jar
+```
+...then the docker image is missing the AttacheMe agent jar. Causes of this are generally:
+ 
+1. The image has not been built locally while the agent jar was installed.
+   * Running the AttachMe run configuration in IntelliJ will pull the agent jar locally.
+   * Running `gradlle :<service>:buildAppImage` will rebuild the image with the agent jar available.
+2. The service is not correctly configured for debugging.
+   See [Configuring a service for debugging](#configuring-a-service-for-debugging)
+
+#### Service being debugged hangs on startup
+
+The service will block waiting for the debugger to attach. Therefore, it's likely the debugger is not attaching.
+The most common causes this are:
+
+1. The AttachMe plugin is not running. Once the plugin is installed you will need to create a new "run configuration"
+   in IntelliJ that leverages the plugin and run it. See the [blog post][4] for details.
+2. The port the AttachMe plugin is listening does not match the one the service is calling out on. The default port
+   used by the AttachMe plugin is `7857`. The same default is used by Creek. However, if you need to change the
+   plugin's default for any reason, you'll need to also tell the Creek system tests. 
+   See the documentation for the build plugin you are using.
 
 ## Extending system tests
 

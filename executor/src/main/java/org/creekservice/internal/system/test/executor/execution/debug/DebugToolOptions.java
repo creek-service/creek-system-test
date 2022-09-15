@@ -33,8 +33,8 @@ public final class DebugToolOptions {
 
     private static final PathMatcher JAR_MATCHER =
             FileSystems.getDefault().getPathMatcher("glob:**.jar");
-    private static final Optional<String> AGENT_JAR_FILE =
-            attacheMeJarPath(Paths.get(System.getProperty("user.home")));
+    private static final Optional<Path> AGENT_JAR_FILE =
+            findAttacheMeAgentJar(Paths.get(System.getProperty("user.home")));
 
     private DebugToolOptions() {}
 
@@ -50,11 +50,13 @@ public final class DebugToolOptions {
         return javaToolOptions(attachMePort, serviceDebugPort, AGENT_JAR_FILE);
     }
 
+    public static Optional<Path> agentJarFile() {
+        return AGENT_JAR_FILE;
+    }
+
     @VisibleForTesting
     static Optional<String> javaToolOptions(
-            final int attachMePort,
-            final int serviceDebugPort,
-            final Optional<String> agentJarFile) {
+            final int attachMePort, final int serviceDebugPort, final Optional<Path> agentJarFile) {
         return agentJarFile.map(
                 jar ->
                         "-javaagent:/opt/creek/agent/"
@@ -66,7 +68,7 @@ public final class DebugToolOptions {
     }
 
     @VisibleForTesting
-    static Optional<String> attacheMeJarPath(final Path homeDir) {
+    static Optional<Path> findAttacheMeAgentJar(final Path homeDir) {
         final Path dir = homeDir.resolve(".attachme");
         if (Files.notExists(dir)) {
             return Optional.empty();
@@ -76,8 +78,7 @@ public final class DebugToolOptions {
             return stream.filter(Files::isRegularFile)
                     .filter(JAR_MATCHER::matches)
                     .map(Path::getFileName)
-                    .map(Path::toString)
-                    .filter(p -> p.startsWith("attachme-agent-"))
+                    .filter(p -> p.toString().startsWith("attachme-agent-"))
                     .sorted()
                     .reduce((l, r) -> r);
         } catch (final IOException e) {
