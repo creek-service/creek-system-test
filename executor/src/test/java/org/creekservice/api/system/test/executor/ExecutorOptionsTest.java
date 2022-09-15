@@ -16,7 +16,8 @@
 
 package org.creekservice.api.system.test.executor;
 
-import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.*;
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
