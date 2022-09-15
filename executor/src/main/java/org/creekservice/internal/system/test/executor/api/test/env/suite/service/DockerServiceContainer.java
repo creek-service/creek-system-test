@@ -130,6 +130,7 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
 
     @VisibleForTesting
     public ServiceDebugInfo serviceDebugInfo() {
+        throwIfNotOnCorrectThread();
         return serviceDebugInfo;
     }
 

@@ -273,7 +273,11 @@ class DockerServiceContainerTest {
                 Arguments.of("get", (Consumer<DockerServiceContainer>) si -> si.get("")),
                 Arguments.of(
                         "forEach",
-                        (Consumer<DockerServiceContainer>) si -> si.forEach(mock(Consumer.class))));
+                        (Consumer<DockerServiceContainer>) si -> si.forEach(mock(Consumer.class))),
+                Arguments.of(
+                        "serviceDebugInfo",
+                        (Consumer<DockerServiceContainer>)
+                                DockerServiceContainer::serviceDebugInfo));
     }
 
     private static List<String> testedMethodNames() {
