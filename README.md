@@ -366,7 +366,8 @@ To be able to debug a Creek Service the docker image must be built on a develope
     // ...
    }
    ```
-3. The service's `DockerFile` needs to be tweaked to handle the agent.
+3. Create the `.ensureAgent` file in the root of the module. This can just be an empty file. 
+4. The service's `DockerFile` needs to be tweaked to handle the agent.
    This includes installing the `lsof` command, as this is required by the agent.
    ```dockerfile
    RUN yum update -y
