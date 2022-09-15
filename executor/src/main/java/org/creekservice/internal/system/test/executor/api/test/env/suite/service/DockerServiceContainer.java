@@ -128,6 +128,11 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         nextDebugServicePort.set(serviceDebugInfo.baseServicePort());
     }
 
+    @VisibleForTesting
+    public ServiceDebugInfo serviceDebugInfo() {
+        return serviceDebugInfo;
+    }
+
     private GenericContainer<?> createContainer(
             final DockerImageName imageName, final String instanceName, final String serviceName) {
 
