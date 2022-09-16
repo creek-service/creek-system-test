@@ -18,7 +18,6 @@ package org.creekservice.api.system.test.parser;
 
 
 import java.util.Collection;
-import org.creekservice.api.system.test.extension.test.model.ModelType;
 import org.creekservice.internal.system.test.parser.YamlTestPackageParser;
 
 /** Factory class for test package parsing. */

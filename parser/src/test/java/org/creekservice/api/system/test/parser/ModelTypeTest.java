@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test.model;
+package org.creekservice.api.system.test.parser;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -24,6 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.testing.EqualsTester;
+import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.Input;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
 import org.junit.jupiter.api.Test;
 
 class ModelTypeTest {

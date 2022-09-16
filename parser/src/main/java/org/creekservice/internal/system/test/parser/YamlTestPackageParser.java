@@ -40,13 +40,13 @@ import java.util.stream.Stream;
 import org.creekservice.api.base.type.Suppliers;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.Input;
-import org.creekservice.api.system.test.extension.test.model.ModelType;
 import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.api.system.test.model.TestSuiteDef;
+import org.creekservice.api.system.test.parser.ModelType;
 import org.creekservice.api.system.test.parser.TestPackageParser;
 
 /**

@@ -16,12 +16,12 @@
 
 package org.creekservice.api.system.test.model;
 
-import static org.creekservice.api.system.test.extension.test.model.ModelType.expectationRef;
-import static org.creekservice.api.system.test.extension.test.model.ModelType.inputRef;
-import static org.creekservice.api.system.test.extension.test.model.ModelType.ref;
 import static org.creekservice.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
 import static org.creekservice.api.system.test.model.SimpleRef.simpleRef;
 import static org.creekservice.api.system.test.model.TestCaseDef.testCase;
+import static org.creekservice.api.system.test.parser.ModelType.expectationRef;
+import static org.creekservice.api.system.test.parser.ModelType.inputRef;
+import static org.creekservice.api.system.test.parser.ModelType.ref;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
