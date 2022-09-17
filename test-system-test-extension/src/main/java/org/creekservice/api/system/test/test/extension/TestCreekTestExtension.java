@@ -32,7 +32,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
 
     @Override
     public void initialize(final CreekSystemTest api) {
-        api.extensions().initialize(new TestCreekExtensionProvider());
+        api.extensions().ensureExtension(TestCreekExtensionProvider.class);
 
         api.tests().model().addExpectation(TestExpectation.class, this::prepareExpectation);
     }

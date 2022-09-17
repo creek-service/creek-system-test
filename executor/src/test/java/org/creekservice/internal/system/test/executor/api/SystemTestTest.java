@@ -25,13 +25,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.testing.NullPointerTester;
+import java.util.function.Function;
 import org.creekservice.api.service.extension.CreekExtension;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
-import org.creekservice.api.service.extension.CreekService;
-import org.creekservice.api.service.extension.component.model.ComponentModelCollection;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
-import org.creekservice.internal.service.api.component.model.ComponentModel;
+import org.creekservice.internal.service.api.Creek;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
@@ -39,8 +38,7 @@ import org.creekservice.internal.system.test.executor.execution.debug.ServiceDeb
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -48,18 +46,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SystemTestTest {
 
     @Mock private TestModel testModel;
-    @Mock private ComponentModel componentModel;
     @Mock private TestEnv testEnv;
     @Mock private ComponentDefinitions<ServiceDefinition> services;
     @Mock private ComponentDefinitions<AggregateDefinition> aggregates;
-    @Mock private CreekExtensionProvider<CreekExtension> provider0;
-    @Mock private CreekExtensionProvider<CreekExtension> provider1;
-    @Captor private ArgumentCaptor<CreekService> serviceApiCaptor;
+    @Mock private Function<SystemTest.Components, Creek> serviceApiFactory;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Creek serviceApi;
+
     private SystemTest api;
 
     @BeforeEach
     void setUp() {
-        api = new SystemTest(testModel, testEnv, services, aggregates, componentModel);
+        when(serviceApiFactory.apply(any())).thenReturn(serviceApi);
+        api = new SystemTest(testModel, testEnv, services, aggregates, serviceApiFactory);
     }
 
     @Test
@@ -91,37 +91,27 @@ class SystemTestTest {
         assertThat(api.components().definitions().aggregates(), is(sameInstance(aggregates)));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    void shouldInitializeServiceExtensionWithSharedComponentModel() {
-        // Given:
-        final ComponentModelCollection sharedModel = api.extensions().model();
-
-        // When:
-        api.extensions().initialize(provider0);
-        api.extensions().initialize(provider1);
-
-        // Then:
-        verify(provider0).initialize(serviceApiCaptor.capture());
-        verify(provider1).initialize(serviceApiCaptor.capture());
-        serviceApiCaptor
-                .getAllValues()
-                .forEach(
-                        serviceApi ->
-                                assertThat(
-                                        serviceApi.components().model(),
-                                        is(sameInstance(sharedModel))));
-    }
-
-    @Test
-    void shouldReturnInitializedProvider() {
+    void shouldEnsureExtensions() {
         // Given:
         final CreekExtension ext = mock(CreekExtension.class);
-        when(provider0.initialize(any())).thenReturn(ext);
+        when(serviceApi.extensions().ensureExtension(any(Class.class))).thenReturn(ext);
 
         // When:
-        final CreekExtension result = api.extensions().initialize(provider0);
+        final CreekExtension result = api.extensions().ensureExtension(TestExtensionProvider.class);
 
         // Then:
+        verify(serviceApi.extensions()).ensureExtension(TestExtensionProvider.class);
         assertThat(result, is(ext));
     }
+
+    @Test
+    void shouldBuildExtensionsWithComponentDescriptors() {
+        verify(serviceApiFactory).apply(api.components());
+    }
+
+    private interface TestExtension extends CreekExtension {}
+
+    private interface TestExtensionProvider extends CreekExtensionProvider<TestExtension> {}
 }

@@ -59,13 +59,17 @@ public interface CreekSystemTest {
     interface ExtensionAccessor {
 
         /**
-         * Initialize a Creek service extension.
+         * Ensure an extension has been initialized.
          *
-         * @param provider the extension provider
+         * <p>Initializes the extension from the supplied {@code providerType} if it has not already
+         * been initialized. Does nothing if the extension has already been applied.
+         *
+         * @param provider the extension provider type.
          * @param <T> the type of the extension
          * @return the initialized extension.
          */
-        <T extends CreekExtension> T initialize(CreekExtensionProvider<T> provider);
+        <T extends CreekExtension> T ensureExtension(
+                Class<? extends CreekExtensionProvider<T>> provider);
     }
 
     interface TestAccessor {
