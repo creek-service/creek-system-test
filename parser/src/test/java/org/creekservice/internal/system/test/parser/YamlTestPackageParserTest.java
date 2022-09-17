@@ -16,11 +16,11 @@
 
 package org.creekservice.internal.system.test.parser;
 
-import static org.creekservice.api.system.test.extension.test.model.ModelType.expectation;
-import static org.creekservice.api.system.test.extension.test.model.ModelType.input;
 import static org.creekservice.api.system.test.model.TestCase.testCase;
 import static org.creekservice.api.system.test.model.TestPackage.testPackage;
 import static org.creekservice.api.system.test.model.TestSuite.testSuite;
+import static org.creekservice.api.system.test.parser.ModelType.expectation;
+import static org.creekservice.api.system.test.parser.ModelType.input;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -47,10 +47,10 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.Input;
-import org.creekservice.api.system.test.extension.test.model.ModelType;
 import org.creekservice.api.system.test.model.TestCaseDef;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuiteDef;
+import org.creekservice.api.system.test.parser.ModelType;
 import org.creekservice.api.system.test.parser.TestPackageParser;
 import org.creekservice.api.system.test.parser.TestPackageParsers;
 import org.junit.jupiter.api.BeforeEach;

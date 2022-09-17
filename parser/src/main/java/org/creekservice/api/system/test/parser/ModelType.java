@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test.model;
+package org.creekservice.api.system.test.parser;
 
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
 import java.util.Optional;
+import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.Input;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.Ref;
 
 /**
  * Holds a Creek system test model subtype, and it's metadata.

@@ -32,8 +32,8 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
-import org.creekservice.api.system.test.extension.test.model.ModelType;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.api.system.test.parser.ModelType;
 
 public final class TestModel implements TestModelContainer {
 
