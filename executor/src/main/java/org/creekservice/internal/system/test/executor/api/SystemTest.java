@@ -22,7 +22,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -34,7 +34,6 @@ import org.creekservice.api.system.test.extension.component.definition.Aggregate
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.internal.service.api.Creek;
-import org.creekservice.internal.service.api.component.model.ComponentModel;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
@@ -54,7 +53,7 @@ public final class SystemTest implements CreekSystemTest {
                 new TestEnv(serviceDebugInfo),
                 ComponentDefinitions.serviceDefinitions(components),
                 ComponentDefinitions.aggregateDefinitions(components),
-                new ComponentModel());
+                c -> new Creek(c.descriptors()));
     }
 
     @VisibleForTesting
@@ -63,10 +62,10 @@ public final class SystemTest implements CreekSystemTest {
             final TestEnv testEnv,
             final ComponentDefinitions<ServiceDefinition> serviceDefinitions,
             final ComponentDefinitions<AggregateDefinition> aggregateDefinitions,
-            final ComponentModel componentModel) {
+            final Function<Components, Creek> api) {
         this.tests = new Tests(testModel, testEnv);
         this.components = new Components(serviceDefinitions, aggregateDefinitions);
-        this.extensions = new Extensions(componentModel, Creek::new);
+        this.extensions = new Extensions(api.apply(components));
     }
 
     @Override
@@ -157,34 +156,23 @@ public final class SystemTest implements CreekSystemTest {
         }
     }
 
-    public final class Extensions implements ExtensionAccessor {
+    public static final class Extensions implements ExtensionAccessor {
 
-        final ComponentModel model;
-        final BiFunction<Collection<? extends ComponentDescriptor>, ComponentModel, Creek>
-                apiFactory;
+        final Creek api;
 
-        Extensions(
-                final ComponentModel model,
-                final BiFunction<Collection<? extends ComponentDescriptor>, ComponentModel, Creek>
-                        apiFactory) {
-            this.model = requireNonNull(model, "model");
-            this.apiFactory = requireNonNull(apiFactory, "apiFactory");
+        Extensions(final Creek api) {
+            this.api = requireNonNull(api, "api");
         }
 
         @Override
-        public <T extends CreekExtension> T initialize(final CreekExtensionProvider<T> provider) {
-            final Creek api = apiFactory.apply(components.descriptors(), model);
-            api.initializing(Optional.of(provider));
-            try {
-                return provider.initialize(api);
-            } finally {
-                api.initializing(Optional.empty());
-            }
+        public <T extends CreekExtension> T ensureExtension(
+                final Class<? extends CreekExtensionProvider<T>> provider) {
+            return api.extensions().ensureExtension(provider);
         }
 
         @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         public ComponentModelCollection model() {
-            return model;
+            return api.components().model();
         }
     }
 }

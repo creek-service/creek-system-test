@@ -16,6 +16,8 @@
 
 package org.creekservice.api.system.test.test.util;
 
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
@@ -137,7 +139,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldSupportConfiguringServicesForDebugging() {
+    void shouldSupportConfiguringServiceDebugInfo() {
         // Given:
         final ServiceDebugInfo debugServiceInfo =
                 serviceDebugInfo(123, 321, Set.of("a"), Set.of("b"));
@@ -147,5 +149,21 @@ class CreekSystemTestExtensionTesterTest {
         assertThat(
                 ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
                 is(debugServiceInfo));
+    }
+
+    @Test
+    void shouldSupportConfiguringServicesForDebugging() {
+        // Given:
+        tester = tester.withDebugServices("a");
+
+        // Then:
+        assertThat(
+                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
+                is(
+                        serviceDebugInfo(
+                                DEFAULT_ATTACH_ME_PORT,
+                                DEFAULT_BASE_DEBUG_PORT,
+                                Set.of("a"),
+                                Set.of())));
     }
 }
