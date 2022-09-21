@@ -20,6 +20,7 @@ import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceD
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +36,13 @@ import org.creekservice.api.system.test.extension.component.definition.Component
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
+import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerInstance;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
+import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
+import org.creekservice.internal.system.test.parser.SystemTestMapper;
 
 /** A test helper for testing Creek system test extensions. */
 public final class CreekSystemTestExtensionTester {
@@ -162,5 +166,57 @@ public final class CreekSystemTestExtensionTester {
     public void clearServices() {
         services.forEach(ServiceInstance::stop);
         services.clear();
+    }
+
+    /**
+     * Returns a builder that can be used to customise the system test model and then build a YAML
+     * deserializer.
+     *
+     * <p>The returned builder exposes the same {@link TestModelContainer} type that test extensions
+     * use to register their model types. After registering types, the created deserializer can be
+     * used to test deserialization of an extensions test model types.
+     *
+     * @return the builder.
+     */
+    public YamlParserBuilder yamlParser() {
+        return new YamlParserBuilder();
+    }
+
+    public static final class YamlParserBuilder {
+
+        private final TestModel model;
+
+        private YamlParserBuilder() {
+            this.model = new TestModel();
+        }
+
+        /**
+         * The test model container.
+         *
+         * <p>Tests should add the same ref, input and expectation types that the extension adds.
+         *
+         * @return the test model container.
+         */
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        public TestModelContainer model() {
+            return model;
+        }
+
+        /** @return the model parser. */
+        public ModelParser build() {
+            final ObjectMapper mapper = SystemTestMapper.create(model.modelTypes());
+
+            return new ModelParser() {
+                @Override
+                public <B, S extends B> S parseOther(
+                        final String text, final Class<B> baseType, final Class<S> subType) {
+                    try {
+                        return subType.cast(mapper.readValue(text, baseType));
+                    } catch (final Exception e) {
+                        throw new AssertionError("Failed to parse: " + text, e);
+                    }
+                }
+            };
+        }
     }
 }

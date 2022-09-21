@@ -8,4 +8,6 @@ module creek.system.test.parser {
     requires com.github.spotbugs.annotations;
 
     exports org.creekservice.api.system.test.parser;
+    exports org.creekservice.internal.system.test.parser to
+            creek.system.test.test.util;
 }

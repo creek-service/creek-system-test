@@ -28,14 +28,24 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Set;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
+import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
+import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
+import org.creekservice.api.system.test.extension.test.model.Input;
+import org.creekservice.api.system.test.extension.test.model.InputHandler;
+import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.YamlParserBuilder;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
@@ -166,4 +176,133 @@ class CreekSystemTestExtensionTesterTest {
                                 Set.of("a"),
                                 Set.of())));
     }
+
+    @Test
+    void shouldBuildRefParser() {
+        // Given:
+        final YamlParserBuilder builder = tester.yamlParser();
+        builder.model().addRef(TestRef.class).withName("test/ref");
+
+        // When:
+        final ModelParser parser = builder.build();
+
+        // Then: formatting:off:
+        final String yaml = "---\n"
+                + "!test/ref\n"
+                + "id: bob";
+        // formatting:on:
+
+        final TestRef parsed = parser.parseRef(yaml, TestRef.class);
+        assertThat(parsed.id(), is("bob"));
+    }
+
+    @Test
+    void shouldBuildInputParser() {
+        // Given:
+        final YamlParserBuilder builder = tester.yamlParser();
+        builder.model()
+                .addInput(TestInput.class, mock(TestInputHandler.class))
+                .withName("test/input");
+
+        // When:
+        final ModelParser parser = builder.build();
+
+        // Then: formatting:off:
+        final String yaml = "---\n"
+                + "!test/input\n"
+                + "name: bob";
+        // formatting:on:
+
+        final TestInput parsed = parser.parseInput(yaml, TestInput.class);
+        assertThat(parsed.name, is("bob"));
+    }
+
+    @Test
+    void shouldBuildExpectationParser() {
+        // Given:
+        final YamlParserBuilder builder = tester.yamlParser();
+        builder.model()
+                .addExpectation(TestExpectation.class, mock(TestExpectationHandler.class))
+                .withName("test/expectation");
+
+        // When:
+        final ModelParser parser = builder.build();
+
+        // Then: formatting:off:
+        final String yaml = "---\n"
+                + "!test/expectation\n"
+                + "name: bob";
+        // formatting:on:
+
+        final TestExpectation parsed = parser.parseExpectation(yaml, TestExpectation.class);
+        assertThat(parsed.name, is("bob"));
+    }
+
+    @Test
+    void shouldBuildOtherParser() {
+        // Given:
+        final YamlParserBuilder builder = tester.yamlParser();
+
+        // When:
+        final ModelParser parser = builder.build();
+
+        // Then: formatting:off:
+        final String yaml = "---\n"
+                + "bob";
+        // formatting:on:
+
+        final String parsed = parser.parseOther(yaml, String.class);
+        assertThat(parsed, is("bob"));
+    }
+
+    @Test
+    void shouldThrowOnParseFailed() {
+        // Given:
+        final ModelParser parser = tester.yamlParser().build();
+
+        // When:
+        final Error e =
+                assertThrows(
+                        AssertionError.class, () -> parser.parseOther("not-yaml", Integer.class));
+
+        // Then:
+        assertThat(e.getMessage(), is("Failed to parse: not-yaml"));
+    }
+
+    public static final class TestRef implements InputRef, ExpectationRef {
+
+        private final String id;
+
+        @SuppressWarnings("RedundantModifier")
+        public TestRef(@JsonProperty("id") final String id) {
+            this.id = id;
+        }
+
+        @Override
+        public String id() {
+            return id;
+        }
+    }
+
+    public static final class TestInput implements Input {
+        private final String name;
+
+        @SuppressWarnings("RedundantModifier")
+        public TestInput(@JsonProperty("name") final String id) {
+            this.name = id;
+        }
+    }
+
+    private interface TestInputHandler extends InputHandler<TestInput> {}
+
+    public static final class TestExpectation implements Expectation {
+        private final String name;
+
+        @SuppressWarnings("RedundantModifier")
+        public TestExpectation(@JsonProperty("name") final String id) {
+            this.name = id;
+        }
+    }
+
+    private interface TestExpectationHandler extends ExpectationHandler<TestExpectation> {}
 }
