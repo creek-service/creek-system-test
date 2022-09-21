@@ -18,12 +18,17 @@ plugins {
     `java-library`
 }
 
+val creekBaseVersion : String by extra
 val spotBugsVersion : String by extra
+val jacksonVersion : String by extra
 
 dependencies {
     api(project(":executor"))
     api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+
     implementation(project(":extension"))
+    implementation(project(":parser"))
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
     testImplementation(project(":test-services"))
 }

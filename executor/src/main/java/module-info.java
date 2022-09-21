@@ -24,4 +24,7 @@ module creek.system.test.executor {
 
     opens org.creekservice.internal.system.test.executor.cli to
             info.picocli;
+
+    exports org.creekservice.internal.system.test.executor.api.test.model to
+            creek.system.test.test.util;
 }

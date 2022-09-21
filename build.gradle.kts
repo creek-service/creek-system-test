@@ -141,6 +141,7 @@ subprojects {
             removeUnusedImports()
             trimTrailingWhitespace()
             endWithNewline()
+            toggleOffOn("formatting:off", "formatting:on")
         }
     }
 
