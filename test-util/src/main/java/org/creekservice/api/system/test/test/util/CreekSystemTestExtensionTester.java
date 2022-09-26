@@ -20,6 +20,7 @@ import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceD
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
@@ -209,12 +210,9 @@ public final class CreekSystemTestExtensionTester {
             return new ModelParser() {
                 @Override
                 public <B, S extends B> S parseOther(
-                        final String text, final Class<B> baseType, final Class<S> subType) {
-                    try {
-                        return subType.cast(mapper.readValue(text, baseType));
-                    } catch (final Exception e) {
-                        throw new AssertionError("Failed to parse: " + text, e);
-                    }
+                        final String text, final Class<B> baseType, final Class<S> subType)
+                        throws JsonProcessingException {
+                    return subType.cast(mapper.readValue(text, baseType));
                 }
             };
         }
