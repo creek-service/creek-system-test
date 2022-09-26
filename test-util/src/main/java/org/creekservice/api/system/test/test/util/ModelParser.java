@@ -17,6 +17,7 @@
 package org.creekservice.api.system.test.test.util;
 
 
+import java.io.IOException;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.Ref;
@@ -30,8 +31,9 @@ public interface ModelParser {
      * @param type the ref subtype.
      * @param <T> the ref subtype.
      * @return the parsed instance.
+     * @throws IOException on parsing error.
      */
-    default <T extends Ref> T parseRef(final String text, final Class<T> type) {
+    default <T extends Ref> T parseRef(final String text, final Class<T> type) throws IOException {
         return parseOther(text, Ref.class, type);
     }
 
@@ -42,8 +44,10 @@ public interface ModelParser {
      * @param type the input subtype.
      * @param <T> the input subtype.
      * @return the parsed instance.
+     * @throws IOException on parsing error.
      */
-    default <T extends Input> T parseInput(final String text, final Class<T> type) {
+    default <T extends Input> T parseInput(final String text, final Class<T> type)
+            throws IOException {
         return parseOther(text, Input.class, type);
     }
 
@@ -54,8 +58,10 @@ public interface ModelParser {
      * @param type the expectation subtype.
      * @param <T> the expectation subtype.
      * @return the parsed instance.
+     * @throws IOException on parsing error.
      */
-    default <T extends Expectation> T parseExpectation(final String text, final Class<T> type) {
+    default <T extends Expectation> T parseExpectation(final String text, final Class<T> type)
+            throws IOException {
         return parseOther(text, Expectation.class, type);
     }
 
@@ -73,8 +79,9 @@ public interface ModelParser {
      * @param type the type of the object to parse
      * @param <T> the type of the object to parse
      * @return the parsed instance
+     * @throws IOException on parsing error.
      */
-    default <T> T parseOther(final String text, final Class<T> type) {
+    default <T> T parseOther(final String text, final Class<T> type) throws IOException {
         return parseOther(text, type, type);
     }
 
@@ -96,6 +103,8 @@ public interface ModelParser {
      *     an interface.
      * @param <S> the subtype, generally the implementation of the interface.
      * @return the parsed instance
+     * @throws IOException on parsing error.
      */
-    <B, S extends B> S parseOther(String text, Class<B> baseType, Class<S> subType);
+    <B, S extends B> S parseOther(String text, Class<B> baseType, Class<S> subType)
+            throws IOException;
 }

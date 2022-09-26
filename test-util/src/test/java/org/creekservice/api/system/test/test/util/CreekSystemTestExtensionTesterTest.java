@@ -28,12 +28,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
@@ -178,7 +180,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldBuildRefParser() {
+    void shouldBuildRefParser() throws Exception {
         // Given:
         final YamlParserBuilder builder = tester.yamlParser();
         builder.model().addRef(TestRef.class).withName("test/ref");
@@ -197,7 +199,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldBuildInputParser() {
+    void shouldBuildInputParser() throws Exception {
         // Given:
         final YamlParserBuilder builder = tester.yamlParser();
         builder.model()
@@ -218,7 +220,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldBuildExpectationParser() {
+    void shouldBuildExpectationParser() throws Exception {
         // Given:
         final YamlParserBuilder builder = tester.yamlParser();
         builder.model()
@@ -239,7 +241,7 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldBuildOtherParser() {
+    void shouldBuildOtherParser() throws Exception {
         // Given:
         final YamlParserBuilder builder = tester.yamlParser();
 
@@ -261,12 +263,11 @@ class CreekSystemTestExtensionTesterTest {
         final ModelParser parser = tester.yamlParser().build();
 
         // When:
-        final Error e =
-                assertThrows(
-                        AssertionError.class, () -> parser.parseOther("not-yaml", Integer.class));
+        final Exception e =
+                assertThrows(IOException.class, () -> parser.parseOther("not-yaml", Integer.class));
 
         // Then:
-        assertThat(e.getMessage(), is("Failed to parse: not-yaml"));
+        assertThat(e.getMessage(), startsWith("Cannot deserialize value"));
     }
 
     public static final class TestRef implements InputRef, ExpectationRef {
