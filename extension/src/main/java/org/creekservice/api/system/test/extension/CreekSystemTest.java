@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.extension;
 
 import java.util.stream.Stream;
 import org.creekservice.api.service.extension.CreekExtension;
+import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
@@ -57,6 +58,15 @@ public interface CreekSystemTest {
     ExtensionAccessor extensions();
 
     interface ExtensionAccessor {
+
+        /**
+         * Register an extensions option set.
+         *
+         * <p>Allows customisation of service extensions added via {@link #ensureExtension}
+         *
+         * @param option the options to add.
+         */
+        void addOption(CreekExtensionOptions option);
 
         /**
          * Ensure an extension has been initialized.

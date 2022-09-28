@@ -63,19 +63,19 @@ class TestCaseDefTest {
                 .addEqualityGroup(
                         testCase(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 inputs,
                                 expectations),
                         testCase(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 inputs,
                                 expectations),
                         testCase(
                                         "name",
-                                        Optional.of("description"),
+                                        Optional.of("notes"),
                                         Optional.of(disabled),
                                         inputs,
                                         expectations)
@@ -83,7 +83,7 @@ class TestCaseDefTest {
                 .addEqualityGroup(
                         testCase(
                                 "diff",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 inputs,
                                 expectations))
@@ -97,21 +97,21 @@ class TestCaseDefTest {
                 .addEqualityGroup(
                         testCase(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.empty(),
                                 inputs,
                                 expectations))
                 .addEqualityGroup(
                         testCase(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 Optional.empty(),
                                 expectations))
                 .addEqualityGroup(
                         testCase(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 inputs,
                                 List.of(expectations.get(0), expectations.get(0))))
@@ -124,7 +124,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -137,7 +137,7 @@ class TestCaseDefTest {
 
         // Then:
         assertThat(result.name(), is("a test case"));
-        assertThat(result.description(), is("description"));
+        assertThat(result.notes(), is("description"));
         assertThat(result.disabled().map(Disabled::reason), is(Optional.of("disabled reason")));
         assertThat(result.inputs(), contains(simpleRef("an_input")));
         assertThat(result.expectations(), contains(simpleRef("an_expectation")));
@@ -149,7 +149,7 @@ class TestCaseDefTest {
         // Given:
         final String yaml =
                 "---\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -181,7 +181,7 @@ class TestCaseDefTest {
         final TestCaseDef result = parse(yaml);
 
         // Then:
-        assertThat(result.description(), is(""));
+        assertThat(result.notes(), is(""));
     }
 
     @Test
@@ -190,7 +190,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "inputs:\n"
                         + "  - an_input\n"
                         + "expectations:\n"
@@ -209,7 +209,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "expectations:\n"
@@ -228,7 +228,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -248,7 +248,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -268,7 +268,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -291,7 +291,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"
@@ -314,7 +314,7 @@ class TestCaseDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test case\n"
-                        + "description: description\n"
+                        + "notes: description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "inputs:\n"

@@ -33,7 +33,7 @@ import java.util.Optional;
 public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
 
     private final String name;
-    private final String description;
+    private final String notes;
     private final Optional<Disabled> disabled;
     private final List<String> services;
     private final List<TestCaseDef> tests;
@@ -42,23 +42,23 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     @JsonCreator
     public static TestSuiteDef testSuite(
             @JsonProperty(value = "name", required = true) final String name,
-            @JsonProperty("description") final Optional<String> description,
+            @JsonProperty("notes") final Optional<String> notes,
             @JsonProperty("disabled") final Optional<Disabled> disabled,
             @JsonProperty(value = "services", required = true) final List<String> services,
             @JsonProperty(value = "tests", required = true) final List<TestCaseDef> tests) {
         return new TestSuiteDef(
-                name, description.orElse(""), disabled, UNKNOWN_LOCATION, services, tests);
+                name, notes.orElse(""), disabled, UNKNOWN_LOCATION, services, tests);
     }
 
     private TestSuiteDef(
             final String name,
-            final String description,
+            final String notes,
             final Optional<Disabled> disabled,
             final URI location,
             final List<String> services,
             final List<TestCaseDef> tests) {
         this.name = requireNonNull(name, "name");
-        this.description = requireNonNull(description, "description");
+        this.notes = requireNonNull(notes, "notes");
         this.disabled = requireNonNull(disabled, "disabled");
         this.location = requireNonNull(location, "location");
         this.services = List.copyOf(requireNonNull(services, "services"));
@@ -75,10 +75,10 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         return name;
     }
 
-    @JsonGetter("description")
-    @JsonPropertyDescription("(Optional) description")
-    public String description() {
-        return description;
+    @JsonGetter("notes")
+    @JsonPropertyDescription("(Optional) notes")
+    public String notes() {
+        return notes;
     }
 
     @JsonGetter("disabled")
@@ -107,7 +107,7 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     }
 
     public TestSuiteDef withLocation(final URI location) {
-        return new TestSuiteDef(name, description, disabled, location, services, tests);
+        return new TestSuiteDef(name, notes, disabled, location, services, tests);
     }
 
     @Override
@@ -122,7 +122,7 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
 
         // Note: location intentionally excluded:
         return Objects.equals(name, testSuiteDef.name)
-                && Objects.equals(description, testSuiteDef.description)
+                && Objects.equals(notes, testSuiteDef.notes)
                 && Objects.equals(disabled, testSuiteDef.disabled)
                 && Objects.equals(services, testSuiteDef.services)
                 && Objects.equals(tests, testSuiteDef.tests);
@@ -131,7 +131,7 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     @Override
     public int hashCode() {
         // Note: location intentionally excluded:
-        return Objects.hash(name, description, disabled, services, tests);
+        return Objects.hash(name, notes, disabled, services, tests);
     }
 
     @Override
@@ -140,8 +140,8 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
                 + "name='"
                 + name
                 + '\''
-                + ", description='"
-                + description
+                + ", notes='"
+                + notes
                 + '\''
                 + ", disabled="
                 + disabled

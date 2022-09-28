@@ -35,7 +35,7 @@ import org.creekservice.api.system.test.extension.test.model.InputRef;
 public final class TestCaseDef implements LocationAware<TestCaseDef> {
 
     private final String name;
-    private final String description;
+    private final String notes;
     private final Optional<Disabled> disabled;
     private final List<InputRef> inputs;
     private final List<ExpectationRef> expectations;
@@ -45,7 +45,7 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     @JsonCreator
     public static TestCaseDef testCase(
             @JsonProperty(value = "name", required = true) final String name,
-            @JsonProperty("description") final Optional<String> description,
+            @JsonProperty("notes") final Optional<String> notes,
             @JsonProperty("disabled") final Optional<Disabled> disabled,
             @JsonProperty("inputs") final Optional<? extends List<? extends InputRef>> maybeInputs,
             @JsonProperty(value = "expectations", required = true)
@@ -53,18 +53,18 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
         final List<? extends InputRef> inputs =
                 maybeInputs.isPresent() ? maybeInputs.get() : List.of();
         return new TestCaseDef(
-                name, description.orElse(""), disabled, UNKNOWN_LOCATION, inputs, expectations);
+                name, notes.orElse(""), disabled, UNKNOWN_LOCATION, inputs, expectations);
     }
 
     private TestCaseDef(
             final String name,
-            final String description,
+            final String notes,
             final Optional<Disabled> disabled,
             final URI location,
             final List<? extends InputRef> inputs,
             final List<? extends ExpectationRef> expectations) {
         this.name = requireNonNull(name, "name");
-        this.description = requireNonNull(description, "description");
+        this.notes = requireNonNull(notes, "notes");
         this.disabled = requireNonNull(disabled, "disabled");
         this.location = requireNonNull(location, "location");
         this.inputs = List.copyOf(requireNonNull(inputs, "inputs"));
@@ -80,10 +80,10 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
         return name;
     }
 
-    @JsonGetter("description")
-    @JsonPropertyDescription("Optional description")
-    public String description() {
-        return description;
+    @JsonGetter("notes")
+    @JsonPropertyDescription("Optional notes")
+    public String notes() {
+        return notes;
     }
 
     @JsonGetter("disabled")
@@ -110,7 +110,7 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     }
 
     public TestCaseDef withLocation(final URI location) {
-        return new TestCaseDef(name, description, disabled, location, inputs, expectations);
+        return new TestCaseDef(name, notes, disabled, location, inputs, expectations);
     }
 
     @Override
@@ -125,7 +125,7 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
 
         // Note: location intentionally excluded:
         return Objects.equals(name, testCase.name)
-                && Objects.equals(description, testCase.description)
+                && Objects.equals(notes, testCase.notes)
                 && Objects.equals(disabled, testCase.disabled)
                 && Objects.equals(inputs, testCase.inputs)
                 && Objects.equals(expectations, testCase.expectations);
@@ -134,7 +134,7 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     @Override
     public int hashCode() {
         // Note: location intentionally excluded:
-        return Objects.hash(name, description, disabled, inputs, expectations);
+        return Objects.hash(name, notes, disabled, inputs, expectations);
     }
 
     @Override
@@ -143,8 +143,8 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
                 + "name='"
                 + name
                 + '\''
-                + ", description='"
-                + description
+                + ", notes='"
+                + notes
                 + '\''
                 + ", disabled="
                 + disabled

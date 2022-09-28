@@ -42,7 +42,7 @@ class TestSuiteDefTest {
 
     private static final String TEST_CASE_YAML =
             "name: test one\n"
-                    + "   description: test description\n"
+                    + "   notes: test description\n"
                     + "   expectations:\n"
                     + "    - an_expectation\n";
 
@@ -63,19 +63,19 @@ class TestSuiteDefTest {
                 .addEqualityGroup(
                         testSuite(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
                                 List.of(testCase)),
                         testSuite(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
                                 List.of(testCase)),
                         testSuite(
                                         "name",
-                                        Optional.of("description"),
+                                        Optional.of("notes"),
                                         Optional.of(disabled),
                                         List.of("service"),
                                         List.of(testCase))
@@ -83,7 +83,7 @@ class TestSuiteDefTest {
                 .addEqualityGroup(
                         testSuite(
                                 "diff",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
                                 List.of(testCase)))
@@ -97,21 +97,21 @@ class TestSuiteDefTest {
                 .addEqualityGroup(
                         testSuite(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("diff"),
                                 List.of(testCase)))
                 .addEqualityGroup(
                         testSuite(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.empty(),
                                 List.of("service"),
                                 List.of(testCase)))
                 .addEqualityGroup(
                         testSuite(
                                 "name",
-                                Optional.of("description"),
+                                Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
                                 List.of(testCase, testCase)))
@@ -124,7 +124,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services:\n"
@@ -138,7 +138,7 @@ class TestSuiteDefTest {
 
         // Then:
         assertThat(result.name(), is("a test suite"));
-        assertThat(result.description(), is("suite description"));
+        assertThat(result.notes(), is("suite description"));
         assertThat(result.disabled().map(Disabled::reason), is(Optional.of("disabled reason")));
         assertThat(result.location(), is(UNKNOWN_LOCATION));
         assertThat(result.services(), contains("a_service"));
@@ -150,7 +150,7 @@ class TestSuiteDefTest {
         // Given:
         final String yaml =
                 "---\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services:\n"
@@ -184,7 +184,7 @@ class TestSuiteDefTest {
         final TestSuiteDef result = parse(yaml);
 
         // Then:
-        assertThat(result.description(), is(""));
+        assertThat(result.notes(), is(""));
     }
 
     @Test
@@ -193,7 +193,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "services:\n"
                         + " - a_service\n"
                         + "tests:\n"
@@ -213,7 +213,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "tests:\n"
@@ -233,7 +233,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services: []\n"
@@ -254,7 +254,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services:\n"
@@ -273,7 +273,7 @@ class TestSuiteDefTest {
         final String yaml =
                 "---\n"
                         + "name: a test suite\n"
-                        + "description: suite description\n"
+                        + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services:\n"

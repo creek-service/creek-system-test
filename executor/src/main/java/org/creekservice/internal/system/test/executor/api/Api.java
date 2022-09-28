@@ -51,8 +51,8 @@ public final class Api {
         final AddServicesUnderTestListener addServicesListener =
                 new AddServicesUnderTestListener(api);
         api.tests().env().listeners().append(addServicesListener);
-        api.tests().env().listeners().append(new InitializeResourcesListener(api));
         creekTestExtensions.forEach(ext -> ext.initialize(api));
+        api.tests().env().listeners().append(new InitializeResourcesListener(api));
         api.tests()
                 .env()
                 .listeners()

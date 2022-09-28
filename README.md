@@ -148,7 +148,7 @@ To test the system, we may want to seed the test environment with some initial _
 ```yaml
 ---
 '@type': kafka_topic
-description: Seed environment with base set of user data
+notes: Seed environment with base set of user data
 topic: user
 records:
   - key: 1876
