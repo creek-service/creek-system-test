@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.testing.NullPointerTester;
 import java.util.function.Function;
 import org.creekservice.api.service.extension.CreekExtension;
+import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
@@ -89,6 +90,18 @@ class SystemTestTest {
     @Test
     void shouldExposeAggregateDefinitions() {
         assertThat(api.components().definitions().aggregates(), is(sameInstance(aggregates)));
+    }
+
+    @Test
+    void shouldAddOptions() {
+        // Given:
+        final CreekExtensionOptions option = mock(CreekExtensionOptions.class);
+
+        // When:
+        api.extensions().addOption(option);
+
+        // Then:
+        verify(serviceApi.options()).add(option);
     }
 
     @SuppressWarnings("unchecked")

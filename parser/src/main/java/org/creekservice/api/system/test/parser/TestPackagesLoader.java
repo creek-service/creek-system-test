@@ -55,8 +55,9 @@ public final class TestPackagesLoader {
             final Predicate<Path> predicate,
             final WalkerFactory walkerFactory) {
         this.rootDir = requireNonNull(rootDir, "rootDir");
-        this.parser = path -> requireNonNull(parser, "parser").parse(path, predicate);
+        this.parser = path -> parser.parse(path, predicate);
         this.walkerFactory = requireNonNull(walkerFactory, "walkerFactory");
+        requireNonNull(parser, "parser");
     }
 
     /**

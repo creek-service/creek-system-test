@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.service.extension.CreekExtension;
+import org.creekservice.api.service.extension.CreekExtensionOptions;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.component.model.ComponentModelCollection;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
@@ -68,16 +69,19 @@ public final class SystemTest implements CreekSystemTest {
         this.extensions = new Extensions(api.apply(components));
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public Tests tests() {
         return tests;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public Components components() {
         return components;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public Extensions extensions() {
         return extensions;
@@ -162,6 +166,11 @@ public final class SystemTest implements CreekSystemTest {
 
         Extensions(final Creek api) {
             this.api = requireNonNull(api, "api");
+        }
+
+        @Override
+        public void addOption(final CreekExtensionOptions option) {
+            api.options().add(option);
         }
 
         @Override

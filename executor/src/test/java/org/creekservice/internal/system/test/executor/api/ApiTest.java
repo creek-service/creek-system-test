@@ -70,15 +70,14 @@ class ApiTest {
     @Test
     void shouldAddAddServicesUnderTestListener() {
         // When:
-        initializeApi(api, List.of());
+        initializeApi(api, List.of(ext0));
 
         // Then:
-        final InOrder inOrder = inOrder(api.tests().env().listeners());
+        final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
         inOrder.verify(api.tests().env().listeners()).append(isA(SuiteCleanUpListener.class));
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(AddServicesUnderTestListener.class));
-        inOrder.verify(api.tests().env().listeners())
-                .append(isA(InitializeResourcesListener.class));
+        inOrder.verify(ext0).initialize(api);
     }
 
     @Test
@@ -88,11 +87,11 @@ class ApiTest {
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
-        inOrder.verify(api.tests().env().listeners())
-                .append(isA(AddServicesUnderTestListener.class));
+        inOrder.verify(ext0).initialize(api);
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(InitializeResourcesListener.class));
-        inOrder.verify(ext0).initialize(api);
+        inOrder.verify(api.tests().env().listeners())
+                .append(isA(StartServicesUnderTestListener.class));
     }
 
     @Test
@@ -103,11 +102,11 @@ class ApiTest {
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0, ext1);
         inOrder.verify(api.tests().env().listeners())
-                .append(isA(InitializeResourcesListener.class));
+                .append(isA(AddServicesUnderTestListener.class));
         inOrder.verify(ext0).initialize(api);
         inOrder.verify(ext1).initialize(api);
         inOrder.verify(api.tests().env().listeners())
-                .append(isA(StartServicesUnderTestListener.class));
+                .append(isA(InitializeResourcesListener.class));
     }
 
     @Test
