@@ -71,10 +71,12 @@ public final class TestCase implements CreekTestCase {
         return suite;
     }
 
+    @Override
     public List<Input> inputs() {
         return List.copyOf(inputs);
     }
 
+    @Override
     public List<Expectation> expectations() {
         return List.copyOf(expectations);
     }

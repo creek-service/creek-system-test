@@ -40,13 +40,13 @@ public final class TestExecutionResult {
     }
 
     /** @return number of test cases that failed, i.e. assertions not met */
-    public int failed() {
-        return results.stream().mapToInt(TestSuiteResult::failed).sum();
+    public long failed() {
+        return results.stream().mapToLong(TestSuiteResult::failures).sum();
     }
 
     /** @return number of test cases that failed to execute */
-    public int errors() {
-        return results.stream().mapToInt(TestSuiteResult::errors).sum();
+    public long errors() {
+        return results.stream().mapToLong(TestSuiteResult::errors).sum();
     }
 
     /** @return {@code true} if there were no failures or errors. */

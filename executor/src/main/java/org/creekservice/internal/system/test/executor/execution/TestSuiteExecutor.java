@@ -17,6 +17,7 @@
 package org.creekservice.internal.system.test.executor.execution;
 
 import static java.util.Objects.requireNonNull;
+import static org.creekservice.internal.system.test.executor.result.TestCaseResult.testCaseResult;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
@@ -55,14 +56,24 @@ public final class TestSuiteExecutor {
         testSuite.tests().forEach(testExecutor::executeTest);
 
         // For now, this facilitates testing:
+        final TestSuiteResult.Builder results = TestSuiteResult.testSuiteResult(testSuite);
+
         switch (testSuite.tests().size()) {
             case 1:
-                return new TestSuiteResult(0, 1);
+                results.add(testCaseResult(testSuite.tests().get(0)).error(new RuntimeException()));
+                break;
             case 2:
-                return new TestSuiteResult(1, 0);
+                results.add(testCaseResult(testSuite.tests().get(0)).failure(new AssertionError()));
+                results.add(testCaseResult(testSuite.tests().get(1)).success());
+                break;
             default:
-                return new TestSuiteResult(0, 0);
+                results.add(testCaseResult(testSuite.tests().get(0)).success());
+                results.add(testCaseResult(testSuite.tests().get(1)).success());
+                results.add(testCaseResult(testSuite.tests().get(2)).success());
+                break;
         }
+
+        return results.build();
     }
 
     private void afterSuite(final TestSuite testSuite) {

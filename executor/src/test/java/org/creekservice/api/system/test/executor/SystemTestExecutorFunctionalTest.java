@@ -320,22 +320,6 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldReportReportValidationFailure() {
-        // Given:
-        givenResult(ExpectedResult.SUCCESS);
-        givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
-
-        // When:
-        final int exitCode = runExecutor(minimalArgs());
-
-        // Then:
-        assertThat(
-                stdErr.get(),
-                containsString("Validation failed for resource group: " + OwnedOutput.id()));
-        assertThat(exitCode, is(2));
-    }
-
-    @Test
     void shouldInitialiseSharedResources() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
@@ -360,7 +344,7 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldReportReportEnsureFailure() {
+    void shouldReportEnsureResourceFailures() {
         // Given:
         givenResult(ExpectedResult.SUCCESS);
         givenEnv(
@@ -375,6 +359,22 @@ class SystemTestExecutorFunctionalTest {
                 stdErr.get(),
                 containsString(
                         "Ensure failed for resource: " + TestServiceDescriptor.UnownedInput1.id()));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldReportResourceValidationFailure() {
+        // Given:
+        givenResult(ExpectedResult.SUCCESS);
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdErr.get(),
+                containsString("Validation failed for resource group: " + OwnedOutput.id()));
         assertThat(exitCode, is(2));
     }
 
@@ -449,8 +449,14 @@ class SystemTestExecutorFunctionalTest {
     }
 
     private String suiteContent(final int numberTestCases) {
+        // formatting:off
         final String header =
-                "---\n" + "name: suite name\n" + "services:\n" + "  - test-service\n" + "tests:\n";
+                "---\n"
+                + "name: suite name\n"
+                + "services:\n"
+                + "  - test-service\n"
+                + "tests:\n";
+        // formatting:on
 
         final String cases =
                 IntStream.range(0, numberTestCases)
