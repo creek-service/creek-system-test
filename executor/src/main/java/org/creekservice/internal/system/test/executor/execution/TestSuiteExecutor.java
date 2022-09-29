@@ -22,6 +22,7 @@ import static org.creekservice.internal.system.test.executor.result.TestCaseResu
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
+import org.creekservice.internal.system.test.executor.result.TestCaseResult;
 import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
 
 public final class TestSuiteExecutor {
@@ -67,9 +68,10 @@ public final class TestSuiteExecutor {
                 results.add(testCaseResult(testSuite.tests().get(1)).success());
                 break;
             default:
-                results.add(testCaseResult(testSuite.tests().get(0)).success());
-                results.add(testCaseResult(testSuite.tests().get(1)).success());
-                results.add(testCaseResult(testSuite.tests().get(2)).success());
+                testSuite.tests().stream()
+                        .map(TestCaseResult::testCaseResult)
+                        .map(TestCaseResult.Builder::success)
+                        .forEach(results::add);
                 break;
         }
 
