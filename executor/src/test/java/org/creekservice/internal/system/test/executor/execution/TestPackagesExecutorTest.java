@@ -16,6 +16,8 @@
 
 package org.creekservice.internal.system.test.executor.execution;
 
+import static org.creekservice.internal.system.test.executor.result.TestCaseResult.testCaseResult;
+import static org.creekservice.internal.system.test.executor.result.TestSuiteResult.testSuiteResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.stream.Stream;
+import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
@@ -48,6 +51,8 @@ class TestPackagesExecutorTest {
     @Mock private ResultsWriter resultsWriter;
     @Mock private TestPackage pkg1;
     @Mock private TestPackage pkg2;
+    @Mock private TestCase test1;
+    @Mock private TestCase test2;
     @Mock private TestSuite suite1;
     @Mock private TestSuite suite2;
     @Mock private TestSuite suite3;
@@ -57,11 +62,20 @@ class TestPackagesExecutorTest {
     void setUp() {
         executor = new TestPackagesExecutor(loader, suiteExecutor, resultsWriter);
 
-        when(suiteExecutor.executeSuite(any())).thenReturn(new TestSuiteResult(0, 0));
+        when(suiteExecutor.executeSuite(any()))
+                .thenAnswer(inv -> testSuiteResult(inv.getArgument(0)).build());
 
         when(loader.stream()).thenReturn(Stream.of(pkg1, pkg2));
         when(pkg1.suites()).thenReturn(List.of(suite1, suite2));
         when(pkg2.suites()).thenReturn(List.of(suite3));
+
+        when(test1.name()).thenReturn("test1");
+        when(test1.suite()).thenReturn(suite1);
+        when(test2.name()).thenReturn("test2");
+        when(test2.suite()).thenReturn(suite2);
+        when(suite1.name()).thenReturn("suite1");
+        when(suite2.name()).thenReturn("suite2");
+        when(suite3.name()).thenReturn("suite3");
     }
 
     @Test
@@ -91,14 +105,27 @@ class TestPackagesExecutorTest {
     @Test
     void shouldCombineResults() {
         // Given:
-        when(suiteExecutor.executeSuite(suite1)).thenReturn(new TestSuiteResult(1, 0));
-        when(suiteExecutor.executeSuite(suite2)).thenReturn(new TestSuiteResult(1, 4));
+        final TestSuiteResult suite1Result =
+                testSuiteResult(suite1)
+                        .add(testCaseResult(test1).failure(new AssertionError()))
+                        .add(testCaseResult(test1).error(new RuntimeException()))
+                        .build();
+
+        final TestSuiteResult suite2Result =
+                testSuiteResult(suite1)
+                        .add(testCaseResult(test2).error(new RuntimeException()))
+                        .add(testCaseResult(test2).error(new RuntimeException()))
+                        .build();
+
+        when(suiteExecutor.executeSuite(suite1)).thenReturn(suite1Result);
+
+        when(suiteExecutor.executeSuite(suite2)).thenReturn(suite2Result);
 
         // When:
         final TestExecutionResult result = executor.execute();
 
         // Then:
-        assertThat(result.failed(), is(2));
-        assertThat(result.errors(), is(4));
+        assertThat(result.failed(), is(1L));
+        assertThat(result.errors(), is(3L));
     }
 }

@@ -13,6 +13,7 @@ module creek.system.test.executor {
     requires com.github.spotbugs.annotations;
     requires testcontainers;
     requires docker.java.api;
+    requires com.fasterxml.jackson.dataformat.xml;
 
     exports org.creekservice.api.system.test.executor;
     exports org.creekservice.internal.system.test.executor.api.test.env.suite.service to

@@ -40,8 +40,11 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TestSuiteExecutorTest {
 
     @Mock private TestListenerCollection listeners;
@@ -56,6 +59,12 @@ class TestSuiteExecutorTest {
     @BeforeEach
     void setUp() {
         suiteExecutor = new TestSuiteExecutor(listeners, testExecutor);
+
+        when(testCase0.name()).thenReturn("test0");
+        when(testCase0.suite()).thenReturn(testSuite);
+        when(testCase1.name()).thenReturn("test1");
+        when(testCase1.suite()).thenReturn(testSuite);
+        when(testSuite.name()).thenReturn("suite");
     }
 
     @Test
