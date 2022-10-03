@@ -16,6 +16,9 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
+
+import java.util.Optional;
+
 /** A collection of extensions to the Creek Service model. */
 public interface TestModelCollection {
 
@@ -26,4 +29,22 @@ public interface TestModelCollection {
      * @return {@code true} if the extension type is known, {@code false} otherwise.
      */
     boolean hasType(Class<?> type);
+
+    /**
+     * Get the input handler for the supplied {@code type}.
+     *
+     * @param type the input type to get the handler for.
+     * @param <T> the input type to get the handler for.
+     * @return the input handler, if present.
+     */
+    <T extends Input> Optional<InputHandler<T>> inputHandler(Class<T> type);
+
+    /**
+     * Get the expectation handler for the supplied {@code type}.
+     *
+     * @param type the expectation type to get the handler for.
+     * @param <T> the expectation type to get the handler for.
+     * @return the expectation handler, if present.
+     */
+    <T extends Expectation> Optional<ExpectationHandler<T>> expectationHandler(Class<T> type);
 }

@@ -18,6 +18,7 @@ package org.creekservice.api.system.test.test.extension;
 
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
@@ -34,10 +35,36 @@ public final class TestCreekTestExtension implements CreekTestExtension {
     public void initialize(final CreekSystemTest api) {
         api.extensions().ensureExtension(TestCreekExtensionProvider.class);
 
-        api.tests().model().addExpectation(TestExpectation.class, this::prepareExpectation);
+        api.tests().model().addInput(TestInput.class, this::pipeInput).withName("creek/test");
+
+        api.tests()
+                .model()
+                .addExpectation(TestExpectation.class, this::prepareExpectation)
+                .withName("creek/test");
+    }
+
+    private void pipeInput(final TestInput input) {
+        System.out.println("Piping input: " + input.value);
+
+        if (input.value.equals("should throw")) {
+            throw new RuntimeException("Failed to process input");
+        }
     }
 
     private Verifier prepareExpectation(final Collection<TestExpectation> expectations) {
-        return () -> System.out.println("Verifying expectations: " + expectations);
+        final String outputs =
+                expectations.stream().map(e -> e.value).collect(Collectors.joining(","));
+
+        if (outputs.contains("should throw")) {
+            throw new RuntimeException("Failed to process expectation");
+        }
+
+        if (outputs.contains("should fail")) {
+            return () -> {
+                throw new AssertionError("Failed because it was meant to");
+            };
+        }
+
+        return () -> System.out.println("Verifying expectations: " + outputs);
     }
 }

@@ -134,7 +134,7 @@ public final class SystemTestExecutor {
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api.tests().env().listeners()),
+                new TestSuiteExecutor(api),
                 new XmlResultsWriter(options.resultDirectory()));
     }
 

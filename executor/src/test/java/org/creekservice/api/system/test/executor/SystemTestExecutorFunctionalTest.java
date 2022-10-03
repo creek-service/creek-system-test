@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.creekservice.api.base.type.Suppliers;
 import org.creekservice.api.system.test.test.extension.TestCreekExtensionProvider;
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
@@ -78,19 +77,42 @@ class SystemTestExecutorFunctionalTest {
     private static final Pattern VERSION_PATTERN =
             Pattern.compile(".*SystemTestExecutor: \\d+\\.\\d+\\.\\d+.*", Pattern.DOTALL);
 
-    private static final String VALID_EXPECTATION = "---\n'@type': test\noutput: output stuff";
+    // formatting:off
+    private static final String VALID_SEED = "---\n" +
+            "!creek/test\n" +
+            "value: seed value";
 
-    private enum ExpectedResult {
-        ERRORS(1),
-        FAILURES(2),
-        SUCCESS(3);
+    private static final String VALID_INPUT = "---\n" +
+            "!creek/test\n" +
+            "value: input value";
 
-        public final int numTestCases;
+    private static final String THROWING_INPUT = "---\n" +
+            "!creek/test\n" +
+            "value: should throw";
 
-        ExpectedResult(final int numTestCases) {
-            this.numTestCases = numTestCases;
-        }
-    }
+    private static final String PASSING_EXPECTATION = "---\n" +
+            "!creek/test\n" +
+            "value: output value";
+
+    private static final String FAILING_EXPECTATION = "---\n" +
+            "!creek/test\n" +
+            "value: should fail";
+
+    private static final String THROWING_EXPECTATION = "---\n" +
+            "!creek/test\n" +
+            "value: should throw";
+
+    private static final String VALID_SUITE = "---\n"
+                    + "name: suite name\n"
+                    + "services:\n"
+                    + "  - test-service\n"
+                    + "tests:\n"
+                    + "  - name: test 0\n"
+                    + "    inputs:\n"
+                    + "      - input-1\n"
+                    + "    expectations:\n"
+                    + "      - expectation-1\n";
+    // formatting:on
 
     @TempDir private Path root;
     private Path testDir;
@@ -104,6 +126,11 @@ class SystemTestExecutorFunctionalTest {
         testDir = root.resolve("tests");
         resultDir = root.resolve("results");
         env = new HashMap<>();
+
+        TestPaths.write(testDir.resolve("seed/seed-1.yml"), VALID_SEED);
+        TestPaths.write(testDir.resolve("inputs/input-1.yml"), VALID_INPUT);
+        TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), PASSING_EXPECTATION);
+        TestPaths.write(testDir.resolve("suite.yml"), VALID_SUITE);
     }
 
     @Test
@@ -215,6 +242,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldFailIfTestDirectoryIsMissing() {
         // Given:
         final String[] args = minimalArgs();
+        TestPaths.delete(testDir);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -228,6 +256,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldFailIfThereWereNoTestPackages() {
         // Given:
         final String[] args = minimalArgs();
+        TestPaths.delete(testDir);
         ensureDirectories(testDir);
 
         // When:
@@ -239,18 +268,63 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldReportTestErrors() {
+    void shouldReportSeedErrors() {
         // Given:
         final String[] args = minimalArgs();
-        givenResult(ExpectedResult.ERRORS);
+        TestPaths.write(testDir.resolve("seed/seed-1.yml"), THROWING_INPUT);
 
         // When:
         final int exitCode = runExecutor(args);
 
         // Then:
         assertThat(
+                stdOut.get(),
+                containsString("Caused by: java.lang.RuntimeException: Failed to process input"));
+        assertThat(
                 stdErr.get(),
-                is("There were failing tests. See the report at: " + resultDir.toUri()));
+                containsString(
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(exitCode, is(1));
+    }
+
+    @Test
+    void shouldReportInputErrors() {
+        // Given:
+        final String[] args = minimalArgs();
+        TestPaths.write(testDir.resolve("inputs/input-1.yml"), THROWING_INPUT);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(
+                stdOut.get(),
+                containsString("Caused by: java.lang.RuntimeException: Failed to process input"));
+        assertThat(
+                stdErr.get(),
+                containsString(
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(exitCode, is(1));
+    }
+
+    @Test
+    void shouldReportExpectationErrors() {
+        // Given:
+        final String[] args = minimalArgs();
+        TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), THROWING_EXPECTATION);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(
+                stdOut.get(),
+                containsString(
+                        "Caused by: java.lang.RuntimeException: Failed to process expectation"));
+        assertThat(
+                stdErr.get(),
+                containsString(
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
         assertThat(exitCode, is(1));
     }
 
@@ -258,7 +332,7 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportTestFailures() {
         // Given:
         final String[] args = minimalArgs();
-        givenResult(ExpectedResult.FAILURES);
+        TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), FAILING_EXPECTATION);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -267,6 +341,9 @@ class SystemTestExecutorFunctionalTest {
         assertThat(
                 stdErr.get(),
                 is("There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(
+                stdOut.get(),
+                containsString("Finished test 'test 0': FAILED: Failed because it was meant to"));
         assertThat(exitCode, is(1));
     }
 
@@ -274,13 +351,42 @@ class SystemTestExecutorFunctionalTest {
     void shouldReportSuccess() {
         // Given:
         final String[] args = minimalArgs();
-        givenResult(ExpectedResult.SUCCESS);
 
         // When:
         final int exitCode = runExecutor(args);
 
         // Then:
         assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), containsString("Finished test 'test 0': SUCCESS"));
+        assertThat(exitCode, is(0));
+    }
+
+    @Test
+    void shouldSkipDisabledTest() {
+        // Given:
+        final String disabled =
+                "---\n"
+                        + "name: suite name\n"
+                        + "services:\n"
+                        + "  - test-service\n"
+                        + "tests:\n"
+                        + "  - name: test 0\n"
+                        + "    disabled:\n"
+                        + "      reason: for testing\n"
+                        + "    inputs:\n"
+                        + "      - input-1\n"
+                        + "    expectations:\n"
+                        + "      - expectation-1\n";
+
+        final String[] args = minimalArgs();
+        TestPaths.write(testDir.resolve("suite.yml"), disabled);
+
+        // When:
+        final int exitCode = runExecutor(args);
+
+        // Then:
+        assertThat(stdErr.get(), is(""));
+        assertThat(stdOut.get(), containsString("Finished test 'test 0': SKIPPED"));
         assertThat(exitCode, is(0));
     }
 
@@ -288,7 +394,6 @@ class SystemTestExecutorFunctionalTest {
     void shouldLogTestLifecycle() {
         // Given:
         final String[] args = minimalArgs();
-        givenResult(ExpectedResult.SUCCESS);
 
         // When:
         runExecutor(args);
@@ -305,9 +410,8 @@ class SystemTestExecutorFunctionalTest {
     void shouldLogOnUnusedDependency() {
         // Given:
         final String[] args = minimalArgs();
-        givenResult(ExpectedResult.SUCCESS);
         final Path unused = testDir.resolve("expectations/unused-expectation.yml");
-        TestPaths.write(unused, VALID_EXPECTATION);
+        TestPaths.write(unused, PASSING_EXPECTATION);
 
         // When:
         final int exitCode = runExecutor(args);
@@ -321,9 +425,6 @@ class SystemTestExecutorFunctionalTest {
 
     @Test
     void shouldInitialiseSharedResources() {
-        // Given:
-        givenResult(ExpectedResult.SUCCESS);
-
         // When:
         runExecutor(minimalArgs());
 
@@ -333,9 +434,6 @@ class SystemTestExecutorFunctionalTest {
 
     @Test
     void shouldInitialiseUnownedResources() {
-        // Given:
-        givenResult(ExpectedResult.SUCCESS);
-
         // When:
         runExecutor(minimalArgs());
 
@@ -344,9 +442,35 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
+    void shouldProcessSeedData() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Piping input: seed value"));
+    }
+
+    @Test
+    void shouldProcessInputs() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Piping input: input value"));
+    }
+
+    @Test
+    void shouldProcessExpectations() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Verifying expectations: output value"));
+    }
+
+    @Test
     void shouldReportEnsureResourceFailures() {
         // Given:
-        givenResult(ExpectedResult.SUCCESS);
         givenEnv(
                 TestCreekExtensionProvider.ENV_FAIL_ENSURE_RESOURCE_ID,
                 TestServiceDescriptor.UnownedInput1.id());
@@ -356,16 +480,19 @@ class SystemTestExecutorFunctionalTest {
 
         // Then:
         assertThat(
-                stdErr.get(),
+                stdOut.get(),
                 containsString(
                         "Ensure failed for resource: " + TestServiceDescriptor.UnownedInput1.id()));
-        assertThat(exitCode, is(2));
+        assertThat(
+                stdErr.get(),
+                containsString(
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(exitCode, is(1));
     }
 
     @Test
     void shouldReportResourceValidationFailure() {
         // Given:
-        givenResult(ExpectedResult.SUCCESS);
         givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
 
         // When:
@@ -441,35 +568,6 @@ class SystemTestExecutorFunctionalTest {
                         List.of("--test-directory=" + testDir, "--result-directory=" + resultDir));
         args.addAll(List.of(additional));
         return args.toArray(String[]::new);
-    }
-
-    private void givenResult(final ExpectedResult result) {
-        TestPaths.write(testDir.resolve("expectations/expectation-1.yml"), VALID_EXPECTATION);
-        TestPaths.write(testDir.resolve("suite.yml"), suiteContent(result.numTestCases));
-    }
-
-    private String suiteContent(final int numberTestCases) {
-        // formatting:off
-        final String header =
-                "---\n"
-                + "name: suite name\n"
-                + "services:\n"
-                + "  - test-service\n"
-                + "tests:\n";
-        // formatting:on
-
-        final String cases =
-                IntStream.range(0, numberTestCases)
-                        .mapToObj(
-                                i ->
-                                        "  - name: test "
-                                                + i
-                                                + "\n"
-                                                + "    expectations:\n"
-                                                + "      - expectation-1\n")
-                        .collect(Collectors.joining());
-
-        return header + cases;
     }
 
     private static String readAll(final InputStream stdErr) {

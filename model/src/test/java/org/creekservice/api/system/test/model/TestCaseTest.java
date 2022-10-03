@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.model;
 
+import static org.creekservice.api.system.test.model.Disabled.disabled;
 import static org.creekservice.api.system.test.model.TestCase.testCase;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -29,6 +30,7 @@ import com.google.common.testing.EqualsTester;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
@@ -159,6 +161,22 @@ class TestCaseTest {
 
         // Then:
         assertThrows(UnsupportedOperationException.class, () -> expectations.remove(0));
+    }
+
+    @Test
+    void shouldExposeDisabled() {
+        // Given:
+        final TestCase testCase = builder(List.of(input), List.of(expectation)).build(suite);
+        when(def.disabled()).thenReturn(Optional.empty());
+
+        // Then:
+        assertThat(testCase.disabled(), is(false));
+
+        // Given:
+        when(def.disabled()).thenReturn(Optional.of(disabled("reason", Optional.empty())));
+
+        // Then:
+        assertThat(testCase.disabled(), is(true));
     }
 
     private TestCaseDef def(

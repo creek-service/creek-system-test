@@ -18,23 +18,27 @@ package org.creekservice.internal.system.test.executor.execution;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
-import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
+import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
+import org.creekservice.internal.system.test.executor.execution.input.Inputters;
+import org.creekservice.internal.system.test.executor.result.CaseResult;
+import org.creekservice.internal.system.test.executor.result.SuiteResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,23 +55,30 @@ import org.mockito.quality.Strictness;
 class TestSuiteExecutorTest {
 
     @Mock private TestListenerCollection listeners;
+    @Mock private Inputters inputters;
     @Mock private TestCaseExecutor testExecutor;
-    @Mock private TestSuite testSuite;
+
+    @Mock(answer = RETURNS_DEEP_STUBS)
+    private TestSuite testSuite;
+
     @Mock private TestCase testCase0;
     @Mock private TestCase testCase1;
     @Mock private TestEnvironmentListener listener;
+    @Mock private CaseResult testResult;
     @Captor private ArgumentCaptor<Consumer<TestEnvironmentListener>> actionCaptor;
     private TestSuiteExecutor suiteExecutor;
 
     @BeforeEach
     void setUp() {
-        suiteExecutor = new TestSuiteExecutor(listeners, testExecutor);
+        suiteExecutor = new TestSuiteExecutor(listeners, inputters, testExecutor);
 
         when(testCase0.name()).thenReturn("test0");
         when(testCase0.suite()).thenReturn(testSuite);
         when(testCase1.name()).thenReturn("test1");
         when(testCase1.suite()).thenReturn(testSuite);
-        when(testSuite.name()).thenReturn("suite");
+        when(testSuite.name()).thenReturn("Fred");
+
+        when(testExecutor.executeTest(any())).thenReturn(testResult);
     }
 
     @Test
@@ -84,43 +95,10 @@ class TestSuiteExecutorTest {
     @Test
     void shouldInvokeListenersAfterSuite() {
         // When:
-        suiteExecutor.executeSuite(testSuite);
+        final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        verify(listeners).forEachReverse(actionCaptor.capture());
-        actionCaptor.getValue().accept(listener);
-        verify(listener).afterSuite(eq(testSuite), isA(TestSuiteResult.class));
-    }
-
-    @Test
-    void shouldInvokeAfterSuiteListenersOnBeforeSuiteException() {
-        // Given:
-        final RuntimeException expected = new RuntimeException("Boom");
-        doThrow(expected).when(listeners).forEach(any());
-
-        // When:
-        final Exception e =
-                assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
-
-        // Then:
-        verify(listeners).forEachReverse(any());
-        assertThat(e, is(sameInstance(expected)));
-    }
-
-    @Test
-    void shouldInvokeAfterSuiteListenersOnTestExecuteException() {
-        // Given:
-        final RuntimeException expected = new RuntimeException("Boom");
-        doThrow(expected).when(testExecutor).executeTest(any());
-        givenTestCase(testCase0);
-
-        // When:
-        final Exception e =
-                assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
-
-        // Then:
-        verify(listeners).forEachReverse(any());
-        assertThat(e, is(sameInstance(expected)));
+        assertAfterTestCalled(result);
     }
 
     @Test
@@ -132,10 +110,24 @@ class TestSuiteExecutorTest {
         suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        final InOrder inOrder = inOrder(listeners, testExecutor);
+        final InOrder inOrder = inOrder(listeners, inputters, testExecutor);
         inOrder.verify(listeners).forEach(any());
+        inOrder.verify(inputters).input(any());
         inOrder.verify(testExecutor).executeTest(testCase0);
         inOrder.verify(listeners).forEachReverse(any());
+    }
+
+    @Test
+    void shouldSeed() {
+        // Given:
+        final Input seed = mock(Input.class);
+        when(testSuite.pkg().seedData()).thenReturn(List.of(seed));
+
+        // When:
+        suiteExecutor.executeSuite(testSuite);
+
+        // Then:
+        verify(inputters).input(List.of(seed));
     }
 
     @Test
@@ -144,15 +136,116 @@ class TestSuiteExecutorTest {
         givenTestCase(testCase0, testCase1);
 
         // When:
-        suiteExecutor.executeSuite(testSuite);
+        final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
         final InOrder inOrder = inOrder(testExecutor);
         inOrder.verify(testExecutor).executeTest(testCase0);
         inOrder.verify(testExecutor).executeTest(testCase1);
+        assertAfterTestCalled(result);
+    }
+
+    @Test
+    void shouldHandleBeforeSuiteListenersThrowing() {
+        // Given:
+        final RuntimeException cause = new RuntimeException("boom");
+        doThrow(cause).doNothing().when(listeners).forEach(any());
+
+        givenTestCase(testCase0, testCase1);
+        when(testCase1.disabled()).thenReturn(true);
+
+        // When:
+        final SuiteResult result = suiteExecutor.executeSuite(testSuite);
+
+        // Then:
+        assertThat(result.errors(), is(1L));
+        assertThat(result.skipped(), is(1L));
+        final CaseResult result0 = result.testCases().get(0);
+        assertThat(
+                result0.error().map(Exception::getMessage),
+                is(Optional.of("Suite setup failed for test suite: Fred")));
+        assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
+        assertThat(result0.skipped(), is(false));
+        final CaseResult result1 = result.testCases().get(1);
+        assertThat(result1.error(), is(Optional.empty()));
+        assertThat(result1.skipped(), is(true));
+
+        verify(listeners, times(3)).forEach(actionCaptor.capture());
+        actionCaptor.getAllValues().get(1).accept(listener);
+        verify(listener).afterTest(testCase0, result0);
+        actionCaptor.getAllValues().get(2).accept(listener);
+        verify(listener).afterTest(testCase1, result1);
+
+        assertAfterTestCalled(result);
+    }
+
+    @Test
+    void shouldHandleSeedingThrowing() {
+        // Given:
+        final RuntimeException cause = new RuntimeException("boom");
+        doThrow(cause).when(inputters).input(any());
+
+        givenTestCase(testCase0);
+
+        // When:
+        final SuiteResult result = suiteExecutor.executeSuite(testSuite);
+
+        // Then:
+        assertThat(result.errors(), is(1L));
+        final CaseResult result0 = result.testCases().get(0);
+        assertThat(
+                result0.error().map(Exception::getMessage),
+                is(Optional.of("Suite setup failed for test suite: Fred")));
+        assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
+
+        verify(listeners, times(2)).forEach(actionCaptor.capture());
+        actionCaptor.getAllValues().get(1).accept(listener);
+        verify(listener).afterTest(testCase0, result0);
+
+        assertAfterTestCalled(result);
+    }
+
+    @Test
+    void shouldThrowIfCaseExecutorThrows() {
+        // Given:
+        final RuntimeException cause = new RuntimeException("boom");
+        doThrow(cause).when(testExecutor).executeTest(any());
+
+        givenTestCase(testCase0, testCase1);
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
+
+        // Then:
+        assertThat(e.getMessage(), is("Suite execution failed for test suite: Fred"));
+        assertThat(e.getCause(), is(cause));
+    }
+
+    @Test
+    void shouldThrowIfAfterSuiteListenersThrow() {
+        // Given:
+        final RuntimeException cause = new RuntimeException("boom");
+        doThrow(cause).when(listeners).forEachReverse(any());
+
+        givenTestCase(testCase0, testCase1);
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
+
+        // Then:
+        assertThat(e.getMessage(), is("Suite teardown failed for test suite: Fred"));
+        assertThat(e.getCause(), is(cause));
     }
 
     private void givenTestCase(final TestCase... tests) {
         when(testSuite.tests()).thenReturn(List.of(tests));
+    }
+
+    private void assertAfterTestCalled(final SuiteResult result) {
+        verify(listeners).forEachReverse(actionCaptor.capture());
+        actionCaptor.getValue().accept(listener);
+        verify(listener).afterSuite(testSuite, result);
     }
 }
