@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.Objects;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 /** A simple reference that holds only the location as the value in the yaml. */
 public final class SimpleRef implements InputRef, ExpectationRef, LocationAware<SimpleRef> {

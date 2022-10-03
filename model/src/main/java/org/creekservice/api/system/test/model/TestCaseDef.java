@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 /** Serialisable definition of a test case. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

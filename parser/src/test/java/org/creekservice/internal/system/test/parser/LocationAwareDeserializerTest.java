@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.net.URI;
-import org.creekservice.api.system.test.model.LocationAware;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
