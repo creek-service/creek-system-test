@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import org.creekservice.api.system.test.model.LocationAware;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 /** Deserializer that sets the location on a deserialized type */
 final class LocationAwareDeserializer<T extends LocationAware<T>> extends StdDeserializer<T>

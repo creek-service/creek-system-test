@@ -38,8 +38,8 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.creekservice.api.system.test.extension.test.model.Ref;
-import org.creekservice.api.system.test.model.LocationAware;
 import org.creekservice.api.system.test.parser.ModelType;
 
 public final class SystemTestMapper {
