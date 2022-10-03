@@ -99,6 +99,7 @@ public final class TestModel implements TestModelContainer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
     public <T extends Input> Optional<InputHandler<T>> inputHandler(final Class<T> type) {
         throwIfNotOnCorrectThread();
 
@@ -106,6 +107,7 @@ public final class TestModel implements TestModelContainer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
     public <T extends Expectation> Optional<ExpectationHandler<T>> expectationHandler(
             final Class<T> type) {
         throwIfNotOnCorrectThread();

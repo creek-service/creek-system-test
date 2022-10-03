@@ -81,6 +81,10 @@ public final class TestCase implements CreekTestCase {
         return List.copyOf(expectations);
     }
 
+    public boolean disabled() {
+        return def.disabled().isPresent();
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

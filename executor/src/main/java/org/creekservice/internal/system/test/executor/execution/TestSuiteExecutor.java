@@ -22,65 +22,98 @@ import static org.creekservice.internal.system.test.executor.result.SuiteResult.
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.system.test.model.TestSuite;
-import org.creekservice.internal.system.test.executor.result.CaseResult;
+import org.creekservice.internal.system.test.executor.api.SystemTest;
+import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
 public final class TestSuiteExecutor {
 
+    private final Inputters inputters;
     private final TestListenerCollection listeners;
     private final TestCaseExecutor testExecutor;
 
-    public TestSuiteExecutor(final TestListenerCollection listeners) {
-        this(listeners, new TestCaseExecutor(listeners));
+    public TestSuiteExecutor(final SystemTest api) {
+        this(
+                api.tests().env().listeners(),
+                new Inputters(api.tests().model()),
+                new TestCaseExecutor(api));
     }
 
     @VisibleForTesting
-    TestSuiteExecutor(final TestListenerCollection listeners, final TestCaseExecutor testExecutor) {
+    TestSuiteExecutor(
+            final TestListenerCollection listeners,
+            final Inputters inputters,
+            final TestCaseExecutor testExecutor) {
         this.listeners = requireNonNull(listeners, "listeners");
+        this.inputters = requireNonNull(inputters, "inputter");
         this.testExecutor = requireNonNull(testExecutor, "testExecutor");
     }
 
     public SuiteResult executeSuite(final TestSuite testSuite) {
+        final SuiteResult result = execute(testSuite);
+
+        try {
+            afterSuite(testSuite, result);
+        } catch (final Exception e) {
+            throw new SuiteExecutionFailedException("Suite teardown", testSuite, e);
+        }
+
+        return result;
+    }
+
+    private SuiteResult execute(final TestSuite testSuite) {
+        final SuiteResult.Builder builder = testSuiteResult(testSuite);
+
         try {
             beforeSuite(testSuite);
-            return runSuite(testSuite);
-        } finally {
-            afterSuite(testSuite);
+        } catch (final Exception e) {
+            final SuiteExecutionFailedException cause =
+                    new SuiteExecutionFailedException("Suite setup", testSuite, e);
+
+            testSuite.tests().stream()
+                    .map(
+                            test ->
+                                    test.disabled()
+                                            ? testCaseResult(test).disabled()
+                                            : testCaseResult(test).error(cause))
+                    .peek(
+                            result ->
+                                    listeners.forEach(
+                                            listener ->
+                                                    listener.afterTest(result.testCase(), result)))
+                    .forEach(builder::add);
+
+            return builder.build();
         }
+
+        runSuite(testSuite, builder);
+
+        return builder.build();
     }
 
     private void beforeSuite(final TestSuite testSuite) {
         listeners.forEach(listener -> listener.beforeSuite(testSuite));
+        inputters.input(testSuite.pkg().seedData());
     }
 
-    private SuiteResult runSuite(final TestSuite testSuite) {
-        testSuite.tests().forEach(testExecutor::executeTest);
-
-        // For now, this facilitates testing:
-        final SuiteResult.Builder results = testSuiteResult(testSuite);
-
-        switch (testSuite.tests().size()) {
-            case 1:
-                results.add(testCaseResult(testSuite.tests().get(0)).error(new RuntimeException()));
-                break;
-            case 2:
-                results.add(testCaseResult(testSuite.tests().get(0)).failure(new AssertionError()));
-                results.add(testCaseResult(testSuite.tests().get(1)).success());
-                break;
-            default:
-                testSuite.tests().stream()
-                        .map(CaseResult::testCaseResult)
-                        .map(CaseResult.Builder::success)
-                        .forEach(results::add);
-                break;
+    private void runSuite(final TestSuite testSuite, final SuiteResult.Builder builder) {
+        try {
+            testSuite.tests().stream().map(testExecutor::executeTest).forEach(builder::add);
+        } catch (final Exception e) {
+            throw new SuiteExecutionFailedException("Suite execution", testSuite, e);
         }
-
-        return results.build();
     }
 
-    private void afterSuite(final TestSuite testSuite) {
-        listeners.forEachReverse(
-                listener -> listener.afterSuite(testSuite, testSuiteResult(testSuite).build()));
+    private void afterSuite(final TestSuite testSuite, final TestSuiteResult result) {
+        listeners.forEachReverse(listener -> listener.afterSuite(testSuite, result));
+    }
+
+    private static final class SuiteExecutionFailedException extends RuntimeException {
+        SuiteExecutionFailedException(
+                final String msg, final TestSuite suite, final Throwable cause) {
+            super(msg + " failed for test suite: " + suite.name(), cause);
+        }
     }
 }

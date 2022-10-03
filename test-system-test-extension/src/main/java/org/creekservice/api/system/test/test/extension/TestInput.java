@@ -18,13 +18,13 @@ package org.creekservice.api.system.test.test.extension;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.creekservice.api.system.test.extension.test.model.Expectation;
+import org.creekservice.api.system.test.extension.test.model.Input;
 
-public final class TestExpectation implements Expectation {
+public final class TestInput implements Input {
 
     final String value;
 
-    public TestExpectation(@JsonProperty("value") final String value) {
+    public TestInput(@JsonProperty("value") final String value) {
         this.value = value;
     }
 }
