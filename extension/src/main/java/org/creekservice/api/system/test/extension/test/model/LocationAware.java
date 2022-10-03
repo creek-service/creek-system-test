@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.model;
+package org.creekservice.api.system.test.extension.test.model;
 
 
 import java.net.URI;
-import org.creekservice.api.system.test.extension.test.model.Locatable;
 
 public interface LocationAware<T extends LocationAware<T>> extends Locatable {
 

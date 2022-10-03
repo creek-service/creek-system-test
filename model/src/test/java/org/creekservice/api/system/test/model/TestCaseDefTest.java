@@ -16,7 +16,7 @@
 
 package org.creekservice.api.system.test.model;
 
-import static org.creekservice.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
+import static org.creekservice.api.system.test.extension.test.model.LocationAware.UNKNOWN_LOCATION;
 import static org.creekservice.api.system.test.model.SimpleRef.simpleRef;
 import static org.creekservice.api.system.test.model.TestCaseDef.testCase;
 import static org.creekservice.api.system.test.parser.ModelType.expectationRef;

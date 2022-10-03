@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.creekservice.api.system.test.extension.test.model.LocationAware;
 
 /** Serialisable definition of a test suite. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

@@ -16,7 +16,7 @@
 
 package org.creekservice.api.system.test.model;
 
-import static org.creekservice.api.system.test.model.LocationAware.UNKNOWN_LOCATION;
+import static org.creekservice.api.system.test.extension.test.model.LocationAware.UNKNOWN_LOCATION;
 import static org.creekservice.api.system.test.model.SimpleRef.simpleRef;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
