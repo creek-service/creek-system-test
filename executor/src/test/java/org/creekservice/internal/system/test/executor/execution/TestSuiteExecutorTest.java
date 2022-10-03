@@ -152,22 +152,23 @@ class TestSuiteExecutorTest {
         doThrow(cause).doNothing().when(listeners).forEach(any());
 
         givenTestCase(testCase0, testCase1);
+        when(testCase1.disabled()).thenReturn(true);
 
         // When:
         final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        assertThat(result.errors(), is(2L));
+        assertThat(result.errors(), is(1L));
+        assertThat(result.skipped(), is(1L));
         final CaseResult result0 = result.testCases().get(0);
         assertThat(
                 result0.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred")));
         assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
+        assertThat(result0.skipped(), is(false));
         final CaseResult result1 = result.testCases().get(1);
-        assertThat(
-                result1.error().map(Exception::getMessage),
-                is(Optional.of("Suite setup failed for test suite: Fred")));
-        assertThat(result1.error().map(Exception::getCause), is(Optional.of(cause)));
+        assertThat(result1.error(), is(Optional.empty()));
+        assertThat(result1.skipped(), is(true));
 
         verify(listeners, times(3)).forEach(actionCaptor.capture());
         actionCaptor.getAllValues().get(1).accept(listener);
@@ -184,29 +185,22 @@ class TestSuiteExecutorTest {
         final RuntimeException cause = new RuntimeException("boom");
         doThrow(cause).when(inputters).input(any());
 
-        givenTestCase(testCase0, testCase1);
+        givenTestCase(testCase0);
 
         // When:
         final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        assertThat(result.errors(), is(2L));
+        assertThat(result.errors(), is(1L));
         final CaseResult result0 = result.testCases().get(0);
         assertThat(
                 result0.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred")));
         assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
-        final CaseResult result1 = result.testCases().get(1);
-        assertThat(
-                result1.error().map(Exception::getMessage),
-                is(Optional.of("Suite setup failed for test suite: Fred")));
-        assertThat(result1.error().map(Exception::getCause), is(Optional.of(cause)));
 
-        verify(listeners, times(3)).forEach(actionCaptor.capture());
+        verify(listeners, times(2)).forEach(actionCaptor.capture());
         actionCaptor.getAllValues().get(1).accept(listener);
         verify(listener).afterTest(testCase0, result0);
-        actionCaptor.getAllValues().get(2).accept(listener);
-        verify(listener).afterTest(testCase1, result1);
 
         assertAfterTestCalled(result);
     }
