@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.extension.test.env.listener;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Method;
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -79,7 +82,7 @@ class TestEnvironmentListenerTest {
                 Arguments.of(
                         "afterSuite",
                         (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
-                                (l, t) -> l.afterSuite(t.suite)),
+                                (l, t) -> l.afterSuite(t.suite, mock(TestSuiteResult.class))),
                 Arguments.of(
                         "beforeTest",
                         (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
@@ -87,7 +90,7 @@ class TestEnvironmentListenerTest {
                 Arguments.of(
                         "afterTest",
                         (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
-                                (l, t) -> l.afterTest(t.test)));
+                                (l, t) -> l.afterTest(t.test, mock(TestCaseResult.class))));
     }
 
     private List<String> publicMethodNames() {

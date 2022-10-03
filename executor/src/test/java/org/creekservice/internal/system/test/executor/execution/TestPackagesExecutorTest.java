@@ -16,8 +16,8 @@
 
 package org.creekservice.internal.system.test.executor.execution;
 
-import static org.creekservice.internal.system.test.executor.result.TestCaseResult.testCaseResult;
-import static org.creekservice.internal.system.test.executor.result.TestSuiteResult.testSuiteResult;
+import static org.creekservice.internal.system.test.executor.result.CaseResult.testCaseResult;
+import static org.creekservice.internal.system.test.executor.result.SuiteResult.testSuiteResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,8 +32,8 @@ import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
+import org.creekservice.internal.system.test.executor.result.SuiteResult;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
-import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -105,13 +105,13 @@ class TestPackagesExecutorTest {
     @Test
     void shouldCombineResults() {
         // Given:
-        final TestSuiteResult suite1Result =
+        final SuiteResult suite1Result =
                 testSuiteResult(suite1)
                         .add(testCaseResult(test1).failure(new AssertionError()))
                         .add(testCaseResult(test1).error(new RuntimeException()))
                         .build();
 
-        final TestSuiteResult suite2Result =
+        final SuiteResult suite2Result =
                 testSuiteResult(suite1)
                         .add(testCaseResult(test2).error(new RuntimeException()))
                         .add(testCaseResult(test2).error(new RuntimeException()))

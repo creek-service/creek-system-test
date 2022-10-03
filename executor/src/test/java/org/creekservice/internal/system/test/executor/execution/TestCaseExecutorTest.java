@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import java.util.function.Consumer;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
+import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 import org.creekservice.api.system.test.model.TestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +74,7 @@ class TestCaseExecutorTest {
         // Then:
         verify(listeners).forEachReverse(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
-        verify(listener).afterTest(testCase);
+        verify(listener).afterTest(eq(testCase), isA(TestCaseResult.class));
     }
 
     @Test

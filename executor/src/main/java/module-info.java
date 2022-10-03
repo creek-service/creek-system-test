@@ -13,7 +13,9 @@ module creek.system.test.executor {
     requires com.github.spotbugs.annotations;
     requires testcontainers;
     requires docker.java.api;
+    requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.xml;
+    requires com.fasterxml.jackson.datatype.jdk8;
 
     exports org.creekservice.api.system.test.executor;
     exports org.creekservice.internal.system.test.executor.api.test.env.suite.service to
@@ -28,4 +30,6 @@ module creek.system.test.executor {
 
     exports org.creekservice.internal.system.test.executor.api.test.model to
             creek.system.test.test.util;
+    exports org.creekservice.internal.system.test.executor.result.xml to
+            com.fasterxml.jackson.databind;
 }

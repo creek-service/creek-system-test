@@ -17,13 +17,14 @@
 package org.creekservice.internal.system.test.executor.execution;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.internal.system.test.executor.result.TestCaseResult.testCaseResult;
+import static org.creekservice.internal.system.test.executor.result.CaseResult.testCaseResult;
+import static org.creekservice.internal.system.test.executor.result.SuiteResult.testSuiteResult;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
-import org.creekservice.internal.system.test.executor.result.TestCaseResult;
-import org.creekservice.internal.system.test.executor.result.TestSuiteResult;
+import org.creekservice.internal.system.test.executor.result.CaseResult;
+import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
 public final class TestSuiteExecutor {
 
@@ -40,7 +41,7 @@ public final class TestSuiteExecutor {
         this.testExecutor = requireNonNull(testExecutor, "testExecutor");
     }
 
-    public TestSuiteResult executeSuite(final TestSuite testSuite) {
+    public SuiteResult executeSuite(final TestSuite testSuite) {
         try {
             beforeSuite(testSuite);
             return runSuite(testSuite);
@@ -53,11 +54,11 @@ public final class TestSuiteExecutor {
         listeners.forEach(listener -> listener.beforeSuite(testSuite));
     }
 
-    private TestSuiteResult runSuite(final TestSuite testSuite) {
+    private SuiteResult runSuite(final TestSuite testSuite) {
         testSuite.tests().forEach(testExecutor::executeTest);
 
         // For now, this facilitates testing:
-        final TestSuiteResult.Builder results = TestSuiteResult.testSuiteResult(testSuite);
+        final SuiteResult.Builder results = testSuiteResult(testSuite);
 
         switch (testSuite.tests().size()) {
             case 1:
@@ -69,8 +70,8 @@ public final class TestSuiteExecutor {
                 break;
             default:
                 testSuite.tests().stream()
-                        .map(TestCaseResult::testCaseResult)
-                        .map(TestCaseResult.Builder::success)
+                        .map(CaseResult::testCaseResult)
+                        .map(CaseResult.Builder::success)
                         .forEach(results::add);
                 break;
         }
@@ -79,6 +80,7 @@ public final class TestSuiteExecutor {
     }
 
     private void afterSuite(final TestSuite testSuite) {
-        listeners.forEachReverse(listener -> listener.afterSuite(testSuite));
+        listeners.forEachReverse(
+                listener -> listener.afterSuite(testSuite, testSuiteResult(testSuite).build()));
     }
 }
