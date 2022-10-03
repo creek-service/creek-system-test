@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
@@ -41,7 +42,7 @@ public final class SuiteCleanUpListener implements TestEnvironmentListener {
     }
 
     @Override
-    public void afterSuite(final CreekTestSuite suite) {
+    public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
         api.tests().env().currentSuite().services().forEach(ServiceInstance::stop);
     }
 }

@@ -77,7 +77,7 @@ class StartServicesUnderTestListenerTest {
         when(servicesSupplier.get()).thenThrow(new AssertionError("Impl should cache instances"));
 
         // When:
-        listener.afterSuite(suite);
+        listener.afterSuite(suite, null);
 
         // Then:
         final InOrder inOrder = inOrder(instance0, instance1, instance2);
@@ -100,7 +100,7 @@ class StartServicesUnderTestListenerTest {
     }
 
     @Test
-    void shouldStopStartingServicesIfOnethrows() {
+    void shouldStopStartingServicesIfOneThrows() {
         // Given:
         doThrow(new RuntimeException("Boom")).when(instance1).start();
 
@@ -119,7 +119,7 @@ class StartServicesUnderTestListenerTest {
         assertThrows(Exception.class, () -> listener.beforeSuite(suite));
 
         // When:
-        listener.afterSuite(suite);
+        listener.afterSuite(suite, null);
 
         // Then:
         verify(instance0).stop();

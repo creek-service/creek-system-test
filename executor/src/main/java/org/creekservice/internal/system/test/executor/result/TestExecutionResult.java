@@ -23,14 +23,14 @@ import java.util.List;
 
 public final class TestExecutionResult {
 
-    private final List<TestSuiteResult> results;
+    private final List<SuiteResult> results;
 
-    public TestExecutionResult(final List<TestSuiteResult> results) {
+    public TestExecutionResult(final List<SuiteResult> results) {
         this.results = List.copyOf(requireNonNull(results, "results"));
     }
 
     public TestExecutionResult combine(final TestExecutionResult with) {
-        final List<TestSuiteResult> all = new ArrayList<>(results);
+        final List<SuiteResult> all = new ArrayList<>(results);
         all.addAll(with.results);
         return new TestExecutionResult(all);
     }
@@ -41,16 +41,20 @@ public final class TestExecutionResult {
 
     /** @return number of test cases that failed, i.e. assertions not met */
     public long failed() {
-        return results.stream().mapToLong(TestSuiteResult::failures).sum();
+        return results.stream().mapToLong(SuiteResult::failures).sum();
     }
 
     /** @return number of test cases that failed to execute */
     public long errors() {
-        return results.stream().mapToLong(TestSuiteResult::errors).sum();
+        return results.stream().mapToLong(SuiteResult::errors).sum();
     }
 
     /** @return {@code true} if there were no failures or errors. */
     public boolean passed() {
         return failed() == 0 && errors() == 0;
+    }
+
+    public List<SuiteResult> results() {
+        return List.copyOf(results);
     }
 }

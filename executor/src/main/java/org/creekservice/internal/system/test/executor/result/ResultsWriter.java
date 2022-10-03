@@ -16,13 +16,7 @@
 
 package org.creekservice.internal.system.test.executor.result;
 
+public interface ResultsWriter {
 
-import java.nio.file.Path;
-
-public final class ResultsWriter {
-    public ResultsWriter(final Path outputDirectory) {}
-
-    public void write(final TestExecutionResult result) {
-        // Coming soon...
-    }
+    void write(TestExecutionResult result);
 }

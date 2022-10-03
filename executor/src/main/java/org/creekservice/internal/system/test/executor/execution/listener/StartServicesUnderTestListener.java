@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 
 /**
  * A test lifecycle listener that is responsible for starting and stopping the services under test.
@@ -54,7 +55,7 @@ public final class StartServicesUnderTestListener implements TestEnvironmentList
     }
 
     @Override
-    public void afterSuite(final CreekTestSuite suite) {
+    public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
         reverseIterator(started).forEachRemaining(ServiceInstance::stop);
     }
 }

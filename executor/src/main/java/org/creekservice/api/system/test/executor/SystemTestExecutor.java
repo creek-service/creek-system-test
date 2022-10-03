@@ -31,8 +31,8 @@ import org.creekservice.internal.system.test.executor.execution.TestPackagesExec
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
-import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
+import org.creekservice.internal.system.test.executor.result.xml.XmlResultsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +135,7 @@ public final class SystemTestExecutor {
         return new TestPackagesExecutor(
                 loader,
                 new TestSuiteExecutor(api.tests().env().listeners()),
-                new ResultsWriter(options.resultDirectory()));
+                new XmlResultsWriter(options.resultDirectory()));
     }
 
     private static final class TestExecutionFailedException extends RuntimeException {

@@ -58,7 +58,7 @@ class SuiteCleanUpListenerTest {
     @Test
     void shouldStopAllServicesAfterSuite() {
         // When:
-        listener.afterSuite(null);
+        listener.afterSuite(null, null);
 
         // Then:
         verify(api.tests().env().currentSuite().services()).forEach(actionCaptor.capture());

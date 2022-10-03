@@ -16,35 +16,74 @@
 
 package org.creekservice.internal.system.test.executor.observation;
 
+import static java.util.Objects.requireNonNull;
 
+import java.util.Optional;
+import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.base.type.Throwables;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class LoggingTestEnvironmentListener implements TestEnvironmentListener {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(LoggingTestEnvironmentListener.class);
+    private final Logger logger;
 
-    @Override
-    public void beforeSuite(final CreekTestSuite suite) {
-        LOGGER.info("Starting suite '" + suite.name() + "'");
+    public LoggingTestEnvironmentListener() {
+        this(LoggerFactory.getLogger(LoggingTestEnvironmentListener.class));
+    }
+
+    @VisibleForTesting
+    LoggingTestEnvironmentListener(final Logger logger) {
+        this.logger = requireNonNull(logger, "logger");
     }
 
     @Override
-    public void afterSuite(final CreekTestSuite suite) {
-        LOGGER.info("Finished suite '" + suite.name() + "'");
+    public void beforeSuite(final CreekTestSuite suite) {
+        logger.info("Starting suite '" + suite.name() + "'");
+    }
+
+    @Override
+    public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
+        final String skipped = result.skipped() == 0 ? "" : " skipped: " + result.skipped();
+        final String errors = result.errors() == 0 ? "" : " errors: " + result.errors();
+        final String failures = result.failures() == 0 ? "" : " failures: " + result.failures();
+
+        logger.info("Finished suite '" + suite.name() + "'" + skipped + errors + failures);
     }
 
     @Override
     public void beforeTest(final CreekTestCase test) {
-        LOGGER.info("Starting test '" + test.name() + "'");
+        logger.info("Starting test '" + test.name() + "'");
     }
 
     @Override
-    public void afterTest(final CreekTestCase test) {
-        LOGGER.info("Finished test '" + test.name() + "'");
+    public void afterTest(final CreekTestCase test, final TestCaseResult result) {
+        logger.info("Finished test '" + test.name() + "': " + status(result));
+    }
+
+    private static String status(final TestCaseResult result) {
+        if (result.skipped()) {
+            return "SKIPPED";
+        }
+
+        final Optional<AssertionError> failure = result.failure();
+        final Optional<Exception> error = result.error();
+        if (failure.isEmpty() && error.isEmpty()) {
+            return "SUCCESS";
+        }
+
+        final String level = error.isPresent() ? "ERROR" : "FAILED";
+        final Throwable cause = error.map(Throwable.class::cast).orElseGet(failure::get);
+
+        return level
+                + ": "
+                + cause.getMessage()
+                + System.lineSeparator()
+                + Throwables.stackTrace(cause);
     }
 }
