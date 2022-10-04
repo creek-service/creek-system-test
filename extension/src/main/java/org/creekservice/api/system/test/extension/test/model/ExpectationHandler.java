@@ -17,6 +17,7 @@
 package org.creekservice.api.system.test.extension.test.model;
 
 
+import java.time.Duration;
 import java.util.Collection;
 
 /**
@@ -38,7 +39,7 @@ public interface ExpectationHandler<T extends Expectation> {
      * @param expectations the expectations to prepare to verify.
      * @return the verifier that will be called to verify the supplied {@code expectations}.
      */
-    Verifier prepare(Collection<T> expectations);
+    Verifier prepare(Collection<? extends T> expectations, ExpectationOptions options);
 
     interface Verifier {
 
@@ -49,5 +50,11 @@ public interface ExpectationHandler<T extends Expectation> {
          *     expectation is not met.
          */
         void verify();
+    }
+
+    interface ExpectationOptions {
+
+        /** @return the timeout to use when verifying expectations */
+        Duration timeout();
     }
 }

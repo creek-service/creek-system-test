@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.execution;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.internal.system.test.executor.result.CaseResult.testCaseResult;
 
+import java.time.Duration;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
@@ -34,11 +35,11 @@ public final class TestCaseExecutor {
     private final Verifiers verifiers;
     private final TestListenerCollection listeners;
 
-    public TestCaseExecutor(final SystemTest api) {
+    public TestCaseExecutor(final SystemTest api, final Duration verifierTimeout) {
         this(
                 api.tests().env().listeners(),
                 new Inputters(api.tests().model()),
-                new Verifiers(api.tests().model()));
+                new Verifiers(api.tests().model(), verifierTimeout));
     }
 
     @VisibleForTesting
