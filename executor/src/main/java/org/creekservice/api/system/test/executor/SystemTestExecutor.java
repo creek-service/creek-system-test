@@ -22,6 +22,7 @@ import static org.creekservice.internal.system.test.executor.api.Api.initializeA
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 public final class SystemTestExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTestExecutor.class);
+    private static final Duration DEFAULT_VERIFIER_TIMEOUT = Duration.ofMinutes(1);
 
     private SystemTestExecutor() {}
 
@@ -134,7 +136,8 @@ public final class SystemTestExecutor {
 
         return new TestPackagesExecutor(
                 loader,
-                new TestSuiteExecutor(api),
+                new TestSuiteExecutor(
+                        api, options.verifierTimeout().orElse(DEFAULT_VERIFIER_TIMEOUT)),
                 new XmlResultsWriter(options.resultDirectory()));
     }
 
