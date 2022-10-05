@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.execution.expectation;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,15 +32,14 @@ import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 public final class Verifiers {
 
     private final TestModelContainer model;
+    private final Duration verifierTimeout;
 
-    public Verifiers(final TestModelContainer model) {
+    public Verifiers(final TestModelContainer model, final Duration verifierTimeout) {
         this.model = requireNonNull(model, "model");
+        this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
     }
 
     public Verifier prepare(final Collection<? extends Expectation> expectations) {
-        // Temp version.
-        // Full version coming with: //
-        // https://github.com/creek-service/creek-system-test/issues/128
         final Map<
                         ? extends ExpectationHandler<? extends Expectation>,
                         ? extends List<? extends Expectation>>
@@ -61,7 +61,7 @@ public final class Verifiers {
     @SuppressWarnings("unchecked")
     private <T extends Expectation> Verifier prepare(
             final ExpectationHandler<T> handler, final List<? extends Expectation> expectations) {
-        return handler.prepare((List<T>) expectations);
+        return handler.prepare((List<T>) expectations, () -> verifierTimeout);
     }
 
     private static final class HandlerNotRegisteredException extends RuntimeException {
