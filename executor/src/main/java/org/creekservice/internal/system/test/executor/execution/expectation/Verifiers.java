@@ -40,9 +40,6 @@ public final class Verifiers {
     }
 
     public Verifier prepare(final Collection<? extends Expectation> expectations) {
-        // Temp version.
-        // Full version coming with: //
-        // https://github.com/creek-service/creek-system-test/issues/128
         final Map<
                         ? extends ExpectationHandler<? extends Expectation>,
                         ? extends List<? extends Expectation>>
