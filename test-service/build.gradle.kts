@@ -30,7 +30,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j18-impl:$log4jVersion")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 
 application {
