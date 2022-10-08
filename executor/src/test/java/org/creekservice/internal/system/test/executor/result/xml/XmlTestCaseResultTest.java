@@ -120,9 +120,9 @@ class XmlTestCaseResultTest {
                 xml,
                 is(
                         "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
-                                + "  <failure message=\"bad state\" type=\"java.lang.IllegalStateException\">"
+                                + "  <error message=\"bad state\" type=\"java.lang.IllegalStateException\">"
                                 + stackTrace
-                                + "</failure>\n"
+                                + "</error>\n"
                                 + "</testcase>\n"));
     }
 }
