@@ -158,7 +158,6 @@ class YamlTestPackageParserTest {
                 is(
                         Optional.of(
                                 testPackage(
-                                        root,
                                         List.of(),
                                         List.of(
                                                 testSuite(

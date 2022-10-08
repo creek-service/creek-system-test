@@ -56,11 +56,9 @@ class TestPackageTest {
         final Collection<Input> seedData = List.of(seed);
         final Collection<TestSuite.Builder> suites = List.of(suiteBuilder);
         new EqualsTester()
-                .addEqualityGroup(
-                        testPackage(root, seedData, suites), testPackage(root, seedData, suites))
-                .addEqualityGroup(testPackage(Path.of("diff"), seedData, suites))
-                .addEqualityGroup(testPackage(root, List.of(), suites))
-                .addEqualityGroup(testPackage(root, seedData, List.of(suiteBuilder, suiteBuilder)))
+                .addEqualityGroup(testPackage(seedData, suites), testPackage(seedData, suites))
+                .addEqualityGroup(testPackage(List.of(), suites))
+                .addEqualityGroup(testPackage(seedData, List.of(suiteBuilder, suiteBuilder)))
                 .testEquals();
     }
 
@@ -70,7 +68,7 @@ class TestPackageTest {
         final Exception e =
                 assertThrows(
                         IllegalArgumentException.class,
-                        () -> testPackage(root, List.of(seed), List.of()));
+                        () -> testPackage(List.of(seed), List.of()));
 
         // Then:
         assertThat(e.getMessage(), containsString("suites can not be empty"));
@@ -79,7 +77,7 @@ class TestPackageTest {
     @Test
     void shouldSetPackageOnTestSuite() {
         // When:
-        final TestPackage testPackage = testPackage(root, List.of(seed), List.of(suiteBuilder));
+        final TestPackage testPackage = testPackage(List.of(seed), List.of(suiteBuilder));
 
         // Then:
         verify(suiteBuilder).build(testPackage);

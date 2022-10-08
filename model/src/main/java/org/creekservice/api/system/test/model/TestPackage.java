@@ -19,7 +19,6 @@ package org.creekservice.api.system.test.model;
 import static java.util.Objects.requireNonNull;
 import static org.creekservice.api.base.type.Preconditions.requireNonEmpty;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -29,31 +28,21 @@ import org.creekservice.api.system.test.extension.test.model.Input;
 /** A package to seed data and test suites. */
 public final class TestPackage {
 
-    private final Path root;
     private final List<Input> seedData;
     private final List<TestSuite> suites;
 
     public static TestPackage testPackage(
-            final Path root,
-            final Collection<Input> seedData,
-            final Collection<TestSuite.Builder> suites) {
-        return new TestPackage(root, seedData, suites);
+            final Collection<Input> seedData, final Collection<TestSuite.Builder> suites) {
+        return new TestPackage(seedData, suites);
     }
 
     private TestPackage(
-            final Path root,
-            final Collection<Input> seedData,
-            final Collection<TestSuite.Builder> suites) {
-        this.root = requireNonNull(root, "root");
+            final Collection<Input> seedData, final Collection<TestSuite.Builder> suites) {
         this.seedData = List.copyOf(requireNonNull(seedData, "seedData"));
         this.suites =
                 requireNonEmpty(suites, "suites").stream()
                         .map(builder -> builder.build(this))
                         .collect(Collectors.toUnmodifiableList());
-    }
-
-    public Path root() {
-        return root;
     }
 
     public List<Input> seedData() {
@@ -73,25 +62,16 @@ public final class TestPackage {
             return false;
         }
         final TestPackage that = (TestPackage) o;
-        return Objects.equals(root, that.root)
-                && Objects.equals(seedData, that.seedData)
-                && Objects.equals(suites, that.suites);
+        return Objects.equals(seedData, that.seedData) && Objects.equals(suites, that.suites);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(root, seedData, suites);
+        return Objects.hash(seedData, suites);
     }
 
     @Override
     public String toString() {
-        return "TestPackage{"
-                + "root="
-                + root
-                + ", seedData="
-                + seedData
-                + ", suites="
-                + suites
-                + '}';
+        return "TestPackage{" + ", seedData=" + seedData + ", suites=" + suites + '}';
     }
 }
