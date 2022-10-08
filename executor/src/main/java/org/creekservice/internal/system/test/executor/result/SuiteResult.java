@@ -84,6 +84,22 @@ public final class SuiteResult implements TestSuiteResult {
         return tests;
     }
 
+    @Override
+    public String toString() {
+        return "SuiteResult{"
+                + "name="
+                + suite.name()
+                + ", location="
+                + suite.location()
+                + ", start="
+                + start
+                + ", finish="
+                + finish
+                + ", tests="
+                + tests
+                + '}';
+    }
+
     public static final class Builder {
 
         private final Clock clock;

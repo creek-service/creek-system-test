@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package org.creekservice.internal.system.test.executor.result;
+package org.creekservice.api.system.test.extension.test.model;
 
 
-import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
+import java.util.List;
 
-public interface ResultsWriter {
+public interface TestExecutionResult {
 
-    void write(TestExecutionResult result);
+    /** @return {@code true} if the result contains no test suites. */
+    boolean isEmpty();
+
+    /** @return number of test cases that failed, i.e. assertions not met */
+    long failed();
+
+    /** @return number of test cases that failed to execute */
+    long errors();
+
+    /** @return {@code true} if there were no failures or errors. */
+    boolean passed();
+
+    /** @return the suite results */
+    List<? extends TestSuiteResult> results();
 }

@@ -51,6 +51,8 @@ class CaseResultTest {
         when(clock.instant()).thenReturn(START, FINISH);
 
         builder = new CaseResult.Builder(testCase, clock);
+
+        when(testCase.name()).thenReturn("test-a");
     }
 
     @Test
@@ -64,6 +66,7 @@ class CaseResultTest {
         assertThat(result.failure(), is(Optional.empty()));
         assertThat(result.error(), is(Optional.empty()));
         assertThat(result.skipped(), is(true));
+        assertThat(result.toString(), is("CaseResult{test=test-a, duration=PT42.899S, skipped=true, failure=<none>, error=<none>}"));
     }
 
     @Test
@@ -77,6 +80,7 @@ class CaseResultTest {
         assertThat(result.failure(), is(Optional.empty()));
         assertThat(result.error(), is(Optional.empty()));
         assertThat(result.skipped(), is(false));
+        assertThat(result.toString(), is("CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>, error=<none>}"));
     }
 
     @Test
@@ -93,6 +97,7 @@ class CaseResultTest {
         assertThat(result.failure().orElseThrow(), is(cause));
         assertThat(result.error(), is(Optional.empty()));
         assertThat(result.skipped(), is(false));
+        assertThat(result.toString(), is("CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=boom, error=<none>}"));
     }
 
     @Test
@@ -109,5 +114,6 @@ class CaseResultTest {
         assertThat(result.failure(), is(Optional.empty()));
         assertThat(result.error().orElseThrow(), is(cause));
         assertThat(result.skipped(), is(false));
+        assertThat(result.toString(), is("CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>, error=boom}"));
     }
 }

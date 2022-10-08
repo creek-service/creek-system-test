@@ -1,7 +1,7 @@
 module creek.system.test.executor {
     requires transitive creek.platform.metadata;
+    requires transitive creek.system.test.extension;
     requires creek.base.type;
-    requires creek.system.test.extension;
     requires creek.system.test.parser;
     requires creek.observability.lifecycle;
     requires creek.service.api;

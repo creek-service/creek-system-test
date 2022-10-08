@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SuiteResultTest {
 
-    private static final Instant START = Instant.now();
+    private static final Instant START = Instant.ofEpochMilli(1665249401600L);
     private static final Instant FINISH = START.plusSeconds(43).minusMillis(101);
     private static final Duration DURATION = Duration.between(START, FINISH);
 
@@ -138,5 +139,28 @@ class SuiteResultTest {
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
         assertThat(result.testCases(), contains(error, error));
+    }
+
+    @Test
+    void shouldToString() {
+        // Given:
+        final CaseResult success = testCaseResult(testCase).success();
+
+        when(testCase.name()).thenReturn("test-a");
+        when(testSuite.name()).thenReturn("suite-1");
+        when(testSuite.location()).thenReturn(URI.create("loc:///suite-1"));
+
+        // When:
+        final SuiteResult result = builder.add(success).build();
+
+        // Then:
+        assertThat(result.toString(), is("SuiteResult{" +
+                "name=suite-1, " +
+                "location=loc:///suite-1, " +
+                "start=2022-10-08T17:16:41.600Z, " +
+                "finish=2022-10-08T17:17:24.499Z, " +
+                "tests=[" +
+                success +
+                "]}"));
     }
 }

@@ -78,6 +78,22 @@ public final class CaseResult implements TestCaseResult {
         return skipped;
     }
 
+    @Override
+    public String toString() {
+        return "CaseResult{"
+                + "test="
+                + testCase.name()
+                + ", duration="
+                + duration
+                + ", skipped="
+                + skipped
+                + ", failure="
+                + failure.map(Throwable::getMessage).orElse("<none>")
+                + ", error="
+                + error.map(Throwable::getMessage).orElse("<none>")
+                + '}';
+    }
+
     public static final class Builder {
 
         private final TestCase testCase;

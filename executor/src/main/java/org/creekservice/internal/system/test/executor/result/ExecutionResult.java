@@ -16,45 +16,61 @@
 
 package org.creekservice.internal.system.test.executor.result;
 
+import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 
-public final class TestExecutionResult {
+public final class ExecutionResult implements TestExecutionResult {
 
     private final List<SuiteResult> results;
 
-    public TestExecutionResult(final List<SuiteResult> results) {
+    public ExecutionResult(final List<SuiteResult> results) {
         this.results = List.copyOf(requireNonNull(results, "results"));
     }
 
-    public TestExecutionResult combine(final TestExecutionResult with) {
-        final List<SuiteResult> all = new ArrayList<>(results);
-        all.addAll(with.results);
-        return new TestExecutionResult(all);
-    }
-
+    @Override
     public boolean isEmpty() {
         return results.isEmpty();
     }
 
-    /** @return number of test cases that failed, i.e. assertions not met */
+    @Override
     public long failed() {
         return results.stream().mapToLong(SuiteResult::failures).sum();
     }
 
-    /** @return number of test cases that failed to execute */
+    @Override
     public long errors() {
         return results.stream().mapToLong(SuiteResult::errors).sum();
     }
 
-    /** @return {@code true} if there were no failures or errors. */
+    @Override
     public boolean passed() {
         return failed() == 0 && errors() == 0;
     }
 
+    @Override
     public List<SuiteResult> results() {
         return List.copyOf(results);
+    }
+
+    public ExecutionResult combine(final ExecutionResult with) {
+        final List<SuiteResult> all = new ArrayList<>(results);
+        all.addAll(with.results);
+        return new ExecutionResult(all);
+    }
+
+    @Override
+    public String toString() {
+        return "ExecutionResult{results="
+                + lineSeparator()
+                + results.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining("," + lineSeparator()))
+                + lineSeparator()
+                + "}";
     }
 }

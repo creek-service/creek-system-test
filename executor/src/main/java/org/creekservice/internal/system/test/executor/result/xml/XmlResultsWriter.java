@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
-import org.creekservice.internal.system.test.executor.result.SuiteResult;
-import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
 
 public final class XmlResultsWriter implements ResultsWriter {
 
@@ -44,14 +44,13 @@ public final class XmlResultsWriter implements ResultsWriter {
         this.writer = requireNonNull(writer, "writer");
     }
 
-    @SuppressWarnings("ClassEscapesDefinedScope")
     @Override
     public void write(final TestExecutionResult result) {
         ensureOutputDirectoryExists();
         result.results().forEach(this::write);
     }
 
-    private void write(final SuiteResult result) {
+    private void write(final TestSuiteResult result) {
         final XmlTestSuiteResult xmlResult = XmlTestSuiteResult.from(result);
 
         final Path path =
