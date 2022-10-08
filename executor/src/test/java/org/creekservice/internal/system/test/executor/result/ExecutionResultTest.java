@@ -16,19 +16,18 @@
 
 package org.creekservice.internal.system.test.executor.result;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
 import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ExecutionResultTest {
@@ -49,14 +48,17 @@ class ExecutionResultTest {
         final String text = result.toString();
 
         // Then:
-        assertThat(text, is("ExecutionResult{results="
-                + lineSeparator()
-                + suiteResult0
-                + ","
-                + lineSeparator()
-                + suiteResult1
-                + lineSeparator()
-                + "}"));
+        assertThat(
+                text,
+                is(
+                        "ExecutionResult{results="
+                                + lineSeparator()
+                                + suiteResult0
+                                + ","
+                                + lineSeparator()
+                                + suiteResult1
+                                + lineSeparator()
+                                + "}"));
     }
 
     @Test
@@ -65,7 +67,8 @@ class ExecutionResultTest {
         final ExecutionResult result2 = new ExecutionResult(List.of(suiteResult1));
 
         // When:
-        final ExecutionResult combined = new ExecutionResult(List.of(suiteResult0)).combine(result2);
+        final ExecutionResult combined =
+                new ExecutionResult(List.of(suiteResult0)).combine(result2);
 
         // Then:
         assertThat(combined.results(), contains(suiteResult0, suiteResult1));

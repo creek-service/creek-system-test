@@ -154,13 +154,16 @@ class SuiteResultTest {
         final SuiteResult result = builder.add(success).build();
 
         // Then:
-        assertThat(result.toString(), is("SuiteResult{" +
-                "name=suite-1, " +
-                "location=loc:///suite-1, " +
-                "start=2022-10-08T17:16:41.600Z, " +
-                "finish=2022-10-08T17:17:24.499Z, " +
-                "tests=[" +
-                success +
-                "]}"));
+        assertThat(
+                result.toString(),
+                is(
+                        "SuiteResult{"
+                                + "name=suite-1, "
+                                + "location=loc:///suite-1, "
+                                + "start=2022-10-08T17:16:41.600Z, "
+                                + "finish=2022-10-08T17:17:24.499Z, "
+                                + "tests=["
+                                + success
+                                + "]}"));
     }
 }
