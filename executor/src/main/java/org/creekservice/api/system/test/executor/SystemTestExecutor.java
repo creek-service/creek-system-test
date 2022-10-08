@@ -23,8 +23,10 @@ import static org.creekservice.internal.system.test.executor.api.Api.initializeA
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
+import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
@@ -32,7 +34,7 @@ import org.creekservice.internal.system.test.executor.execution.TestPackagesExec
 import org.creekservice.internal.system.test.executor.execution.TestSuiteExecutor;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
-import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
+import org.creekservice.internal.system.test.executor.result.ExecutionResult;
 import org.creekservice.internal.system.test.executor.result.xml.XmlResultsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,10 @@ public final class SystemTestExecutor {
     public static void main(final String... args) {
         try {
             final boolean success =
-                    PicoCliParser.parse(args).map(SystemTestExecutor::run).orElse(true);
+                    PicoCliParser.parse(args)
+                            .map(SystemTestExecutor::run)
+                            .map(TestExecutionResult::passed)
+                            .orElse(true);
 
             System.exit(success ? 0 : 1);
         } catch (final Exception e) {
@@ -70,10 +75,10 @@ public final class SystemTestExecutor {
      *
      * @param options the options used to customise the test run.
      */
-    public static boolean run(final ExecutorOptions options) {
+    public static TestExecutionResult run(final ExecutorOptions options) {
         if (options.echoOnly()) {
             echo(options);
-            return true;
+            return new ExecutionResult(List.of());
         }
 
         if (!Files.isDirectory(options.testDirectory())) {
@@ -93,14 +98,13 @@ public final class SystemTestExecutor {
                     "No tests found under: " + options.testDirectory().toUri());
         }
 
-        final boolean allPassed = result.passed();
-        if (!allPassed) {
+        if (!result.passed()) {
             LOGGER.error(
                     "There were failing tests. See the report at: "
                             + options.resultDirectory().toUri());
         }
 
-        return allPassed;
+        return result;
     }
 
     private static void echo(final ExecutorOptions options) {

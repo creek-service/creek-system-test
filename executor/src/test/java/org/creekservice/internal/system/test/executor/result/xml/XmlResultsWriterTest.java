@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,9 +31,9 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import java.util.List;
+import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.test.util.TestPaths;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
-import org.creekservice.internal.system.test.executor.result.TestExecutionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,7 +73,7 @@ class XmlResultsWriterTest {
                 .thenReturn("some xml")
                 .thenReturn("some more xml");
 
-        when(result.results()).thenReturn(List.of(suite0, suite1));
+        doReturn(List.of(suite0, suite1)).when(result).results();
     }
 
     @Test
