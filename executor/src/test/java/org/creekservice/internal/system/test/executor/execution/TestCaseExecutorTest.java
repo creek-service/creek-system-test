@@ -130,7 +130,7 @@ class TestCaseExecutorTest {
         // Then:
         assertThat(
                 result.error().map(Exception::getMessage),
-                is(Optional.of("Test setup failed for test case: Fred")));
+                is(Optional.of("Test setup failed for test case: Fred, cause: boom")));
         assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
         assertAfterTestCalled(result);
     }
@@ -147,7 +147,7 @@ class TestCaseExecutorTest {
         // Then:
         assertThat(
                 result.error().map(Exception::getMessage),
-                is(Optional.of("Test run failed for test case: Fred")));
+                is(Optional.of("Test run failed for test case: Fred, cause: boom")));
         assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
         assertAfterTestCalled(result);
     }
@@ -164,7 +164,7 @@ class TestCaseExecutorTest {
         // Then:
         assertThat(
                 result.error().map(Exception::getMessage),
-                is(Optional.of("Test run failed for test case: Fred")));
+                is(Optional.of("Test run failed for test case: Fred, cause: boom")));
         assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
         assertAfterTestCalled(result);
     }
@@ -195,7 +195,7 @@ class TestCaseExecutorTest {
         // Then:
         assertThat(
                 result.error().map(Exception::getMessage),
-                is(Optional.of("Test run failed for test case: Fred")));
+                is(Optional.of("Test run failed for test case: Fred, cause: boom")));
         assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
         assertAfterTestCalled(result);
     }
@@ -211,7 +211,7 @@ class TestCaseExecutorTest {
                 assertThrows(RuntimeException.class, () -> executor.executeTest(testCase));
 
         // Then:
-        assertThat(e.getMessage(), is("Test teardown failed for test case: Fred"));
+        assertThat(e.getMessage(), is("Test teardown failed for test case: Fred, cause: boom"));
         assertThat(e.getCause(), is(cause));
     }
 
