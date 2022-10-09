@@ -163,7 +163,7 @@ class TestSuiteExecutorTest {
         final CaseResult result0 = result.testCases().get(0);
         assertThat(
                 result0.error().map(Exception::getMessage),
-                is(Optional.of("Suite setup failed for test suite: Fred")));
+                is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
         assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
         assertThat(result0.skipped(), is(false));
         final CaseResult result1 = result.testCases().get(1);
@@ -195,7 +195,7 @@ class TestSuiteExecutorTest {
         final CaseResult result0 = result.testCases().get(0);
         assertThat(
                 result0.error().map(Exception::getMessage),
-                is(Optional.of("Suite setup failed for test suite: Fred")));
+                is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
         assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
 
         verify(listeners, times(2)).forEach(actionCaptor.capture());
@@ -218,7 +218,7 @@ class TestSuiteExecutorTest {
                 assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
 
         // Then:
-        assertThat(e.getMessage(), is("Suite execution failed for test suite: Fred"));
+        assertThat(e.getMessage(), is("Suite execution failed for test suite: Fred, cause: boom"));
         assertThat(e.getCause(), is(cause));
     }
 
@@ -235,7 +235,7 @@ class TestSuiteExecutorTest {
                 assertThrows(RuntimeException.class, () -> suiteExecutor.executeSuite(testSuite));
 
         // Then:
-        assertThat(e.getMessage(), is("Suite teardown failed for test suite: Fred"));
+        assertThat(e.getMessage(), is("Suite teardown failed for test suite: Fred, cause: boom"));
         assertThat(e.getCause(), is(cause));
     }
 

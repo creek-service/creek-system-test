@@ -105,7 +105,13 @@ public final class TestCaseExecutor {
 
     private static final class TestExecutionException extends RuntimeException {
         TestExecutionException(final String msg, final TestCase test, final Throwable cause) {
-            super(msg + " failed for test case: " + test.name(), cause);
+            super(
+                    msg
+                            + " failed for test case: "
+                            + test.name()
+                            + ", cause: "
+                            + cause.getMessage(),
+                    cause);
         }
     }
 }

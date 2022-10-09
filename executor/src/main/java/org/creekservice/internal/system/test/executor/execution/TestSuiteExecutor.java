@@ -114,7 +114,13 @@ public final class TestSuiteExecutor {
     private static final class SuiteExecutionFailedException extends RuntimeException {
         SuiteExecutionFailedException(
                 final String msg, final TestSuite suite, final Throwable cause) {
-            super(msg + " failed for test suite: " + suite.name(), cause);
+            super(
+                    msg
+                            + " failed for test suite: "
+                            + suite.name()
+                            + ", cause: "
+                            + cause.getMessage(),
+                    cause);
         }
     }
 }
