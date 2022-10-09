@@ -114,7 +114,7 @@ public final class YamlTestPackageParser implements TestPackageParser {
 
         warnOnUnusedDependencies(path, inputs, expectations);
 
-        return Optional.of(testPackage(path, seedData, suites));
+        return Optional.of(testPackage(seedData, suites));
     }
 
     private <T> Stream<LazyFile<T>> loadDir(final Path dir, final Class<T> type) {

@@ -63,12 +63,13 @@ public final class XmlTestCaseResult {
     }
 
     @JacksonXmlProperty
-    public Optional<Failure> failure() {
-        if (result.failure().isPresent()) {
-            return result.failure().map(Failure::new);
-        }
+    public Optional<Issue> failure() {
+        return result.failure().map(Issue::new);
+    }
 
-        return result.error().map(Failure::new);
+    @JacksonXmlProperty
+    public Optional<Issue> error() {
+        return result.error().map(Issue::new);
     }
 
     @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -77,11 +78,11 @@ public final class XmlTestCaseResult {
         return result.skipped() ? Optional.of(new Object()) : Optional.empty();
     }
 
-    public static final class Failure {
+    public static final class Issue {
 
         private final Throwable cause;
 
-        public Failure(final Throwable cause) {
+        public Issue(final Throwable cause) {
             this.cause = requireNonNull(cause, "cause");
         }
 
