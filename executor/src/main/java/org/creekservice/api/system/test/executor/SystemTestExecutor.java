@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.executor;
 
+import static java.lang.System.lineSeparator;
 import static org.creekservice.api.system.test.parser.TestPackageParsers.yamlParser;
 import static org.creekservice.api.system.test.parser.TestPackagesLoader.testPackagesLoader;
 import static org.creekservice.internal.system.test.executor.api.Api.initializeApi;
@@ -35,6 +36,7 @@ import org.creekservice.internal.system.test.executor.execution.TestSuiteExecuto
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.observation.TestPackageParserObserver;
 import org.creekservice.internal.system.test.executor.result.ExecutionResult;
+import org.creekservice.internal.system.test.executor.result.ResultLogFormatter;
 import org.creekservice.internal.system.test.executor.result.xml.XmlResultsWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +103,9 @@ public final class SystemTestExecutor {
         if (!result.passed()) {
             LOGGER.error(
                     "There were failing tests. See the report at: "
-                            + options.resultDirectory().toUri());
+                            + options.resultDirectory().toUri()
+                            + lineSeparator()
+                            + ResultLogFormatter.formatIssues(result));
         }
 
         return result;

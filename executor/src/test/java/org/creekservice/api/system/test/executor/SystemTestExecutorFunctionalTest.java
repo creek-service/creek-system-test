@@ -16,6 +16,7 @@
 
 package org.creekservice.api.system.test.executor;
 
+import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.OwnedOutput;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
@@ -340,7 +341,11 @@ class SystemTestExecutorFunctionalTest {
         // Then:
         assertThat(
                 stdErr.get(),
-                is("There were failing tests. See the report at: " + resultDir.toUri()));
+                is(
+                        "There were failing tests. See the report at: "
+                                + resultDir.toUri()
+                                + lineSeparator()
+                                + "suite name:test 0: Failed because it was meant to"));
         assertThat(
                 stdOut.get(),
                 containsString("Finished test 'test 0': FAILED: Failed because it was meant to"));
