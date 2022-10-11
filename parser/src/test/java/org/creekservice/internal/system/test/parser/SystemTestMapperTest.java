@@ -42,6 +42,7 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.parser.ModelType;
 import org.creekservice.api.test.util.TestPaths;
@@ -244,6 +245,21 @@ class SystemTestMapperTest {
         assertThat(result, is(instanceOf(TestExpectation.class)));
     }
 
+    @Test
+    void shouldDeserializeOptionSubTypes() throws Exception {
+        // Given:
+        final ObjectMapper mapper =
+                SystemTestMapper.create(List.of(ModelType.option(TestOption.class)));
+
+        final String yaml = "---\n'@type': test\n";
+
+        // When:
+        final Option result = mapper.readValue(yaml, Option.class);
+
+        // Then:
+        assertThat(result, is(instanceOf(TestOption.class)));
+    }
+
     public static final class TestType implements LocationAware<TestType> {
 
         private final String name;
@@ -331,4 +347,6 @@ class SystemTestMapperTest {
     public static final class TestInput implements Input {}
 
     public static final class TestExpectation implements Expectation {}
+
+    public static final class TestOption implements Option {}
 }

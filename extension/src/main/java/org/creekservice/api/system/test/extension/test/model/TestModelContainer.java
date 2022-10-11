@@ -67,6 +67,18 @@ public interface TestModelContainer extends TestModelCollection {
     <T extends Expectation> NameBuilder addExpectation(
             Class<T> type, ExpectationHandler<? super T> handler);
 
+    /**
+     * Register a test option extension.
+     *
+     * <p>Users can define options within a test suite that configure a test extension's
+     * functionality.
+     *
+     * @param type the model extension.
+     * @param <T> the model extension.
+     * @return a builder that can be used to customize the model.
+     */
+    <T extends Option> NameBuilder addOption(Class<T> type);
+
     interface NameBuilder {
         /**
          * Sets a custom name for the model.

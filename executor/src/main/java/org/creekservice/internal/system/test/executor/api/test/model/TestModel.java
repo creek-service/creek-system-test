@@ -32,6 +32,7 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.api.system.test.parser.ModelType;
 
@@ -83,6 +84,11 @@ public final class TestModel implements TestModelContainer {
         final NameBuilder builder = addType(type, ModelType::expectation, ModelType::expectation);
         expectationHandlers.put(type, handler);
         return builder;
+    }
+
+    @Override
+    public <T extends Option> NameBuilder addOption(final Class<T> type) {
+        return addType(type, ModelType::option, ModelType::option);
     }
 
     @Override

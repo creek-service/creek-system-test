@@ -28,6 +28,7 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.junit.jupiter.api.Test;
 
 class ModelTypeTest {
@@ -151,6 +152,26 @@ class ModelTypeTest {
     }
 
     @Test
+    void shouldCreateOptionWithDerivedNaming() {
+        // When:
+        final ModelType<TestOption> result = ModelType.option(TestOption.class);
+
+        // Then:
+        assertThat(result.name(), is(empty()));
+        assertThat(result.type(), is(TestOption.class));
+    }
+
+    @Test
+    void shouldCreateOptionWithExplicitNaming() {
+        // When:
+        final ModelType<TestOption> result = ModelType.option(TestOption.class, "explicit_name");
+
+        // Then:
+        assertThat(result.name(), is(of("explicit_name")));
+        assertThat(result.type(), is(TestOption.class));
+    }
+
+    @Test
     void shouldThrowOnIfNotSubtype() {
         assertThrows(IllegalArgumentException.class, () -> ModelType.input(Input.class));
         assertThrows(
@@ -209,4 +230,6 @@ class ModelTypeTest {
     private interface TestInput extends Input {}
 
     private interface TestExpectation extends Expectation {}
+
+    private interface TestOption extends Option {}
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
+import org.creekservice.api.system.test.extension.test.model.Option;
 
 /** Serialisable definition of a test suite. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -37,6 +38,7 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     private final String notes;
     private final Optional<Disabled> disabled;
     private final List<String> services;
+    private final List<Option> options;
     private final List<TestCaseDef> tests;
     private final URI location;
 
@@ -46,9 +48,16 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
             @JsonProperty("notes") final Optional<String> notes,
             @JsonProperty("disabled") final Optional<Disabled> disabled,
             @JsonProperty(value = "services", required = true) final List<String> services,
+            @JsonProperty(value = "options") final Optional<List<Option>> options,
             @JsonProperty(value = "tests", required = true) final List<TestCaseDef> tests) {
         return new TestSuiteDef(
-                name, notes.orElse(""), disabled, UNKNOWN_LOCATION, services, tests);
+                name,
+                notes.orElse(""),
+                disabled,
+                UNKNOWN_LOCATION,
+                services,
+                options.orElse(List.of()),
+                tests);
     }
 
     private TestSuiteDef(
@@ -57,12 +66,14 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
             final Optional<Disabled> disabled,
             final URI location,
             final List<String> services,
+            final List<Option> options,
             final List<TestCaseDef> tests) {
         this.name = requireNonNull(name, "name");
         this.notes = requireNonNull(notes, "notes");
         this.disabled = requireNonNull(disabled, "disabled");
         this.location = requireNonNull(location, "location");
         this.services = List.copyOf(requireNonNull(services, "services"));
+        this.options = List.copyOf(requireNonNull(options, "options"));
         this.tests = List.copyOf(requireNonNull(tests, "tests"));
 
         requireNonEmpty(name, "empty");
@@ -96,6 +107,13 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         return List.copyOf(services);
     }
 
+    @JsonGetter("options")
+    @JsonPropertyDescription(
+            "List of test options that can be used to configure services and test extensions.")
+    public List<Option> options() {
+        return List.copyOf(options);
+    }
+
     @JsonGetter("tests")
     @JsonPropertyDescription(
             "List of test cases the suite contains. Tests are run in the order defined.")
@@ -108,7 +126,7 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
     }
 
     public TestSuiteDef withLocation(final URI location) {
-        return new TestSuiteDef(name, notes, disabled, location, services, tests);
+        return new TestSuiteDef(name, notes, disabled, location, services, options, tests);
     }
 
     @Override
@@ -126,13 +144,14 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
                 && Objects.equals(notes, testSuiteDef.notes)
                 && Objects.equals(disabled, testSuiteDef.disabled)
                 && Objects.equals(services, testSuiteDef.services)
+                && Objects.equals(options, testSuiteDef.options)
                 && Objects.equals(tests, testSuiteDef.tests);
     }
 
     @Override
     public int hashCode() {
         // Note: location intentionally excluded:
-        return Objects.hash(name, notes, disabled, services, tests);
+        return Objects.hash(name, notes, disabled, services, options, tests);
     }
 
     @Override
@@ -150,6 +169,8 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
                 + location
                 + ", services="
                 + services
+                + ", options="
+                + options
                 + ", tests="
                 + tests
                 + '}';

@@ -35,6 +35,7 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.model.TestCase;
+import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.execution.expectation.Verifiers;
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.CaseResult;
@@ -56,6 +57,7 @@ class TestCaseExecutorTest {
     @Mock private TestListenerCollection listeners;
     @Mock private Inputters inputters;
     @Mock private Verifiers verifiers;
+    @Mock private TestSuite testSuite;
     @Mock private TestCase testCase;
     @Mock private TestEnvironmentListener listener;
     @Mock private List<? extends Input> inputs;
@@ -69,9 +71,10 @@ class TestCaseExecutorTest {
         executor = new TestCaseExecutor(listeners, inputters, verifiers);
 
         when(testCase.name()).thenReturn("Fred");
+        when(testCase.suite()).thenReturn(testSuite);
         doReturn(inputs).when(testCase).inputs();
         doReturn(expectations).when(testCase).expectations();
-        doReturn(verifier).when(verifiers).prepare(expectations);
+        doReturn(verifier).when(verifiers).prepare(expectations, testSuite);
     }
 
     @Test
@@ -139,7 +142,7 @@ class TestCaseExecutorTest {
     void shouldHandleInputtersThrowing() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(inputters).input(inputs);
+        doThrow(cause).when(inputters).input(any(), any());
 
         // When:
         final CaseResult result = executor.executeTest(testCase);
@@ -156,7 +159,7 @@ class TestCaseExecutorTest {
     void shouldHandleExpectationPrepareThrowing() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(verifiers).prepare(expectations);
+        doThrow(cause).when(verifiers).prepare(any(), any());
 
         // When:
         final CaseResult result = executor.executeTest(testCase);

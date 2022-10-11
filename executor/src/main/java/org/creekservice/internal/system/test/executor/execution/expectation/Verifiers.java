@@ -27,7 +27,9 @@ import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.api.system.test.model.TestSuite;
 
 public final class Verifiers {
 
@@ -39,7 +41,8 @@ public final class Verifiers {
         this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
     }
 
-    public Verifier prepare(final Collection<? extends Expectation> expectations) {
+    public Verifier prepare(
+            final Collection<? extends Expectation> expectations, final TestSuite suite) {
         final Map<
                         ? extends ExpectationHandler<? extends Expectation>,
                         ? extends List<? extends Expectation>>
@@ -47,7 +50,7 @@ public final class Verifiers {
 
         final List<Verifier> verifiers =
                 byHandler.entrySet().stream()
-                        .map(e -> prepare(e.getKey(), e.getValue()))
+                        .map(e -> prepare(e.getKey(), e.getValue(), suite))
                         .collect(Collectors.toUnmodifiableList());
 
         return () -> verifiers.forEach(Verifier::verify);
@@ -60,8 +63,29 @@ public final class Verifiers {
 
     @SuppressWarnings("unchecked")
     private <T extends Expectation> Verifier prepare(
-            final ExpectationHandler<T> handler, final List<? extends Expectation> expectations) {
-        return handler.prepare((List<T>) expectations, () -> verifierTimeout);
+            final ExpectationHandler<T> handler,
+            final List<? extends Expectation> expectations,
+            final TestSuite suite) {
+        return handler.prepare((List<T>) expectations, new Options(suite));
+    }
+
+    private final class Options implements ExpectationHandler.ExpectationOptions {
+
+        private final TestSuite suite;
+
+        Options(final TestSuite suite) {
+            this.suite = requireNonNull(suite, "suite");
+        }
+
+        @Override
+        public Duration timeout() {
+            return verifierTimeout;
+        }
+
+        @Override
+        public <T extends Option> List<T> get(final Class<T> type) {
+            return suite.options(type);
+        }
     }
 
     private static final class HandlerNotRegisteredException extends RuntimeException {

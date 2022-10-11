@@ -40,6 +40,7 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.parser.ModelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -183,6 +184,25 @@ class TestModelTest {
     }
 
     @Test
+    void shouldAddTestOption() {
+        // When:
+        model.addOption(TestOption.class);
+
+        // Then:
+        assertThat(model.modelTypes(), contains(ModelType.option(TestOption.class)));
+        assertThat(model.hasType(TestOption.class), is(true));
+    }
+
+    @Test
+    void shouldAddNamedTestOption() {
+        // When:
+        model.addOption(TestOption.class).withName("Bob");
+
+        // Then:
+        assertThat(model.modelTypes(), contains(ModelType.option(TestOption.class, "Bob")));
+    }
+
+    @Test
     void shouldThrowOnDuplicateAdd() {
         // Given:
         model.addInputRef(TestRef.class);
@@ -241,6 +261,7 @@ class TestModelTest {
                                         m.addExpectation(
                                                 TestExpectation.class,
                                                 mock(ExpectationHandler.class))),
+                Arguments.of("addOption", (Consumer<TestModel>) m -> m.addOption(TestOption.class)),
                 Arguments.of(
                         "inputHandler", (Consumer<TestModel>) m -> m.inputHandler(TestInput.class)),
                 Arguments.of(
@@ -288,4 +309,6 @@ class TestModelTest {
             return null;
         }
     }
+
+    private static final class TestOption implements Option {}
 }

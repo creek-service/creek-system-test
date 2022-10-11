@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -125,6 +126,30 @@ class TestSuiteTest {
         assertThat(suite.services(), is(List.of("Alice", "Jane")));
     }
 
+    @Test
+    void shouldReturnOptions() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        final Option option0 = mock(TestOption.class);
+        final Option option1 = mock(TestOption.class);
+        final Option option2 = mock(Option.class);
+        when(def.options()).thenReturn(List.of(option1, option2, option0));
+
+        // Then:
+        assertThat(suite.options(TestOption.class), is(List.of(option1, option0)));
+    }
+
+    @Test
+    void shouldReturnOptionsSubTypes() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        final Option option = mock(TestOption.class);
+        when(def.options()).thenReturn(List.of(option));
+
+        // Then:
+        assertThat(suite.options(Option.class), is(List.of(option)));
+    }
+
     private TestSuiteDef def(final Collection<TestCase.Builder> testCases) {
         givenDefTestCases(testCases.size());
         return def;
@@ -135,4 +160,6 @@ class TestSuiteTest {
                 IntStream.range(0, tests).mapToObj(i -> testDef).collect(Collectors.toList());
         when(def.tests()).thenReturn(testDefs);
     }
+
+    private interface TestOption extends Option {}
 }
