@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.extension.test.model;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Handler of {@link Expectation}'s.
@@ -56,5 +57,17 @@ public interface ExpectationHandler<T extends Expectation> {
 
         /** @return the timeout to use when verifying expectations */
         Duration timeout();
+
+        /**
+         * Get user supplied options.
+         *
+         * <p>Test extensions can register custom {@link Option} subtypes when initializing. Users
+         * can then define options within the test suite files.
+         *
+         * @param type the type of the option to get.
+         * @param <T> the type of the option to get.
+         * @return the options of the requested type supplied in the current test suite
+         */
+        <T extends Option> List<T> get(Class<T> type);
     }
 }

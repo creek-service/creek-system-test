@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package org.creekservice.api.system.test.extension.test.model;
+package org.creekservice.internal.system.test.parser;
 
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-/** Public API of a test suite. */
-public interface CreekTestSuite extends Locatable {
-
-    /** @return the name of the suite */
-    String name();
-
-    /** @return the list of services under test */
-    List<String> services();
-
-    /** @return the list of test options */
-    <T extends Option> List<T> options(Class<T> type);
-
-    /** @return the test cases in the suite. */
-    List<? extends CreekTestCase> tests();
-}
+/**
+ * Annotate {@link org.creekservice.api.system.test.extension.test.model.Option} model types as
+ * being polymorphic.
+ *
+ * <p>The use of mixins avoids the need for the {@code extension} model to depend on Jackson
+ * annotations.
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+public interface OptionMixin extends ModelMixin {}

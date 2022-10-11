@@ -85,8 +85,8 @@ public final class TestCaseExecutor {
 
     private CaseResult runTest(final TestCase testCase, final CaseResult.Builder builder) {
         try {
-            final Verifier verifier = verifiers.prepare(testCase.expectations());
-            inputters.input(testCase.inputs());
+            final Verifier verifier = verifiers.prepare(testCase.expectations(), testCase.suite());
+            inputters.input(testCase.inputs(), testCase.suite());
 
             try {
                 verifier.verify();

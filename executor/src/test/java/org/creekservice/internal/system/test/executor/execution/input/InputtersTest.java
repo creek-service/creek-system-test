@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
@@ -30,10 +31,15 @@ import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
+import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,11 +50,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class InputtersTest {
 
+    @Mock private TestSuite testSuite;
     @Mock private TestModelContainer model;
     @Mock private Input0 input0;
     @Mock private Input1 input1;
     @Mock private InputHandler<Input0> inputHandler0;
     @Mock private InputHandler<Input1> inputHandler1;
+    @Captor private ArgumentCaptor<InputOptions> optionsCaptor;
     private Inputters inputters;
 
     @BeforeEach
@@ -66,7 +74,8 @@ class InputtersTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> inputters.input(List.of(input0)));
+                assertThrows(
+                        RuntimeException.class, () -> inputters.input(List.of(input0), testSuite));
 
         // Then:
         assertThat(
@@ -77,19 +86,32 @@ class InputtersTest {
     @Test
     void shouldProcessInputInOrder() {
         // When:
-        inputters.input(List.of(input0, input1, input0));
+        inputters.input(List.of(input0, input1, input0), testSuite);
 
         // Then:
         final InOrder inOrder = inOrder(inputHandler0, inputHandler1);
-        inOrder.verify(inputHandler0).process(input0);
-        inOrder.verify(inputHandler1).process(input1);
-        inOrder.verify(inputHandler0).process(input0);
+        inOrder.verify(inputHandler0).process(eq(input0), any());
+        inOrder.verify(inputHandler1).process(eq(input1), any());
+        inOrder.verify(inputHandler0).process(eq(input0), any());
+    }
+
+    @Test
+    void shouldExposeOptionsToHandlers() {
+        // Given:
+        inputters.input(List.of(input0), testSuite);
+        verify(inputHandler0).process(eq(input0), optionsCaptor.capture());
+
+        // When:
+        optionsCaptor.getValue().get(Option.class);
+
+        // Then:
+        verify(testSuite).options(Option.class);
     }
 
     @Test
     void shouldFlushHandlersOnce() {
         // When:
-        inputters.input(List.of(input0, input1, input0));
+        inputters.input(List.of(input0, input1, input0), testSuite);
 
         // Then:
         verify(inputHandler0, times(1)).flush();

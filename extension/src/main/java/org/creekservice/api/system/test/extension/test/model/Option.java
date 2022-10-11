@@ -16,21 +16,5 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
-
-import java.util.List;
-
-/** Public API of a test suite. */
-public interface CreekTestSuite extends Locatable {
-
-    /** @return the name of the suite */
-    String name();
-
-    /** @return the list of services under test */
-    List<String> services();
-
-    /** @return the list of test options */
-    <T extends Option> List<T> options(Class<T> type);
-
-    /** @return the test cases in the suite. */
-    List<? extends CreekTestCase> tests();
-}
+/** Base type of all test options */
+public interface Option {}

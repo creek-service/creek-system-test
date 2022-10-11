@@ -23,22 +23,31 @@ import static org.creekservice.api.system.test.model.TestSuiteDef.testSuite;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.testing.EqualsTester;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import org.creekservice.api.system.test.extension.test.model.Option;
+import org.creekservice.api.system.test.parser.ModelType;
 import org.creekservice.internal.system.test.parser.SystemTestMapper;
 import org.junit.jupiter.api.Test;
 
 class TestSuiteDefTest {
 
-    private static final ObjectMapper MAPPER = SystemTestMapper.create(List.of());
+    private static final ObjectMapper MAPPER =
+            SystemTestMapper.create(
+                    List.of(ModelType.option(TestOption.class, "creek/test-option/1")));
 
     private static final String TEST_CASE_YAML =
             "name: test one\n"
@@ -58,6 +67,7 @@ class TestSuiteDefTest {
     void shouldImplementHashCodeAndEquals() {
         final Disabled disabled = mock(Disabled.class);
         final TestCaseDef testCase = mock(TestCaseDef.class);
+        final Option option = mock(Option.class);
 
         new EqualsTester()
                 .addEqualityGroup(
@@ -66,18 +76,21 @@ class TestSuiteDefTest {
                                 Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase)),
                         testSuite(
                                 "name",
                                 Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase)),
                         testSuite(
                                         "name",
                                         Optional.of("notes"),
                                         Optional.of(disabled),
                                         List.of("service"),
+                                        Optional.of(List.of(option)),
                                         List.of(testCase))
                                 .withLocation(mock(URI.class)))
                 .addEqualityGroup(
@@ -86,6 +99,7 @@ class TestSuiteDefTest {
                                 Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase)))
                 .addEqualityGroup(
                         testSuite(
@@ -93,6 +107,7 @@ class TestSuiteDefTest {
                                 Optional.of("diff"),
                                 Optional.of(disabled),
                                 List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase)))
                 .addEqualityGroup(
                         testSuite(
@@ -100,13 +115,7 @@ class TestSuiteDefTest {
                                 Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("diff"),
-                                List.of(testCase)))
-                .addEqualityGroup(
-                        testSuite(
-                                "name",
-                                Optional.of("notes"),
-                                Optional.empty(),
-                                List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase)))
                 .addEqualityGroup(
                         testSuite(
@@ -114,6 +123,23 @@ class TestSuiteDefTest {
                                 Optional.of("notes"),
                                 Optional.of(disabled),
                                 List.of("service"),
+                                Optional.of(List.of()),
+                                List.of(testCase)))
+                .addEqualityGroup(
+                        testSuite(
+                                "name",
+                                Optional.of("notes"),
+                                Optional.empty(),
+                                List.of("service"),
+                                Optional.of(List.of(option)),
+                                List.of(testCase)))
+                .addEqualityGroup(
+                        testSuite(
+                                "name",
+                                Optional.of("notes"),
+                                Optional.of(disabled),
+                                List.of("service"),
+                                Optional.of(List.of(option)),
                                 List.of(testCase, testCase)))
                 .testEquals();
     }
@@ -129,6 +155,9 @@ class TestSuiteDefTest {
                         + "  reason: disabled reason\n"
                         + "services:\n"
                         + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -142,6 +171,8 @@ class TestSuiteDefTest {
         assertThat(result.disabled().map(Disabled::reason), is(Optional.of("disabled reason")));
         assertThat(result.location(), is(UNKNOWN_LOCATION));
         assertThat(result.services(), contains("a_service"));
+        assertThat(result.options(), hasSize(1));
+        assertThat(result.options().get(0), is(instanceOf(TestOption.class)));
         assertThat(result.tests(), contains(TEST_CASE_NO_LOCATION));
     }
 
@@ -155,6 +186,9 @@ class TestSuiteDefTest {
                         + "  reason: disabled reason\n"
                         + "services:\n"
                         + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -176,6 +210,9 @@ class TestSuiteDefTest {
                         + "  reason: disabled reason\n"
                         + "services:\n"
                         + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -196,6 +233,9 @@ class TestSuiteDefTest {
                         + "notes: suite description\n"
                         + "services:\n"
                         + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -216,6 +256,9 @@ class TestSuiteDefTest {
                         + "notes: suite description\n"
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -237,6 +280,9 @@ class TestSuiteDefTest {
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services: []\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests:\n"
                         + " - "
                         + TEST_CASE_YAML;
@@ -249,6 +295,28 @@ class TestSuiteDefTest {
     }
 
     @Test
+    void shouldNotRequireOptions() throws Exception {
+        // Given:
+        final String yaml =
+                "---\n"
+                        + "name: a test suite\n"
+                        + "notes: suite description\n"
+                        + "disabled:\n"
+                        + "  reason: disabled reason\n"
+                        + "services:\n"
+                        + " - a_service\n"
+                        + "tests:\n"
+                        + " - "
+                        + TEST_CASE_YAML;
+
+        // When:
+        final TestSuiteDef result = parse(yaml);
+
+        // Then:
+        assertThat(result.options(), is(empty()));
+    }
+
+    @Test
     void shouldRequireTests() {
         // Given:
         final String yaml =
@@ -258,7 +326,10 @@ class TestSuiteDefTest {
                         + "disabled:\n"
                         + "  reason: disabled reason\n"
                         + "services:\n"
-                        + " - a_service\n";
+                        + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n";
 
         // When:
         final Exception e = assertThrows(JsonProcessingException.class, () -> parse(yaml));
@@ -278,6 +349,9 @@ class TestSuiteDefTest {
                         + "  reason: disabled reason\n"
                         + "services:\n"
                         + " - a_service\n"
+                        + "options:\n"
+                        + " - !creek/test-option/1\n"
+                        + "   dummy: text\n"
                         + "tests: []\n";
 
         // When:
@@ -289,5 +363,12 @@ class TestSuiteDefTest {
 
     private static TestSuiteDef parse(final String yaml) throws Exception {
         return MAPPER.readValue(yaml, TestSuiteDef.class);
+    }
+
+    public static final class TestOption implements Option {
+
+        @JsonCreator
+        @SuppressWarnings("checkstyle:RedundantModifier")
+        public TestOption(@JsonProperty("dummy") final String dummy) {}
     }
 }

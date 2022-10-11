@@ -23,6 +23,7 @@ import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
+import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
 
 /** Extension used for testing */
 public final class TestCreekTestExtension implements CreekTestExtension {
@@ -44,7 +45,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
                 .withName("creek/test");
     }
 
-    private void pipeInput(final TestInput input) {
+    private void pipeInput(final TestInput input, final InputOptions options) {
         System.out.println("Piping input: " + input.value);
 
         if (input.value.equals("should throw")) {

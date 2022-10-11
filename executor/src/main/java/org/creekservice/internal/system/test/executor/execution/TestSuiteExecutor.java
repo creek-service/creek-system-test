@@ -96,7 +96,7 @@ public final class TestSuiteExecutor {
 
     private void beforeSuite(final TestSuite testSuite) {
         listeners.forEach(listener -> listener.beforeSuite(testSuite));
-        inputters.input(testSuite.pkg().seedData());
+        inputters.input(testSuite.pkg().seedData(), testSuite);
     }
 
     private void runSuite(final TestSuite testSuite, final SuiteResult.Builder builder) {

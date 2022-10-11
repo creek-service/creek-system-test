@@ -34,7 +34,9 @@ import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +53,7 @@ class VerifiersTest {
 
     private static final Duration TIMEOUT = Duration.ofMillis(123457);
 
+    @Mock private TestSuite testSuite;
     @Mock private TestModelContainer model;
     @Mock private ExpectationHandler<ExpectationA> handlerA;
     @Mock private ExpectationHandler<ExpectationB> handlerB;
@@ -77,7 +80,9 @@ class VerifiersTest {
 
         // When:
         final Exception e =
-                assertThrows(RuntimeException.class, () -> verifiers.prepare(List.of(unknown)));
+                assertThrows(
+                        RuntimeException.class,
+                        () -> verifiers.prepare(List.of(unknown), testSuite));
 
         // Then:
         assertThat(
@@ -95,7 +100,7 @@ class VerifiersTest {
         final ExpectationA e2 = new ExpectationA();
 
         // When:
-        verifiers.prepare(List.of(e0, e1, e2));
+        verifiers.prepare(List.of(e0, e1, e2), testSuite);
 
         // Then:
         verify(handlerA).prepare(eq(List.of(e0, e2)), any());
@@ -108,11 +113,25 @@ class VerifiersTest {
         final ExpectationA e0 = new ExpectationA();
 
         // When:
-        verifiers.prepare(List.of(e0));
+        verifiers.prepare(List.of(e0), testSuite);
 
         // Then:
         verify(handlerA).prepare(any(), optionsCaptor.capture());
         assertThat(optionsCaptor.getValue().timeout(), is(TIMEOUT));
+    }
+
+    @Test
+    void shouldExposeOptionsToHandlers() {
+        // Given:
+        final ExpectationA e0 = new ExpectationA();
+        verifiers.prepare(List.of(e0), testSuite);
+        verify(handlerA).prepare(any(), optionsCaptor.capture());
+
+        // When:
+        optionsCaptor.getValue().get(Option.class);
+
+        // Then:
+        verify(testSuite).options(Option.class);
     }
 
     @Test
@@ -121,7 +140,7 @@ class VerifiersTest {
         final ExpectationA e0 = new ExpectationA();
         final ExpectationB e1 = new ExpectationB();
 
-        final Verifier verifier = verifiers.prepare(List.of(e0, e1));
+        final Verifier verifier = verifiers.prepare(List.of(e0, e1), testSuite);
 
         verifyNoInteractions(verifierA, verifierB);
 

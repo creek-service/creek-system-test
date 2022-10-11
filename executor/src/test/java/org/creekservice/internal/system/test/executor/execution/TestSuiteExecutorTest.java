@@ -112,7 +112,7 @@ class TestSuiteExecutorTest {
         // Then:
         final InOrder inOrder = inOrder(listeners, inputters, testExecutor);
         inOrder.verify(listeners).forEach(any());
-        inOrder.verify(inputters).input(any());
+        inOrder.verify(inputters).input(any(), any());
         inOrder.verify(testExecutor).executeTest(testCase0);
         inOrder.verify(listeners).forEachReverse(any());
     }
@@ -127,7 +127,7 @@ class TestSuiteExecutorTest {
         suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        verify(inputters).input(List.of(seed));
+        verify(inputters).input(List.of(seed), testSuite);
     }
 
     @Test
@@ -183,7 +183,7 @@ class TestSuiteExecutorTest {
     void shouldHandleSeedingThrowing() {
         // Given:
         final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(inputters).input(any());
+        doThrow(cause).when(inputters).input(any(), any());
 
         givenTestCase(testCase0);
 

@@ -24,6 +24,7 @@ import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputRef;
+import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.Ref;
 
 /**
@@ -176,6 +177,32 @@ public final class ModelType<T> {
     public static <T extends Expectation> ModelType<T> expectation(
             final Class<T> type, final String name) {
         return modelType(type, name, Expectation.class);
+    }
+
+    /**
+     * Create metadata about a {@link Option} subtype, with a standard type name.
+     *
+     * <p>The name of the subtype will be derived from the {@code type} name. See {@code
+     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     *
+     * @param type the subtype
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends Option> ModelType<T> option(final Class<T> type) {
+        return modelType(type, Option.class);
+    }
+
+    /**
+     * Create metadata about a {@link Option} subtype, with a custom explicit name.
+     *
+     * @param type the subtype
+     * @param name the name of the subtype.
+     * @param <T> the subtype
+     * @return the model metadata
+     */
+    public static <T extends Option> ModelType<T> option(final Class<T> type, final String name) {
+        return modelType(type, name, Option.class);
     }
 
     /**
