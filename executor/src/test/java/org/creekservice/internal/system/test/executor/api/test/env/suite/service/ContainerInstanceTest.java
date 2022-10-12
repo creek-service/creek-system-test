@@ -248,6 +248,20 @@ class ContainerInstanceTest {
     }
 
     @Test
+    void shouldStopIfCallbackThrows() {
+        // Given:
+        when(container.getContainerId()).thenReturn(null).thenReturn("running");
+
+        doThrow(new RuntimeException("Boom")).when(container).start();
+
+        // When:
+        assertThrows(RuntimeException.class, instance::start);
+
+        // Then:
+        verify(container).stop();
+    }
+
+    @Test
     void shouldExposeTestNetworkPorts() {
         // Given:
         final int port = 253;
