@@ -17,6 +17,7 @@
 package org.creekservice.internal.system.test.executor.execution;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -24,7 +25,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -158,23 +158,11 @@ class TestSuiteExecutorTest {
         final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        assertThat(result.errors(), is(1L));
-        assertThat(result.skipped(), is(1L));
-        final CaseResult result0 = result.testCases().get(0);
+        assertThat(result.errors(), is(2L));
+        assertThat(result.testResults(), is(empty()));
         assertThat(
-                result0.error().map(Exception::getMessage),
+                result.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
-        assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
-        assertThat(result0.skipped(), is(false));
-        final CaseResult result1 = result.testCases().get(1);
-        assertThat(result1.error(), is(Optional.empty()));
-        assertThat(result1.skipped(), is(true));
-
-        verify(listeners, times(3)).forEach(actionCaptor.capture());
-        actionCaptor.getAllValues().get(1).accept(listener);
-        verify(listener).afterTest(testCase0, result0);
-        actionCaptor.getAllValues().get(2).accept(listener);
-        verify(listener).afterTest(testCase1, result1);
 
         assertAfterTestCalled(result);
     }
@@ -192,15 +180,11 @@ class TestSuiteExecutorTest {
 
         // Then:
         assertThat(result.errors(), is(1L));
-        final CaseResult result0 = result.testCases().get(0);
+        assertThat(result.testResults(), is(empty()));
         assertThat(
-                result0.error().map(Exception::getMessage),
+                result.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
-        assertThat(result0.error().map(Exception::getCause), is(Optional.of(cause)));
-
-        verify(listeners, times(2)).forEach(actionCaptor.capture());
-        actionCaptor.getAllValues().get(1).accept(listener);
-        verify(listener).afterTest(testCase0, result0);
+        assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
 
         assertAfterTestCalled(result);
     }

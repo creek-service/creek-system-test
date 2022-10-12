@@ -20,12 +20,14 @@ import static java.util.Objects.requireNonNull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.model.TestPackage;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.result.ExecutionResult;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
+import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
 public final class TestPackagesExecutor {
 
@@ -53,12 +55,12 @@ public final class TestPackagesExecutor {
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     private TestExecutionResult executePackages() {
         try (Stream<TestPackage> packages = loader.stream()) {
-            return packages.map(TestPackage::suites)
-                    .flatMap(List::stream)
-                    .map(suiteExecutor::executeSuite)
-                    .map(List::of)
-                    .map(ExecutionResult::new)
-                    .reduce(new ExecutionResult(List.of()), ExecutionResult::combine);
+            final List<SuiteResult> result =
+                    packages.map(TestPackage::suites)
+                            .flatMap(List::stream)
+                            .map(suiteExecutor::executeSuite)
+                            .collect(Collectors.toList());
+            return new ExecutionResult(result);
         }
     }
 }

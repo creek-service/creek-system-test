@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
@@ -56,7 +57,7 @@ public final class XmlTestSuiteResult {
 
     @JacksonXmlProperty(isAttribute = true)
     public long tests() {
-        return result.testCases().size();
+        return result.testResults().size();
     }
 
     @JacksonXmlProperty(isAttribute = true)
@@ -72,6 +73,11 @@ public final class XmlTestSuiteResult {
     @JacksonXmlProperty(isAttribute = true)
     public long errors() {
         return result.errors();
+    }
+
+    @JacksonXmlProperty
+    public Optional<XmlIssue> error() {
+        return result.error().map(XmlIssue::new);
     }
 
     @JacksonXmlProperty(isAttribute = true)
@@ -95,7 +101,7 @@ public final class XmlTestSuiteResult {
 
     @JacksonXmlProperty
     public List<XmlTestCaseResult> testcase() {
-        return result.testCases().stream().map(XmlTestCaseResult::from).collect(toList());
+        return result.testResults().stream().map(XmlTestCaseResult::from).collect(toList());
     }
 
     private static String localHostName() {

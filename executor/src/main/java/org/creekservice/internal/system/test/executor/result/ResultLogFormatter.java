@@ -17,32 +17,48 @@
 package org.creekservice.internal.system.test.executor.result;
 
 
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class ResultLogFormatter {
 
     private ResultLogFormatter() {}
 
     public static String formatIssues(final TestExecutionResult result) {
         return result.results().stream()
-                .flatMap(suite -> suite.testCases().stream())
-                .map(ResultLogFormatter::formatIssue)
+                .flatMap(ResultLogFormatter::suiteIssues)
                 .filter(msg -> !msg.isBlank())
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    private static String formatIssue(final TestCaseResult test) {
+    private static Stream<String> suiteIssues(final TestSuiteResult suite) {
+        return Stream.concat(
+                suite.error().stream()
+                        .map(e -> formatIssue(suite.testSuite(), Optional.empty(), e)),
+                suite.testResults().stream().flatMap(ResultLogFormatter::caseIssue));
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    private static Stream<String> caseIssue(final TestCaseResult test) {
         if (test.failure().isEmpty() && test.error().isEmpty()) {
-            return "";
+            return Stream.empty();
         }
 
-        final String issue =
-                test.failure().isPresent()
-                        ? test.failure().get().getMessage()
-                        : test.error().get().getMessage();
+        final Throwable issue =
+                test.failure().map(Throwable.class::cast).orElseGet(() -> test.error().get());
 
-        return test.testCase().suite().name() + ":" + test.testCase().name() + ": " + issue;
+        return Stream.of(formatIssue(test.testCase().suite(), Optional.of(test.testCase()), issue));
+    }
+
+    private static String formatIssue(
+            final CreekTestSuite suite, final Optional<CreekTestCase> test, final Throwable issue) {
+        return suite.name() + test.map(t -> ":" + t.name()).orElse("") + ": " + issue.getMessage();
     }
 }

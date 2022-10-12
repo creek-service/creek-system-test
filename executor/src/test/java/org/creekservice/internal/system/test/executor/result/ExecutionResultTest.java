@@ -18,11 +18,11 @@ package org.creekservice.internal.system.test.executor.result;
 
 import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,19 +62,6 @@ class ExecutionResultTest {
     }
 
     @Test
-    void shouldCombine() {
-        // Given:
-        final ExecutionResult result2 = new ExecutionResult(List.of(suiteResult1));
-
-        // When:
-        final ExecutionResult combined =
-                new ExecutionResult(List.of(suiteResult0)).combine(result2);
-
-        // Then:
-        assertThat(combined.results(), contains(suiteResult0, suiteResult1));
-    }
-
-    @Test
     void shouldCountFailures() {
         // Given:
         when(suiteResult0.failures()).thenReturn(1L);
@@ -87,7 +74,7 @@ class ExecutionResultTest {
     @Test
     void shouldCountErrors() {
         // Given:
-        when(suiteResult0.errors()).thenReturn(1L);
+        when(suiteResult0.error()).thenReturn(Optional.of(new RuntimeException()));
         when(suiteResult1.errors()).thenReturn(2L);
 
         // Then:

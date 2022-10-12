@@ -42,8 +42,12 @@ import org.mockito.quality.Strictness;
 class ResultLogFormatterTest {
 
     @Mock private TestExecutionResult result;
-    @Mock private TestSuiteResult suiteResult0;
-    @Mock private TestSuiteResult suiteResult1;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private TestSuiteResult suiteResult0;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private TestSuiteResult suiteResult1;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private TestCaseResult testResult0;
@@ -58,8 +62,8 @@ class ResultLogFormatterTest {
     @BeforeEach
     void setUp() {
         doReturn(List.of(suiteResult0, suiteResult1)).when(result).results();
-        doReturn(List.of(testResult0, testResult1)).when(suiteResult0).testCases();
-        doReturn(List.of(testResult2)).when(suiteResult1).testCases();
+        doReturn(List.of(testResult0, testResult1)).when(suiteResult0).testResults();
+        doReturn(List.of(testResult2)).when(suiteResult1).testResults();
 
         when(testResult0.failure()).thenReturn(Optional.empty());
         when(testResult0.error()).thenReturn(Optional.empty());
@@ -102,5 +106,20 @@ class ResultLogFormatterTest {
                         "suite-0:test-0: failure reason"
                                 + lineSeparator()
                                 + "suite-1:test-2: error reason"));
+    }
+
+    @Test
+    void shouldFormatSuiteWithError() {
+        // Given:
+        when(suiteResult0.error()).thenReturn(Optional.of(new RuntimeException("Boom")));
+        when(suiteResult0.testResults()).thenReturn(List.of());
+        when(suiteResult0.testSuite().name()).thenReturn("suite-0");
+        when(testResult2.error()).thenReturn(Optional.of(new RuntimeException("error reason")));
+
+        // When:
+        final String text = ResultLogFormatter.formatIssues(result);
+
+        // Then:
+        assertThat(text, is("suite-0: Boom" + lineSeparator() + "suite-1:test-2: error reason"));
     }
 }

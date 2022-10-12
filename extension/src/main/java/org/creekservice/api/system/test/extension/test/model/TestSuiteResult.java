@@ -20,6 +20,7 @@ package org.creekservice.api.system.test.extension.test.model;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface TestSuiteResult {
 
@@ -41,6 +42,13 @@ public interface TestSuiteResult {
     /** @return how long the test suite took to run. */
     Duration duration();
 
+    /**
+     * Indicates the test suite did not execute.
+     *
+     * @return any exception thrown trying to set up the suite.
+     */
+    Optional<Exception> error();
+
     /** @return the results for the tests within the suite. */
-    List<? extends TestCaseResult> testCases();
+    List<? extends TestCaseResult> testResults();
 }

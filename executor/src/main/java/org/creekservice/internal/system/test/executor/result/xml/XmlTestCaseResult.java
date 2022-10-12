@@ -17,16 +17,12 @@
 package org.creekservice.internal.system.test.executor.result.xml;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElse;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import org.creekservice.api.base.type.Throwables;
 import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 
 /** Test case result that can be serialized as part of JUnit style test XML report. */
@@ -63,45 +59,18 @@ public final class XmlTestCaseResult {
     }
 
     @JacksonXmlProperty
-    public Optional<Issue> failure() {
-        return result.failure().map(Issue::new);
+    public Optional<XmlIssue> failure() {
+        return result.failure().map(XmlIssue::new);
     }
 
     @JacksonXmlProperty
-    public Optional<Issue> error() {
-        return result.error().map(Issue::new);
+    public Optional<XmlIssue> error() {
+        return result.error().map(XmlIssue::new);
     }
 
     @JsonInclude(JsonInclude.Include.NON_ABSENT)
     @JacksonXmlProperty
     public Optional<Object> skipped() {
         return result.skipped() ? Optional.of(new Object()) : Optional.empty();
-    }
-
-    public static final class Issue {
-
-        private final Throwable cause;
-
-        public Issue(final Throwable cause) {
-            this.cause = requireNonNull(cause, "cause");
-        }
-
-        @JacksonXmlProperty(isAttribute = true)
-        @JsonGetter("message")
-        public String message() {
-            return requireNonNullElse(cause.getMessage(), "");
-        }
-
-        @JacksonXmlProperty(isAttribute = true)
-        @JsonGetter("type")
-        public String type() {
-            return cause.getClass().getCanonicalName();
-        }
-
-        @JacksonXmlText
-        @JsonGetter("stack")
-        public String stack() {
-            return Throwables.stackTrace(cause);
-        }
     }
 }

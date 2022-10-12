@@ -17,7 +17,6 @@
 package org.creekservice.internal.system.test.executor.execution;
 
 import static java.util.Objects.requireNonNull;
-import static org.creekservice.internal.system.test.executor.result.CaseResult.testCaseResult;
 import static org.creekservice.internal.system.test.executor.result.SuiteResult.testSuiteResult;
 
 import java.time.Duration;
@@ -73,20 +72,7 @@ public final class TestSuiteExecutor {
             final SuiteExecutionFailedException cause =
                     new SuiteExecutionFailedException("Suite setup", testSuite, e);
 
-            testSuite.tests().stream()
-                    .map(
-                            test ->
-                                    test.disabled()
-                                            ? testCaseResult(test).disabled()
-                                            : testCaseResult(test).error(cause))
-                    .peek(
-                            result ->
-                                    listeners.forEach(
-                                            listener ->
-                                                    listener.afterTest(result.testCase(), result)))
-                    .forEach(builder::add);
-
-            return builder.build();
+            return builder.buildError(cause);
         }
 
         runSuite(testSuite, builder);

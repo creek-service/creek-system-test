@@ -23,15 +23,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.system.test.model.TestSuite;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class SuiteResult implements TestSuiteResult {
 
     private final TestSuite suite;
     private final Instant start;
     private final Instant finish;
+    private final Optional<Exception> error;
     private final List<CaseResult> tests;
 
     public static Builder testSuiteResult(final TestSuite testSuite) {
@@ -42,10 +45,12 @@ public final class SuiteResult implements TestSuiteResult {
             final TestSuite suite,
             final Instant start,
             final Instant finish,
+            final Optional<Exception> error,
             final List<CaseResult> tests) {
         this.suite = requireNonNull(suite, "suite");
         this.tests = List.copyOf(requireNonNull(tests, "tests"));
         this.start = requireNonNull(start, "start");
+        this.error = requireNonNull(error, "error");
         this.finish = requireNonNull(finish, "finish");
     }
 
@@ -66,7 +71,8 @@ public final class SuiteResult implements TestSuiteResult {
 
     @Override
     public long errors() {
-        return tests.stream().filter(test -> test.error().isPresent()).count();
+        return error.map(e -> (long) testSuite().tests().size())
+                .orElseGet(() -> tests.stream().filter(test -> test.error().isPresent()).count());
     }
 
     @Override
@@ -80,7 +86,12 @@ public final class SuiteResult implements TestSuiteResult {
     }
 
     @Override
-    public List<CaseResult> testCases() {
+    public Optional<Exception> error() {
+        return error;
+    }
+
+    @Override
+    public List<CaseResult> testResults() {
         return tests;
     }
 
@@ -95,6 +106,8 @@ public final class SuiteResult implements TestSuiteResult {
                 + start
                 + ", finish="
                 + finish
+                + ", error="
+                + error.map(Throwable::getMessage).orElse("<none>")
                 + ", tests="
                 + tests
                 + '}';
@@ -120,7 +133,12 @@ public final class SuiteResult implements TestSuiteResult {
         }
 
         public SuiteResult build() {
-            return new SuiteResult(testSuite, start, clock.instant(), tests);
+            return new SuiteResult(testSuite, start, clock.instant(), Optional.empty(), tests);
+        }
+
+        public SuiteResult buildError(final Exception cause) {
+            return new SuiteResult(
+                    testSuite, start, clock.instant(), Optional.of(cause), List.of());
         }
     }
 }
