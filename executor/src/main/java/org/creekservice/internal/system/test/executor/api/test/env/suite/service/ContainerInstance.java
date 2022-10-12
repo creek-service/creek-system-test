@@ -114,6 +114,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                     imageName,
                     container.getContainerId());
         } catch (final Exception e) {
+            stop();
             throw new FailedToStartServiceException(name, imageName, container, e);
         }
     }
