@@ -20,6 +20,7 @@ import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.OwnedOutput;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
+import static org.creekservice.api.test.util.coverage.CodeCoverage.codeCoverageCmdLineArg;
 import static org.creekservice.api.test.util.debug.RemoteDebug.remoteDebugArguments;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -31,15 +32,12 @@ import static org.hamcrest.Matchers.startsWith;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -560,7 +558,7 @@ class SystemTestExecutorFunctionalTest {
         if (DEBUG) {
             cmd.addAll(remoteDebugArguments());
         }
-        findConvergeAgentCmdLineArg().ifPresent(cmd::add);
+        codeCoverageCmdLineArg().ifPresent(cmd::add);
 
         cmd.addAll(List.of(javaArgs));
         cmd.addAll(List.of(cmdArgs));
@@ -583,13 +581,5 @@ class SystemTestExecutorFunctionalTest {
 
     private void givenEnv(final String envName, final URI id) {
         this.env.put(envName, id.toString());
-    }
-
-    private static Optional<String> findConvergeAgentCmdLineArg() {
-        final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        return runtimeMXBean.getInputArguments().stream()
-                .filter(arg -> arg.startsWith("-javaagent"))
-                .filter(arg -> arg.contains("org.jacoco.agent"))
-                .reduce((first, second) -> first);
     }
 }
