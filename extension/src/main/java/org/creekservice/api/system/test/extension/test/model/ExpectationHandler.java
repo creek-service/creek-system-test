@@ -55,7 +55,14 @@ public interface ExpectationHandler<T extends Expectation> {
 
     interface ExpectationOptions {
 
-        /** @return the timeout to use when verifying expectations */
+        /**
+         * The default timeout to use when verifying expectations
+         *
+         * <p>Test extensions may choose to provide a way for the user to override this default,
+         * i.e. via an {@link Option option extensions}
+         *
+         * @return the default timeout to use when verifying expectations
+         */
         Duration timeout();
 
         /**

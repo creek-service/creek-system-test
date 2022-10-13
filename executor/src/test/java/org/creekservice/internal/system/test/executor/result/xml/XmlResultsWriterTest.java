@@ -133,6 +133,20 @@ class XmlResultsWriterTest {
     }
 
     @Test
+    void shouldOverwriteExistingFiles() {
+        // Given:
+        TestPaths.write(outputDir.resolve("TEST-suite0.xml"), "old results");
+        TestPaths.write(outputDir.resolve("TEST-suite1.xml"), "old results");
+
+        // When:
+        writer.write(result);
+
+        // Then:
+        assertThat(outputDir.resolve("TEST-suite0.xml"), fileContains("some xml"));
+        assertThat(outputDir.resolve("TEST-suite1.xml"), fileContains("some more xml"));
+    }
+
+    @Test
     void shouldSanitizeSuiteNameForUseInFileName() {
         // Given:
         when(suite0.testSuite().name()).thenReturn("!some $$ Weird --___ !£$%£^&* Name");
