@@ -150,4 +150,19 @@ class LoggingTestEnvironmentListenerTest {
         // Then:
         verify(logger).info("Finished suite 'Bob' skipped: 1 errors: 2 failures: 3");
     }
+
+    @Test
+    void shouldLogAfterSuiteStartUpFailure() {
+        // Given:
+        when(suite.name()).thenReturn("Bob");
+        final RuntimeException cause = new RuntimeException("msg");
+        when(suiteResult.error()).thenReturn(Optional.of(cause));
+
+        // When:
+        listener.afterSuite(suite, suiteResult);
+
+        // Then:
+        verify(logger)
+                .info("Start up failed for suite 'Bob': msg\n" + Throwables.stackTrace(cause));
+    }
 }

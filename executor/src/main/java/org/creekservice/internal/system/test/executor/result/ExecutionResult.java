@@ -19,7 +19,6 @@ package org.creekservice.internal.system.test.executor.result;
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
@@ -44,7 +43,7 @@ public final class ExecutionResult implements TestExecutionResult {
 
     @Override
     public long errors() {
-        return results.stream().mapToLong(SuiteResult::errors).sum();
+        return results.stream().mapToLong(this::suiteErrors).sum();
     }
 
     @Override
@@ -57,12 +56,6 @@ public final class ExecutionResult implements TestExecutionResult {
         return List.copyOf(results);
     }
 
-    public ExecutionResult combine(final ExecutionResult with) {
-        final List<SuiteResult> all = new ArrayList<>(results);
-        all.addAll(with.results);
-        return new ExecutionResult(all);
-    }
-
     @Override
     public String toString() {
         return "ExecutionResult{results="
@@ -72,5 +65,9 @@ public final class ExecutionResult implements TestExecutionResult {
                         .collect(Collectors.joining("," + lineSeparator()))
                 + lineSeparator()
                 + "}";
+    }
+
+    private long suiteErrors(final SuiteResult result) {
+        return result.errors() + result.error().stream().mapToLong(e -> 1L).sum();
     }
 }

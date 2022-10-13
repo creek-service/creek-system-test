@@ -27,6 +27,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +67,7 @@ class SuiteResultTest {
         assertThat(result.errors(), is(0L));
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
-        assertThat(result.testCases(), is(empty()));
+        assertThat(result.testResults(), is(empty()));
     }
 
     @Test
@@ -84,7 +85,7 @@ class SuiteResultTest {
         assertThat(result.errors(), is(0L));
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
-        assertThat(result.testCases(), contains(disabled, disabled));
+        assertThat(result.testResults(), contains(disabled, disabled));
     }
 
     @Test
@@ -102,7 +103,7 @@ class SuiteResultTest {
         assertThat(result.errors(), is(0L));
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
-        assertThat(result.testCases(), contains(success, success));
+        assertThat(result.testResults(), contains(success, success));
     }
 
     @Test
@@ -120,7 +121,7 @@ class SuiteResultTest {
         assertThat(result.errors(), is(0L));
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
-        assertThat(result.testCases(), contains(failure, failure));
+        assertThat(result.testResults(), contains(failure, failure));
     }
 
     @Test
@@ -138,7 +139,26 @@ class SuiteResultTest {
         assertThat(result.errors(), is(2L));
         assertThat(result.start(), is(START));
         assertThat(result.duration(), is(DURATION));
-        assertThat(result.testCases(), contains(error, error));
+        assertThat(result.testResults(), contains(error, error));
+    }
+
+    @Test
+    void shouldBuildWithSuiteError() {
+        // Given:
+        final RuntimeException cause = new RuntimeException();
+        when(testSuite.tests()).thenReturn(List.of(testCase, testCase));
+
+        // When:
+        final SuiteResult result = builder.buildError(cause);
+
+        // Then:
+        assertThat(result.testSuite(), is(testSuite));
+        assertThat(result.skipped(), is(0L));
+        assertThat(result.failures(), is(0L));
+        assertThat(result.errors(), is(2L));
+        assertThat(result.start(), is(START));
+        assertThat(result.duration(), is(DURATION));
+        assertThat(result.testResults(), is(empty()));
     }
 
     @Test
@@ -162,8 +182,32 @@ class SuiteResultTest {
                                 + "location=loc:///suite-1, "
                                 + "start=2022-10-08T17:16:41.600Z, "
                                 + "finish=2022-10-08T17:17:24.499Z, "
+                                + "error=<none>, "
                                 + "tests=["
                                 + success
                                 + "]}"));
+    }
+
+    @Test
+    void shouldToStringSuiteError() {
+        // Given:
+        final Exception cause = new RuntimeException("boom");
+        when(testSuite.name()).thenReturn("suite-1");
+        when(testSuite.location()).thenReturn(URI.create("loc:///suite-1"));
+
+        // When:
+        final SuiteResult result = builder.buildError(cause);
+
+        // Then:
+        assertThat(
+                result.toString(),
+                is(
+                        "SuiteResult{"
+                                + "name=suite-1, "
+                                + "location=loc:///suite-1, "
+                                + "start=2022-10-08T17:16:41.600Z, "
+                                + "finish=2022-10-08T17:17:24.499Z, "
+                                + "error=boom, "
+                                + "tests=[]}"));
     }
 }

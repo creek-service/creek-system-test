@@ -49,6 +49,18 @@ public final class LoggingTestEnvironmentListener implements TestEnvironmentList
 
     @Override
     public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
+        if (result.error().isPresent()) {
+            final Exception cause = result.error().get();
+            logger.info(
+                    "Start up failed for suite '"
+                            + suite.name()
+                            + "': "
+                            + cause.getMessage()
+                            + System.lineSeparator()
+                            + Throwables.stackTrace(cause));
+            return;
+        }
+
         final String skipped = result.skipped() == 0 ? "" : " skipped: " + result.skipped();
         final String errors = result.errors() == 0 ? "" : " errors: " + result.errors();
         final String failures = result.failures() == 0 ? "" : " failures: " + result.failures();

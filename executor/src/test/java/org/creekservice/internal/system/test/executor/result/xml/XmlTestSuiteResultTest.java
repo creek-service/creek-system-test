@@ -26,6 +26,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import org.creekservice.api.base.type.Throwables;
 import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
@@ -58,8 +60,16 @@ class XmlTestSuiteResultTest {
         when(suiteResult.skipped()).thenReturn(1L);
         when(suiteResult.errors()).thenReturn(3L);
         when(suiteResult.failures()).thenReturn(4L);
-        doReturn(List.of(caseResult0, caseResult1)).when(suiteResult).testCases();
+        doReturn(List.of(caseResult0, caseResult1)).when(suiteResult).testResults();
 
+        when(testSuite.name()).thenReturn("the suite");
+
+        xmlResult = new XmlTestSuiteResult(suiteResult, "some-host");
+    }
+
+    @Test
+    void shouldSerialize() throws Exception {
+        // Given:
         when(caseResult0.testCase()).thenReturn(testCase0);
         when(caseResult0.duration()).thenReturn(Duration.ofMillis(12345));
         when(caseResult1.testCase()).thenReturn(testCase1);
@@ -70,13 +80,6 @@ class XmlTestSuiteResultTest {
         when(testCase1.name()).thenReturn("test 1");
         when(testCase1.suite()).thenReturn(testSuite);
 
-        when(testSuite.name()).thenReturn("the suite");
-
-        xmlResult = new XmlTestSuiteResult(suiteResult, "some-host");
-    }
-
-    @Test
-    void shouldSerialize() throws Exception {
         // When:
         final String xml = MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(xmlResult);
 
@@ -90,6 +93,31 @@ class XmlTestSuiteResultTest {
                                 + "    <testcase classname=\"the suite\" name=\"test 0\" time=\"12.345\"/>\n"
                                 + "    <testcase classname=\"the suite\" name=\"test 1\" time=\"23.587\"/>\n"
                                 + "  </testcase>\n"
+                                + "</testsuite>\n"));
+    }
+
+    @Test
+    void shouldSerializeSuiteError() throws Exception {
+        // Given:
+        final IllegalArgumentException cause = new IllegalArgumentException("Boom");
+        when(suiteResult.error()).thenReturn(Optional.of(cause));
+        when(suiteResult.errors()).thenReturn(4L);
+        when(suiteResult.skipped()).thenReturn(0L);
+        when(suiteResult.testResults()).thenReturn(List.of());
+        final String stackTrace = Throwables.stackTrace(cause);
+
+        // When:
+        final String xml = MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(xmlResult);
+
+        // Then:
+        assertThat(
+                xml,
+                is(
+                        "<testsuite errors=\"4\" failures=\"4\" hostname=\"some-host\" name=\"the suite\" "
+                                + "skipped=\"0\" tests=\"0\" time=\"1234.567\" timestamp=\"1970-01-15T06:56:07.890\">\n"
+                                + "  <error message=\"Boom\" type=\"java.lang.IllegalArgumentException\">"
+                                + stackTrace
+                                + "</error>\n"
                                 + "</testsuite>\n"));
     }
 }
