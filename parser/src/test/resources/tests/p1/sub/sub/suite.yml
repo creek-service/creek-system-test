@@ -1,0 +1,8 @@
+---
+name: p1.sub.sub
+services:
+  - service_a
+tests:
+  - name: test 1
+    expectations:
+      - expectation-1

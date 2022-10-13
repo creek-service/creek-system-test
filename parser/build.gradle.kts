@@ -31,4 +31,6 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+
+    testImplementation(project(":test-system-test-extension"))
 }
