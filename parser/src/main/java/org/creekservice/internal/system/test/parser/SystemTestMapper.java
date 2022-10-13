@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import java.util.Collection;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationRef;
@@ -55,7 +54,7 @@ public final class SystemTestMapper {
                 JsonMapper.builder(new YAMLFactory().enable(YAMLGenerator.Feature.MINIMIZE_QUOTES))
                         .disable(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS)
                         .addModule(modelModule)
-                        .addModule(new Jdk8Module())
+                        .findAndAddModules()
                         .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                         .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
                         .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)

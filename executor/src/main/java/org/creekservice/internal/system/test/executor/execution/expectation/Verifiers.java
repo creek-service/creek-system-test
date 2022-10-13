@@ -77,6 +77,7 @@ public final class Verifiers {
             this.suite = requireNonNull(suite, "suite");
         }
 
+        /** @return the default timeout to use when verifying expectations. */
         @Override
         public Duration timeout() {
             return verifierTimeout;
