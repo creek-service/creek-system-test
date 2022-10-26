@@ -7,8 +7,8 @@
 
 This repo provides functionality for executing system tests.
 
-> ## NOTE
-> There is a [Gradle plugin][2] for running system tests as part of a Gradle build that should be used in preference
+> ### NOTE
+> There is a [Gradle plugin][gradle-plugin] for running system tests as part of a Gradle build that should be used in preference
 > to invoking the test executor manually!
 
 Simply put, system tests provide black-box testing of microservices. The system tests start your service or services,
@@ -127,8 +127,8 @@ The directory structure of the system tests can contain a single test package:
 The easiest way to get familiar with the format is to look at an example.
 
 The example will be a Kafka-Streams based microservice, so the examples below will be making use of the
-[Kafka Streams system test extensions][1]. The extensions define _seed_ and _input_ extensions for producing data to
-Kafka and _expectation_ extensions for checking data is in Kafka.  See the [Kafka Streams system test extension docs][1]
+[Kafka Streams system test extensions][kafka-test-ext]. The extensions define _seed_ and _input_ extensions for producing data to
+Kafka and _expectation_ extensions for checking data is in Kafka.  See the [Kafka Streams system test extension docs][kafka-test-ext]
 for more info.
 
 Let's look at testing a fictitious `balance-service` that tracks _user_ balances.
@@ -161,7 +161,7 @@ records:
 
 The `@type` field in `seed/user.yml` is set to `kafka_topic`, which indicates to the system tests that the file holds
 records that should be produced to Kafka. The rest of the fields within the file are specific to the `kafka_topic`
-seed type extension (See [Kafka system test extensions][1] for more details). However, they're hopefully pretty
+seed type extension (See [Kafka system test extensions][kafka-test-ext] for more details). However, they're hopefully pretty
 self-explanatory:
 
 The `seed/user.yml` file defines two _users_ that will be produced to the `user` topic before any of out `balance-service`
@@ -324,25 +324,35 @@ tests:
 
 ## Running system tests
 
-There is a [gradle plugin][2] for running system tests as part of a Gradle build.
+There is a [Gradle plugin][gradle-plugin] for running system tests as part of a Gradle build.
 
 Happy to take contributions for a [Maven plugin](https://github.com/creek-service/creek-system-test/issues/2).
 
 ## Debugging system tests
 
-The system tests leverage the [AttachMe][3] IntelliJ plugin to simplify attaching the debugger to Creek based services
-running within Docker containers. You can read more about the AttachMe plugin [here][4].  
+The system tests leverage the [AttachMe][attachme-plugin] IntelliJ plugin to simplify attaching the debugger to Creek based services
+running within Docker containers. You can read more about the AttachMe plugin [here][attachme-blog].  
 
 Assuming the AttachMe plugin is installed, running and listening on the correct port, and the microservice is 
 [correctly configured](#configuring-a-service-for-debugging), then debugging the service is as simple building 
-the container image locally and passing the service name(s) on the command line when running system tests.
+the container image locally, setting breakpoints in the code and then passing the service, or service-instance, 
+name(s) on the command line when running system tests.
 
-[creek-system-test-gradle-plugin/issue/#63](https://github.com/creek-service/creek-system-test-gradle-plugin/issues/63)
-covers extending the Gradle plugin to support debugging microservies.
+Service names match those set in the `services` field of a test suite.
+For example, `my-service`. When a service name is set, 
+all instances of the service that are started will block waiting for the debugger to attach.
+
+Specifying service instance name allows only a specific instance of a service to be debugged.
+Instance names are in the form <service-name>-<instance-number>, where instance-number is zero indexed.
+For example, `my-service-2` would mean the third instance of `my-service` to be started.
+
+Information on how to debug the services can be found in build plugin documentation.
+For example, the [Gradle plugin][gradle-plugin].
 
 ### Configuring a service for debugging
 
-> ## NOTE Template repos, such as [Aggregate Template][5] are correctly preconfigured for service debugging
+> ### NOTE
+> Template repos, such as [Aggregate Template][aggregate-template] are correctly preconfigured for service debugging
 
 To be able to debug a Creek Service the docker image must be built on a developer's machine with:
 
@@ -385,7 +395,7 @@ To use AttachMe normally, a user would create and run an `AttachMe` configuratio
 in a terminal window to set the `JAVA_TOOL_OPTIONS` environment variable to install the agent and set up the
 debugging parameters. Any java process started from the terminal, or any child processes it starts, will
 automatically pick up the `JAVA_TOOL_OPTIONS` and spawn a new debug window in IntelliJ.  
-This is very cool and useful in itself, and I'd recommend you read the [blog post][4] on the topic to learn more.
+This is very cool and useful in itself, and I'd recommend you read the [blog post][attachme-blog] on the topic to learn more.
 
 To enable debugging of services running within containers, the docker image built locally picks up the AttachMe agent
 files from your home directory and Creek sets the appropriate `JAVA_TOOLS_OPTIONS` when creating the container.
@@ -393,7 +403,8 @@ When the service starts up, the AttachMe agent calls out to the AttachMe plugin,
 the service is listening on for the debugger to attach. The plugin passes this on to the IntelliJ debugger, which
 then connects to the service.
 
-> ## NOTE the service is configured to wait for the debugger to attach, so if the AttachMe plugin is not running
+> ### NOTE
+> the service is configured to wait for the debugger to attach, so if the AttachMe plugin is not running
 > the service will timeout on startup.
 
 ### Known failures to debug
@@ -420,7 +431,7 @@ The service will block waiting for the debugger to attach. Therefore, it's likel
 The most common causes this are:
 
 1. The AttachMe plugin is not running. Once the plugin is installed you will need to create a new "run configuration"
-   in IntelliJ that leverages the plugin and run it. See the [blog post][4] for details.
+   in IntelliJ that leverages the plugin and run it. See the [blog post][attachme-blog] for details.
 2. The port the AttachMe plugin is listening does not match the one the service is calling out on. The default port
    used by the AttachMe plugin is `7857`. The same default is used by Creek. However, if you need to change the
    plugin's default for any reason, you'll need to also tell the Creek system tests. 
@@ -430,8 +441,8 @@ The most common causes this are:
 
 Creek is designed to be extendable. See how to [extend system tests](extension).
 
-[1]: https://github.com/creek-service/creek-kafka/tree/main/system-test
-[2]: https://github.com/creek-service/creek-system-test-gradle-plugin
-[3]: https://plugins.jetbrains.com/plugin/13263-attachme
-[4]: https://blog.jetbrains.com/scala/2020/01/14/attachme-attach-the-intellij-idea-debugger-to-forked-jvms-automatically/
-[5]: https://github.com/creek-service/aggregate-template
+[kafka-test-ext]: https://github.com/creek-service/creek-kafka/tree/main/test-extension
+[gradle-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
+[attachme-plugin]: https://plugins.jetbrains.com/plugin/13263-attachme
+[attachme-blog]: https://blog.jetbrains.com/scala/2020/01/14/attachme-attach-the-intellij-idea-debugger-to-forked-jvms-automatically/
+[aggregate-template]: https://github.com/creek-service/aggregate-template
