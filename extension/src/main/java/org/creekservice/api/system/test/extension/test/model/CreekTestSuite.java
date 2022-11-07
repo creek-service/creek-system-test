@@ -28,7 +28,11 @@ public interface CreekTestSuite extends Locatable {
     /** @return the list of services under test */
     List<String> services();
 
-    /** @return the list of test options */
+    /**
+     * @param type the option type to look up.
+     * @param <T> the option type to look up.
+     * @return the list of test options or the requested type.
+     */
     <T extends Option> List<T> options(Class<T> type);
 
     /** @return the test cases in the suite. */

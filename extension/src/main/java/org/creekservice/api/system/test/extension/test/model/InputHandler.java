@@ -36,6 +36,7 @@ public interface InputHandler<T extends Input> {
      * #flush()} will block until any outstanding asynchronous operations have completed.
      *
      * @param input the input to process.
+     * @param options the customisation options of how to process the input.
      */
     void process(T input, InputOptions options);
 
@@ -47,6 +48,7 @@ public interface InputHandler<T extends Input> {
      */
     default void flush() {}
 
+    /** Customisation options for handling inputs. */
     interface InputOptions {
 
         /**

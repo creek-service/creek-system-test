@@ -30,14 +30,22 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.api.system.test.model.TestSuite;
 
+/** Handles delegation of input resources to the extension that handles them. */
 public final class Inputters {
 
     private final TestModelContainer model;
 
+    /** @param model system test model */
     public Inputters(final TestModelContainer model) {
         this.model = requireNonNull(model, "model");
     }
 
+    /**
+     * Route the supplied {@code inputs} to the test extension that handles them.
+     *
+     * @param inputs the inputs to handle.
+     * @param suite the current suite being executed.
+     */
     public void input(final Collection<? extends Input> inputs, final TestSuite suite) {
         final Set<InputHandler<?>> usedHandlers =
                 inputs.stream()

@@ -1,3 +1,7 @@
+/**
+ * Contains base types system test extensions implement and the API the system tests exposes to
+ * extensions.
+ */
 module creek.system.test.extension {
     requires transitive creek.platform.metadata;
     requires transitive creek.service.extension;

@@ -28,12 +28,18 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
+/** Executor or test suites. */
 public final class TestSuiteExecutor {
 
     private final Inputters inputters;
     private final TestListenerCollection listeners;
     private final TestCaseExecutor testExecutor;
 
+    /**
+     * @param api the system test api.
+     * @param verifierTimeout the default verifier timeout, i.e. how long to wait for expectations
+     *     to be met.
+     */
     public TestSuiteExecutor(final SystemTest api, final Duration verifierTimeout) {
         this(
                 api.tests().env().listeners(),
@@ -51,6 +57,12 @@ public final class TestSuiteExecutor {
         this.testExecutor = requireNonNull(testExecutor, "testExecutor");
     }
 
+    /**
+     * Execute a test suite.
+     *
+     * @param testSuite the test suite.
+     * @return the test result.
+     */
     public SuiteResult executeSuite(final TestSuite testSuite) {
         final SuiteResult result = execute(testSuite);
 

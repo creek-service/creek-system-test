@@ -19,10 +19,7 @@ plugins {
     application
 }
 
-val creekBaseVersion : String by extra
-val creekPlatformVersion : String by extra
-val creekObsVersion : String by extra
-val creekServiceVersion : String by extra
+val creekVersion : String by extra
 val testContainersVersion : String by extra
 val picocliVersion : String by extra
 val log4jVersion : String by extra
@@ -32,11 +29,11 @@ val jacksonVersion : String by extra
 dependencies {
     implementation(project(":extension"))
     implementation(project(":parser"))
-    implementation("org.creekservice:creek-base-type:$creekBaseVersion")
-    implementation("org.creekservice:creek-platform-metadata:$creekPlatformVersion")
-    implementation("org.creekservice:creek-platform-resource:$creekPlatformVersion")
-    implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
-    implementation("org.creekservice:creek-service-api:$creekServiceVersion")
+    implementation("org.creekservice:creek-base-type:$creekVersion")
+    implementation("org.creekservice:creek-platform-metadata:$creekVersion")
+    implementation("org.creekservice:creek-platform-resource:$creekVersion")
+    implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
+    implementation("org.creekservice:creek-service-api:$creekVersion")
     implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")

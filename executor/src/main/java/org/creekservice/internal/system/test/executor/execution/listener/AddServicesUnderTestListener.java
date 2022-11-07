@@ -46,6 +46,7 @@ public final class AddServicesUnderTestListener implements TestEnvironmentListen
     private final SystemTest api;
     private final List<ServiceInstance> added = new ArrayList<>();
 
+    /** @param api the system test api */
     public AddServicesUnderTestListener(final SystemTest api) {
         this.api = requireNonNull(api, "api");
     }
@@ -56,6 +57,7 @@ public final class AddServicesUnderTestListener implements TestEnvironmentListen
         suite.services().stream().map(this::addServiceUnderTest).forEachOrdered(added::add);
     }
 
+    /** @return list of all services-under-test added to the current test environment. */
     public List<ServiceInstance> added() {
         return List.copyOf(added);
     }

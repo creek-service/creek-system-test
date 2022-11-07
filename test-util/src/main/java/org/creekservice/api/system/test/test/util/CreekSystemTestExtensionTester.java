@@ -152,6 +152,7 @@ public final class CreekSystemTestExtensionTester {
     }
 
     /** @return the ids of running containers, keyed on the instance name. */
+    @SuppressWarnings("deprecation")
     public Map<String, String> runningContainerIds() {
         return services.stream()
                 .filter(ServiceInstance::running)
@@ -183,6 +184,7 @@ public final class CreekSystemTestExtensionTester {
         return new YamlParserBuilder();
     }
 
+    /** Parser builder. */
     public static final class YamlParserBuilder {
 
         private final TestModel model;

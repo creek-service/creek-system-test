@@ -31,6 +31,13 @@ public final class TestPackage {
     private final List<Input> seedData;
     private final List<TestSuite> suites;
 
+    /**
+     * Factory method
+     *
+     * @param seedData any seed data to play in before each suite.
+     * @param suites the test suites.
+     * @return the test package.
+     */
     public static TestPackage testPackage(
             final Collection<Input> seedData, final Collection<TestSuite.Builder> suites) {
         return new TestPackage(seedData, suites);
@@ -45,10 +52,12 @@ public final class TestPackage {
                         .collect(Collectors.toUnmodifiableList());
     }
 
+    /** @return any seed data to play in before each suite. */
     public List<Input> seedData() {
         return List.copyOf(seedData);
     }
 
+    /** @return the test suites in the package. */
     public List<TestSuite> suites() {
         return List.copyOf(suites);
     }

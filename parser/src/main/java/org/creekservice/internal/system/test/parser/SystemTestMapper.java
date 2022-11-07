@@ -42,10 +42,17 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.Ref;
 import org.creekservice.api.system.test.parser.ModelType;
 
+/** Mapper for deserializing system tests. */
 public final class SystemTestMapper {
 
     private SystemTestMapper() {}
 
+    /**
+     * Factory method.
+     *
+     * @param modelTypes the known model extensions.
+     * @return the mapper.
+     */
     public static ObjectMapper create(final Collection<ModelType<?>> modelTypes) {
         final SimpleModule modelModule = new SimpleModule();
         modelModule.setDeserializerModifier(new LocationAwareDeserializerModifier());

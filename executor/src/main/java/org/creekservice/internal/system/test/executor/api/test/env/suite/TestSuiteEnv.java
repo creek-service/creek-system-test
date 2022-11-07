@@ -24,10 +24,12 @@ import org.creekservice.api.system.test.extension.test.env.suite.TestSuiteEnviro
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
+/** Implementation of {@link TestSuiteEnvironment}. */
 public final class TestSuiteEnv implements TestSuiteEnvironment {
 
     private final DockerServiceContainer services;
 
+    /** @param serviceDebugInfo info about which services should be debugged. */
     public TestSuiteEnv(final ServiceDebugInfo serviceDebugInfo) {
         this(new DockerServiceContainer(serviceDebugInfo));
     }

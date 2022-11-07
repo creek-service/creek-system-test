@@ -27,12 +27,19 @@ public final class InstanceNaming {
 
     private final Map<String, AtomicInteger> names = new HashMap<>();
 
+    /**
+     * Build the next instance name for a given {@code serviceName}.
+     *
+     * @param serviceName the name of the service.
+     * @return the next instance name.
+     */
     public String instanceName(final String serviceName) {
         requireNonNull(serviceName, "serviceName");
         final AtomicInteger counter = names.computeIfAbsent(serviceName, k -> new AtomicInteger());
         return serviceName + "-" + counter.getAndIncrement();
     }
 
+    /** Clear tracked instance counts. */
     public void clear() {
         names.clear();
     }

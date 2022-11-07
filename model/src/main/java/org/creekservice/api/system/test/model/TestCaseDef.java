@@ -42,6 +42,16 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
     private final List<ExpectationRef> expectations;
     private final URI location;
 
+    /**
+     * Factory method.
+     *
+     * @param name the name of the test.
+     * @param notes optional notes.
+     * @param disabled flag indicating if test is disabled.
+     * @param maybeInputs any test inputs.
+     * @param expectations test expectations.
+     * @return the new definition.
+     */
     @SuppressWarnings("unused") // Invoked via reflection by Jackson
     @JsonCreator
     public static TestCaseDef testCase(
@@ -75,24 +85,28 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
         requireNonEmpty(expectations, "expectations");
     }
 
+    /** @return the name of the test. */
     @JsonGetter("name")
     @JsonPropertyDescription("Name of the test case")
     public String name() {
         return name;
     }
 
+    /** @return any notes. */
     @JsonGetter("notes")
     @JsonPropertyDescription("Optional notes")
     public String notes() {
         return notes;
     }
 
+    /** @return optional that will be present if the test is disabled. */
     @JsonGetter("disabled")
     @JsonPropertyDescription("(Optional) if present, the test is disabled")
     public Optional<Disabled> disabled() {
         return disabled;
     }
 
+    /** @return test inputs. */
     @JsonGetter("inputs")
     @JsonPropertyDescription(
             "(Optional) list of inputs to feed into the system before asserting expectations")
@@ -100,16 +114,22 @@ public final class TestCaseDef implements LocationAware<TestCaseDef> {
         return List.copyOf(inputs);
     }
 
+    /** @return test expectations. */
     @JsonGetter("expectations")
     @JsonPropertyDescription("List of expectations to assert once inputs are processed")
     public List<ExpectationRef> expectations() {
         return List.copyOf(expectations);
     }
 
+    /** @return the location in the test files the instance was loaded from. */
     public URI location() {
         return location;
     }
 
+    /**
+     * @param location the the location in the test files the instance was loaded from.
+     * @return a new instance with the location set.
+     */
     public TestCaseDef withLocation(final URI location) {
         return new TestCaseDef(name, notes, disabled, location, inputs, expectations);
     }

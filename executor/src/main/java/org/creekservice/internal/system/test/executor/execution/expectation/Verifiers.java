@@ -29,20 +29,36 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
 import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
-import org.creekservice.api.system.test.model.TestSuite;
+import org.creekservice.api.system.test.model.TestCase;
 
+/** A verifier of test case expectations. */
 public final class Verifiers {
 
     private final TestModelContainer model;
     private final Duration verifierTimeout;
 
+    /**
+     * @param model the system test model.
+     * @param verifierTimeout the default verifier timeout, i.e. how long to wait for expectations
+     *     to be met.
+     */
     public Verifiers(final TestModelContainer model, final Duration verifierTimeout) {
         this.model = requireNonNull(model, "model");
         this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
     }
 
+    /**
+     * Do preparatory work for the supplied {@code expectations}.
+     *
+     * <p>Calls back to test extensions to allow them to initialise any internal state necessary to
+     * verify the supplied expectations once all input has been piped in.
+     *
+     * @param expectations the expectations to prepare for
+     * @param test the test being run
+     * @return a verifier than can be invoked once all input is processed to verify expectations.
+     */
     public Verifier prepare(
-            final Collection<? extends Expectation> expectations, final TestSuite suite) {
+            final Collection<? extends Expectation> expectations, final TestCase test) {
         final Map<
                         ? extends ExpectationHandler<? extends Expectation>,
                         ? extends List<? extends Expectation>>
@@ -50,7 +66,7 @@ public final class Verifiers {
 
         final List<Verifier> verifiers =
                 byHandler.entrySet().stream()
-                        .map(e -> prepare(e.getKey(), e.getValue(), suite))
+                        .map(e -> prepare(e.getKey(), e.getValue(), test))
                         .collect(Collectors.toUnmodifiableList());
 
         return () -> verifiers.forEach(Verifier::verify);
@@ -65,16 +81,16 @@ public final class Verifiers {
     private <T extends Expectation> Verifier prepare(
             final ExpectationHandler<T> handler,
             final List<? extends Expectation> expectations,
-            final TestSuite suite) {
-        return handler.prepare((List<T>) expectations, new Options(suite));
+            final TestCase test) {
+        return handler.prepare((List<T>) expectations, new Options(test));
     }
 
     private final class Options implements ExpectationHandler.ExpectationOptions {
 
-        private final TestSuite suite;
+        private final TestCase test;
 
-        Options(final TestSuite suite) {
-            this.suite = requireNonNull(suite, "suite");
+        Options(final TestCase test) {
+            this.test = requireNonNull(test, "test");
         }
 
         /** @return the default timeout to use when verifying expectations. */
@@ -85,7 +101,7 @@ public final class Verifiers {
 
         @Override
         public <T extends Option> List<T> get(final Class<T> type) {
-            return suite.options(type);
+            return test.suite().options(type);
         }
     }
 

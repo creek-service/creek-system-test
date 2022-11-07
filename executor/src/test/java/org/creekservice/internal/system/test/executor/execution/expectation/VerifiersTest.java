@@ -36,6 +36,7 @@ import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
 import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
+import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,7 @@ class VerifiersTest {
 
     private static final Duration TIMEOUT = Duration.ofMillis(123457);
 
+    @Mock private TestCase testCase;
     @Mock private TestSuite testSuite;
     @Mock private TestModelContainer model;
     @Mock private ExpectationHandler<ExpectationA> handlerA;
@@ -69,6 +71,7 @@ class VerifiersTest {
         doReturn(Optional.of(handlerA)).when(model).expectationHandler(ExpectationA.class);
         doReturn(Optional.of(handlerB)).when(model).expectationHandler(ExpectationB.class);
 
+        when(testCase.suite()).thenReturn(testSuite);
         when(handlerA.prepare(any(), any())).thenReturn(verifierA);
         when(handlerB.prepare(any(), any())).thenReturn(verifierB);
     }
@@ -82,7 +85,7 @@ class VerifiersTest {
         final Exception e =
                 assertThrows(
                         RuntimeException.class,
-                        () -> verifiers.prepare(List.of(unknown), testSuite));
+                        () -> verifiers.prepare(List.of(unknown), testCase));
 
         // Then:
         assertThat(
@@ -100,7 +103,7 @@ class VerifiersTest {
         final ExpectationA e2 = new ExpectationA();
 
         // When:
-        verifiers.prepare(List.of(e0, e1, e2), testSuite);
+        verifiers.prepare(List.of(e0, e1, e2), testCase);
 
         // Then:
         verify(handlerA).prepare(eq(List.of(e0, e2)), any());
@@ -113,7 +116,7 @@ class VerifiersTest {
         final ExpectationA e0 = new ExpectationA();
 
         // When:
-        verifiers.prepare(List.of(e0), testSuite);
+        verifiers.prepare(List.of(e0), testCase);
 
         // Then:
         verify(handlerA).prepare(any(), optionsCaptor.capture());
@@ -124,7 +127,7 @@ class VerifiersTest {
     void shouldExposeOptionsToHandlers() {
         // Given:
         final ExpectationA e0 = new ExpectationA();
-        verifiers.prepare(List.of(e0), testSuite);
+        verifiers.prepare(List.of(e0), testCase);
         verify(handlerA).prepare(any(), optionsCaptor.capture());
 
         // When:
@@ -140,7 +143,7 @@ class VerifiersTest {
         final ExpectationA e0 = new ExpectationA();
         final ExpectationB e1 = new ExpectationB();
 
-        final Verifier verifier = verifiers.prepare(List.of(e0, e1), testSuite);
+        final Verifier verifier = verifiers.prepare(List.of(e0, e1), testCase);
 
         verifyNoInteractions(verifierA, verifierB);
 

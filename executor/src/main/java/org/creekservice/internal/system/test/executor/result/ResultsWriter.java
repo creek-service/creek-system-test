@@ -19,7 +19,13 @@ package org.creekservice.internal.system.test.executor.result;
 
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 
+/** A writer of test execution results */
 public interface ResultsWriter {
 
+    /**
+     * Write the supplied {@code result}
+     *
+     * @param result the result to write.
+     */
     void write(TestExecutionResult result);
 }

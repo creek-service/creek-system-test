@@ -27,7 +27,11 @@ import org.creekservice.api.platform.metadata.ServiceDescriptor;
  */
 public interface ServiceInstance {
 
-    /** The unique name of the instance. */
+    /**
+     * The unique name of the instance.
+     *
+     * @return the name of the instance.
+     */
     String name();
 
     /**
@@ -114,6 +118,14 @@ public interface ServiceInstance {
         private final String stdout;
         private final String stderr;
 
+        /**
+         * Factory method
+         *
+         * @param exitCode the services exit code.
+         * @param stdout the content of stdOut.
+         * @param stderr the content of stdError.
+         * @return the result instance.
+         */
         public static ExecResult execResult(
                 final int exitCode, final String stdout, final String stderr) {
             return new ExecResult(exitCode, stdout, stderr);
@@ -125,14 +137,17 @@ public interface ServiceInstance {
             this.stderr = requireNonNull(stderr, "stderr");
         }
 
+        /** @return the service's process's exit code. */
         public int exitCode() {
             return exitCode;
         }
 
+        /** @return the contents of stdOut */
         public String stdout() {
             return stdout;
         }
 
+        /** @return the contents of stdErr */
         public String stderr() {
             return stderr;
         }

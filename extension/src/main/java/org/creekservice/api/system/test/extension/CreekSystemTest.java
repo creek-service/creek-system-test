@@ -57,6 +57,7 @@ public interface CreekSystemTest {
      */
     ExtensionAccessor extensions();
 
+    /** Provides access to system test extensions. */
     interface ExtensionAccessor {
 
         /**
@@ -82,6 +83,7 @@ public interface CreekSystemTest {
                 Class<? extends CreekExtensionProvider<T>> provider);
     }
 
+    /** Provides access to information about the tests */
     interface TestAccessor {
         /**
          * The data model of the system tests.
@@ -102,6 +104,7 @@ public interface CreekSystemTest {
         TestEnvironment env();
     }
 
+    /** Provides access to the known components. */
     interface ComponentAccessor {
 
         /**
@@ -112,6 +115,7 @@ public interface CreekSystemTest {
         ComponentDefinitionAccessor definitions();
     }
 
+    /** Provides access to the known component definitions. */
     interface ComponentDefinitionAccessor {
 
         /**

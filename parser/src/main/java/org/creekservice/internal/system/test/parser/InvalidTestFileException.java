@@ -16,8 +16,13 @@
 
 package org.creekservice.internal.system.test.parser;
 
+/** An exception type thrown if a test file is invalid. */
 public final class InvalidTestFileException extends TestLoadFailedException {
 
+    /**
+     * @param msg the message
+     * @param cause the cause.
+     */
     public InvalidTestFileException(final String msg, final Throwable cause) {
         super(msg, cause);
     }

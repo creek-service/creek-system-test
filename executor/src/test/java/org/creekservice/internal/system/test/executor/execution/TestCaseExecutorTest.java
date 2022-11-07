@@ -74,7 +74,7 @@ class TestCaseExecutorTest {
         when(testCase.suite()).thenReturn(testSuite);
         doReturn(inputs).when(testCase).inputs();
         doReturn(expectations).when(testCase).expectations();
-        doReturn(verifier).when(verifiers).prepare(expectations, testSuite);
+        doReturn(verifier).when(verifiers).prepare(expectations, testCase);
     }
 
     @Test

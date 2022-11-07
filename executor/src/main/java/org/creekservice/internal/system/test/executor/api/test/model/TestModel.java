@@ -36,6 +36,7 @@ import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
 import org.creekservice.api.system.test.parser.ModelType;
 
+/** Implementation of {@link TestModelContainer}. */
 public final class TestModel implements TestModelContainer {
 
     private final long threadId;
@@ -44,6 +45,7 @@ public final class TestModel implements TestModelContainer {
     private final Map<Class<? extends Expectation>, ExpectationHandler<?>> expectationHandlers =
             new HashMap<>();
 
+    /** Constructor. */
     public TestModel() {
         this(Thread.currentThread().getId());
     }
@@ -98,6 +100,7 @@ public final class TestModel implements TestModelContainer {
         return types.containsKey(requireNonNull(type, "type"));
     }
 
+    /** @return all known model extensions. */
     public List<ModelType<?>> modelTypes() {
         throwIfNotOnCorrectThread();
 

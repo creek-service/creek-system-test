@@ -27,11 +27,14 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+/** Mapper for writing XML Junit compatible results. */
 public enum XmlResultMapper {
+    /** The one and only instance. */
     INSTANCE;
 
     private final ObjectMapper mapper = create();
 
+    /** @return get the mapper instance. */
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     public ObjectMapper get() {
         return mapper;

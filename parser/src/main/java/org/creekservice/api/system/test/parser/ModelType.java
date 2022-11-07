@@ -221,10 +221,15 @@ public final class ModelType<T> {
         return name;
     }
 
+    /** @return the model type. */
     public Class<T> type() {
         return type;
     }
 
+    /**
+     * @return the base type, i.e. the part of the system test model this type extends, e.g. a
+     *     {@link Input} extension.
+     */
     public Class<? super T> base() {
         return base;
     }

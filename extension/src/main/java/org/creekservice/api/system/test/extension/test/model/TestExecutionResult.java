@@ -19,6 +19,7 @@ package org.creekservice.api.system.test.extension.test.model;
 
 import java.util.List;
 
+/** The result of a test run. */
 public interface TestExecutionResult {
 
     /** @return {@code true} if the result contains no test suites. */

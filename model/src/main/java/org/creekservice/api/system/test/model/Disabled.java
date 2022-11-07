@@ -34,6 +34,13 @@ public final class Disabled {
     private final String reason;
     private final Optional<URI> issue;
 
+    /**
+     * Factory method.
+     *
+     * @param reason the reason its disabled.
+     * @param issue the link to the ticket / issue tracking it being disabled.
+     * @return the new instance.
+     */
     @JsonCreator
     public static Disabled disabled(
             @JsonProperty(value = "reason", required = true) final String reason,
@@ -46,12 +53,14 @@ public final class Disabled {
         this.issue = requireNonNull(issue, "issue");
     }
 
+    /** @return the reason its disabled. */
     @JsonGetter("reason")
     @JsonPropertyDescription("The reason why the suite or test is disabled.")
     public String reason() {
         return reason;
     }
 
+    /** @return the link to the ticket / issue tracking it being disabled. */
     @JsonGetter("issue")
     @JsonPropertyDescription("Optional link to a related issue")
     public Optional<URI> issue() {

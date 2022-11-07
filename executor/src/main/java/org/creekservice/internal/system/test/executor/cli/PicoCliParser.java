@@ -40,12 +40,19 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Spec;
 
+/** Cli arguments parser for the executor */
 public final class PicoCliParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PicoCliParser.class);
 
     private PicoCliParser() {}
 
+    /**
+     * Parse the command line
+     *
+     * @param args the command line args.
+     * @return the parsed command line, or else {@code empty} if the args have already been handled.
+     */
     public static Optional<ExecutorOptions> parse(final String... args) {
         final Options options = new Options();
         final CommandLine parser = new CommandLine(options);
@@ -72,6 +79,7 @@ public final class PicoCliParser {
         }
     }
 
+    /** The command line options the executor supports. */
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "FieldMayBeFinal"})
     @CommandLine.Command(name = "SystemTestExecutor", mixinStandardHelpOptions = true)
     public static final class Options implements ExecutorOptions {
@@ -122,6 +130,11 @@ public final class PicoCliParser {
 
         private int debugAttachMePort = DEFAULT_ATTACH_ME_PORT;
 
+        /**
+         * Method to allow {@code debugAttachMePort} to ve validated.
+         *
+         * @param port the debug port.
+         */
         @Option(
                 names = {"-dap", "--debug-attachme-port"},
                 description = "The port the attachMe plugin will be listening on.")
@@ -139,6 +152,11 @@ public final class PicoCliParser {
 
         private int debugServicePort = DEFAULT_BASE_DEBUG_PORT;
 
+        /**
+         * Method to allow {@code debugServicePort} to ve validated.
+         *
+         * @param port the debug port.
+         */
         @Option(
                 names = {"-dsp", "--debug-service-port"},
                 description =
@@ -158,6 +176,11 @@ public final class PicoCliParser {
 
         private Set<String> debugServices = Set.of();
 
+        /**
+         * Method to allow {@code debugServices} to ve validated.
+         *
+         * @param names the services to debug
+         */
         @Option(
                 names = {"-ds", "--debug-service"},
                 split = ",",
@@ -168,6 +191,11 @@ public final class PicoCliParser {
 
         private Set<String> debugInstances = Set.of();
 
+        /**
+         * Method to allow {@code debugServiceInstances} to ve validated.
+         *
+         * @param names the service instances to debug
+         */
         @Option(
                 names = {"-dsi", "--debug-service-instance"},
                 split = ",",

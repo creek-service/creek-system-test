@@ -25,6 +25,7 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Preconditions;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 
+/** Implementation of {@link ExecutorOptions.ServiceDebugInfo}. */
 public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo {
 
     private final int attachMePort;
@@ -56,6 +57,12 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
                         attachMePort, baseServicePort, serviceNames, serviceInstanceNames);
     }
 
+    /**
+     * Create an immutable copy of {@code info}
+     *
+     * @param info the info to copy
+     * @return the immutable copy.
+     */
     public static ServiceDebugInfo copyOf(final ExecutorOptions.ServiceDebugInfo info) {
         if (info instanceof ServiceDebugInfo) {
             return (ServiceDebugInfo) info;
@@ -67,6 +74,7 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
                 info.serviceInstanceNames());
     }
 
+    /** @return an empty instance. */
     public static ServiceDebugInfo none() {
         return serviceDebugInfo(0, 0, Set.of(), Set.of());
     }
@@ -116,6 +124,13 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
         return Set.copyOf(instanceNames);
     }
 
+    /**
+     * Helper method to determine if a service instance should be debugged.
+     *
+     * @param serviceName the instance's service name.
+     * @param instanceName the instance's name.
+     * @return {@code true} if it should be debugged, {@code false} otherwise.
+     */
     public boolean shouldDebug(final String serviceName, final String instanceName) {
         return serviceNames.contains(serviceName.toLowerCase())
                 || instanceNames.contains(instanceName.toLowerCase());

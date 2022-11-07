@@ -41,6 +41,7 @@ public interface TestPackageParser {
      */
     Optional<TestPackage> parse(Path path, Predicate<Path> predicate);
 
+    /** A parsing observer */
     interface Observer {
 
         /**

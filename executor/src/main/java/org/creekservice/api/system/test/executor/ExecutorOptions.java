@@ -57,6 +57,7 @@ public interface ExecutorOptions {
         return false;
     }
 
+    /** @return info about which services should be debugged. */
     default Optional<ServiceDebugInfo> serviceDebugInfo() {
         return Optional.empty();
     }
@@ -71,7 +72,13 @@ public interface ExecutorOptions {
      */
     interface ServiceDebugInfo {
 
+        /** The default attachMe port that the IntelliJ attachMe plugin uses. */
         int DEFAULT_ATTACH_ME_PORT = 7857;
+
+        /**
+         * The start of the default range of ports on the local machine that services will listen on
+         * for the debugger.
+         */
         int DEFAULT_BASE_DEBUG_PORT = 8000;
 
         /**

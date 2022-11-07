@@ -38,10 +38,12 @@ public interface ExpectationHandler<T extends Expectation> {
      * know the initial state of the system.
      *
      * @param expectations the expectations to prepare to verify.
+     * @param options the customisation options of how to process the expectation.
      * @return the verifier that will be called to verify the supplied {@code expectations}.
      */
     Verifier prepare(Collection<? extends T> expectations, ExpectationOptions options);
 
+    /** A type that can be verified once all input is fed into the system. */
     interface Verifier {
 
         /**
@@ -53,6 +55,7 @@ public interface ExpectationHandler<T extends Expectation> {
         void verify();
     }
 
+    /** Customisation options for expectation handling. */
     interface ExpectationOptions {
 
         /**

@@ -1,3 +1,4 @@
+/** Executor of system tests. */
 module creek.system.test.executor {
     requires transitive creek.platform.metadata;
     requires transitive creek.system.test.extension;

@@ -7,6 +7,8 @@
 
 This repo provides functionality for executing system tests.
 
+See [CreekService.org](https://www.creekservice.org) for info on Creek Service.
+
 > ### NOTE
 > There is a [Gradle plugin][gradle-plugin] for running system tests as part of a Gradle build that should be used in preference
 > to invoking the test executor manually!

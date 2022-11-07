@@ -36,6 +36,12 @@ public final class CaseResult implements TestCaseResult {
     private final Optional<Exception> error;
     private final boolean skipped;
 
+    /**
+     * Factory method to get a test case result builder.
+     *
+     * @param testCase the test case being executed.
+     * @return the test case result builder.
+     */
     public static CaseResult.Builder testCaseResult(final TestCase testCase) {
         return new Builder(testCase, Clock.systemUTC());
     }
@@ -94,6 +100,7 @@ public final class CaseResult implements TestCaseResult {
                 + '}';
     }
 
+    /** Builder of test case results. */
     public static final class Builder {
 
         private final TestCase testCase;
@@ -107,19 +114,33 @@ public final class CaseResult implements TestCaseResult {
             this.start = clock.instant();
         }
 
+        /** @return a result indicating the test was disabled */
         public CaseResult disabled() {
             return new CaseResult(testCase, duration(), Optional.empty(), Optional.empty(), true);
         }
 
+        /** @return a result indicating the test passed */
         public CaseResult success() {
             return new CaseResult(testCase, duration(), Optional.empty(), Optional.empty(), false);
         }
 
+        /**
+         * A test failure, i.e. the expected outcome did not match.
+         *
+         * @param cause details of the mismatch.
+         * @return a result indicating the test failed.
+         */
         public CaseResult failure(final AssertionError cause) {
             return new CaseResult(
                     testCase, duration(), Optional.of(cause), Optional.empty(), false);
         }
 
+        /**
+         * Test failed to run.
+         *
+         * @param cause the cause.
+         * @return a result indicating the a test error.
+         */
         public CaseResult error(final Exception cause) {
             return new CaseResult(
                     testCase, duration(), Optional.empty(), Optional.of(cause), false);

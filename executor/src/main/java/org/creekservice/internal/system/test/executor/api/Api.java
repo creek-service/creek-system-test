@@ -32,12 +32,19 @@ import org.creekservice.internal.system.test.executor.observation.LoggingTestEnv
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Util class for initialising the system test api. */
 public final class Api {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Api.class);
 
     private Api() {}
 
+    /**
+     * Initialise the test api
+     *
+     * @param serviceDebugInfo info about which services should be debugged.
+     * @return the initialised test api.
+     */
     public static SystemTest initializeApi(final ServiceDebugInfo serviceDebugInfo) {
         return initializeApi(
                 new SystemTest(loadComponents(), serviceDebugInfo), loadTestExtensions());

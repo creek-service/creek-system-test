@@ -23,10 +23,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 
+/** Implementation of {@link TestExecutionResult} */
 public final class ExecutionResult implements TestExecutionResult {
 
     private final List<SuiteResult> results;
 
+    /** @param results the list of suite results to include */
     public ExecutionResult(final List<SuiteResult> results) {
         this.results = List.copyOf(requireNonNull(results, "results"));
     }
