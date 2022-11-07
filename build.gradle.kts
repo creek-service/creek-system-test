@@ -74,7 +74,7 @@ subprojects {
 
     extra.apply {
         set("creekBaseVersion", "0.2.0-SNAPSHOT")
-        set("creekPlatformVersion", "0.2.0-SNAPSHOT")
+        set("creekPlatformVersion", "0.2.0")
         set("creekTestVersion", "0.2.0-SNAPSHOT")
         set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("creekServiceVersion", "0.2.0-SNAPSHOT")
