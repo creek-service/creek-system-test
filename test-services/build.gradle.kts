@@ -18,9 +18,9 @@ plugins {
     `java-library`
 }
 
-val creekBaseVersion : String by extra
+val creekVersion : String by extra
 
 dependencies {
     api(project(":test-service-extension-metadata"))
-    api("org.creekservice:creek-platform-metadata:$creekBaseVersion")
+    api("org.creekservice:creek-platform-metadata:$creekVersion")
 }

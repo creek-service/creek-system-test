@@ -57,6 +57,7 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
     private final AtomicInteger nextDebugServicePort;
     private final InstanceNaming naming = new InstanceNaming();
 
+    /** @param serviceDebugInfo info about which services should be debugged. */
     public DockerServiceContainer(final ServiceDebugInfo serviceDebugInfo) {
         this(serviceDebugInfo, DockerServiceContainer::containerFactory);
     }
@@ -120,6 +121,13 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         return instances.values().iterator();
     }
 
+    /**
+     * Clear all services.
+     *
+     * <p>All services must already have been stopped.
+     *
+     * <p>Clears the container, ready for the next test suite.
+     */
     public void clear() {
         throwIfNotOnCorrectThread();
         throwOnRunningServices();
@@ -128,7 +136,16 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         nextDebugServicePort.set(serviceDebugInfo.baseServicePort());
     }
 
+    /**
+     * Visible only for testing.
+     *
+     * @return info about which services should be debugged.
+     * @deprecated not intended for public use. No backwards compatability guaranteed on new
+     *     releases.
+     */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @VisibleForTesting
+    @Deprecated
     public ServiceDebugInfo serviceDebugInfo() {
         throwIfNotOnCorrectThread();
         return serviceDebugInfo;

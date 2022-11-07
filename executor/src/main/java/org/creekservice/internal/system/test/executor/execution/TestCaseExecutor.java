@@ -29,12 +29,18 @@ import org.creekservice.internal.system.test.executor.execution.expectation.Veri
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.CaseResult;
 
+/** Executor of test cases. */
 public final class TestCaseExecutor {
 
     private final Inputters inputters;
     private final Verifiers verifiers;
     private final TestListenerCollection listeners;
 
+    /**
+     * @param api the system test api.
+     * @param verifierTimeout the default verifier timeout, i.e. how long to wait for expectations
+     *     to be met.
+     */
     public TestCaseExecutor(final SystemTest api, final Duration verifierTimeout) {
         this(
                 api.tests().env().listeners(),
@@ -52,6 +58,12 @@ public final class TestCaseExecutor {
         this.verifiers = requireNonNull(verifiers, "verifiers");
     }
 
+    /**
+     * Execute a test case.
+     *
+     * @param testCase the test case.
+     * @return the test result.
+     */
     public CaseResult executeTest(final TestCase testCase) {
         final CaseResult result = execute(testCase);
 
@@ -85,7 +97,7 @@ public final class TestCaseExecutor {
 
     private CaseResult runTest(final TestCase testCase, final CaseResult.Builder builder) {
         try {
-            final Verifier verifier = verifiers.prepare(testCase.expectations(), testCase.suite());
+            final Verifier verifier = verifiers.prepare(testCase.expectations(), testCase);
             inputters.input(testCase.inputs(), testCase.suite());
 
             try {

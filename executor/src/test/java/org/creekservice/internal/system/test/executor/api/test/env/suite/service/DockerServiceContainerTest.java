@@ -252,7 +252,7 @@ class DockerServiceContainerTest {
                 hasSize(publicMethodNames.size()));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
                 Arguments.of(

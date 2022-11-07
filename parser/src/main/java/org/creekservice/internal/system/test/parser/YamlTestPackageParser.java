@@ -75,6 +75,10 @@ public final class YamlTestPackageParser implements TestPackageParser {
     private final ObjectMapper mapper;
     private final Observer observer;
 
+    /**
+     * @param modelExtensions known model extensions
+     * @param observer a parsing observer
+     */
     public YamlTestPackageParser(
             final Collection<ModelType<?>> modelExtensions, final Observer observer) {
         this.mapper = SystemTestMapper.create(modelExtensions);

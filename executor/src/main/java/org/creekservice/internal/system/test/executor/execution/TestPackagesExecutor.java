@@ -29,12 +29,18 @@ import org.creekservice.internal.system.test.executor.result.ExecutionResult;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
+/** Executor of test packages. */
 public final class TestPackagesExecutor {
 
     private final TestPackagesLoader loader;
     private final TestSuiteExecutor suiteExecutor;
     private final ResultsWriter resultsWriter;
 
+    /**
+     * @param loader used to load all available test packages
+     * @param suiteExecutor used to execute each suite.
+     * @param resultsWriter used to write results.
+     */
     public TestPackagesExecutor(
             final TestPackagesLoader loader,
             final TestSuiteExecutor suiteExecutor,
@@ -44,6 +50,11 @@ public final class TestPackagesExecutor {
         this.resultsWriter = requireNonNull(resultsWriter, "resultsWriter");
     }
 
+    /**
+     * Execute all packages.
+     *
+     * @return the result.
+     */
     public TestExecutionResult execute() {
         final TestExecutionResult result = executePackages();
         if (!result.isEmpty()) {

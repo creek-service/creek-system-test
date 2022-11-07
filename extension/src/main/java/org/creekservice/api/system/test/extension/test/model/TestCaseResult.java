@@ -20,6 +20,7 @@ package org.creekservice.api.system.test.extension.test.model;
 import java.time.Duration;
 import java.util.Optional;
 
+/** The result of a single {@link CreekTestCase} execution. */
 public interface TestCaseResult {
 
     /** @return the test case. */

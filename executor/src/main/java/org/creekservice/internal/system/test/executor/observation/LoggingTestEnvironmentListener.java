@@ -29,10 +29,12 @@ import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Lifecycle logging test listener. */
 public final class LoggingTestEnvironmentListener implements TestEnvironmentListener {
 
     private final Logger logger;
 
+    /** Constructor. */
     public LoggingTestEnvironmentListener() {
         this(LoggerFactory.getLogger(LoggingTestEnvironmentListener.class));
     }

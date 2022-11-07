@@ -26,11 +26,18 @@ import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 
+/** Util class for formatting execution results to a string. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class ResultLogFormatter {
 
     private ResultLogFormatter() {}
 
+    /**
+     * Format any errors found in the execution {@code result}.
+     *
+     * @param result the execution result to format
+     * @return the String containing any errors in the result.
+     */
     public static String formatIssues(final TestExecutionResult result) {
         return result.results().stream()
                 .flatMap(ResultLogFormatter::suiteIssues)

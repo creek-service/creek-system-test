@@ -32,6 +32,12 @@ public final class XmlTestCaseResult {
 
     private final TestCaseResult result;
 
+    /**
+     * Factory method.
+     *
+     * @param result the test case result.
+     * @return the XML equivalent.
+     */
     public static XmlTestCaseResult from(final TestCaseResult result) {
         return new XmlTestCaseResult(result);
     }
@@ -40,16 +46,19 @@ public final class XmlTestCaseResult {
         this.result = requireNonNull(result, "result");
     }
 
+    /** @return the test name. */
     @JacksonXmlProperty(isAttribute = true)
     public String name() {
         return result.testCase().name();
     }
 
+    /** @return the suite name. */
     @JacksonXmlProperty(isAttribute = true)
     public String classname() {
         return result.testCase().suite().name();
     }
 
+    /** @return the duration of the test execution */
     @JacksonXmlProperty(isAttribute = true)
     public String time() {
         return String.format(
@@ -58,16 +67,19 @@ public final class XmlTestCaseResult {
                 TimeUnit.NANOSECONDS.toMillis(result.duration().getNano()));
     }
 
+    /** @return any failure details, i.e. test was not successful. */
     @JacksonXmlProperty
     public Optional<XmlIssue> failure() {
         return result.failure().map(XmlIssue::new);
     }
 
+    /** @return any error details, i.e. test did not run. */
     @JacksonXmlProperty
     public Optional<XmlIssue> error() {
         return result.error().map(XmlIssue::new);
     }
 
+    /** @return non-empty if the test was skipped. */
     @JsonInclude(JsonInclude.Include.NON_ABSENT)
     @JacksonXmlProperty
     public Optional<Object> skipped() {

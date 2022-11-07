@@ -20,6 +20,11 @@ package org.creekservice.api.system.test.extension.component.definition;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * A collection of {@link ComponentDefinition}s.
+ *
+ * @param <T> the type of component definition.
+ */
 public interface ComponentDefinitionCollection<T extends ComponentDefinition> extends Iterable<T> {
 
     /**

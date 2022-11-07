@@ -25,11 +25,13 @@ import org.creekservice.internal.system.test.executor.api.test.env.listener.Test
 import org.creekservice.internal.system.test.executor.api.test.env.suite.TestSuiteEnv;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
+/** Implementation of {@link TestEnvironment} */
 public final class TestEnv implements TestEnvironment {
 
     private final TestListeners listeners;
     private final TestSuiteEnv suite;
 
+    /** @param serviceDebugInfo info about which services should be debugged. */
     public TestEnv(final ServiceDebugInfo serviceDebugInfo) {
         this(new TestListeners(), new TestSuiteEnv(serviceDebugInfo));
     }

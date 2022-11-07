@@ -29,11 +29,13 @@ import org.creekservice.api.system.test.extension.test.model.TestExecutionResult
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.system.test.executor.result.ResultsWriter;
 
+/** A writer of XML results */
 public final class XmlResultsWriter implements ResultsWriter {
 
     private final Path outputDirectory;
     private final ObjectWriter writer;
 
+    /** @param outputDirectory the directory in which to persist results */
     public XmlResultsWriter(final Path outputDirectory) {
         this(outputDirectory, XmlResultMapper.INSTANCE.get().writerWithDefaultPrettyPrinter());
     }

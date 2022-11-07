@@ -18,8 +18,8 @@ plugins {
     `java-library`
 }
 
-val creekServiceVersion : String by extra
+val creekVersion : String by extra
 
 dependencies {
-    api("org.creekservice:creek-service-extension:$creekServiceVersion")
+    api("org.creekservice:creek-service-extension:$creekVersion")
 }

@@ -34,6 +34,13 @@ public final class TestSuite implements CreekTestSuite {
     private final TestPackage pkg;
     private final List<TestCase> tests;
 
+    /**
+     * Factory method
+     *
+     * @param tests the tests in the suite.
+     * @param def the suite definition.
+     * @return the suite builder.
+     */
     public static Builder testSuite(
             final Collection<TestCase.Builder> tests, final TestSuiteDef def) {
         return new Builder(tests, def);
@@ -53,21 +60,31 @@ public final class TestSuite implements CreekTestSuite {
         requireEqual(tests.size(), def.tests().size(), "test case size mismatch");
     }
 
+    /** @return the name of the suite. */
     @Override
     public String name() {
         return def.name();
     }
 
+    /** @return the location in the test files the instance was loaded from. */
     @Override
     public URI location() {
         return def.location();
     }
 
+    /** @return the list of services under test. */
     @Override
     public List<String> services() {
         return def.services();
     }
 
+    /**
+     * Retrieve any options that are of the supplied {@code type}, or subtypes of.
+     *
+     * @param type the option type to look up.
+     * @param <T> the option type to look up.
+     * @return the list of options.
+     */
     @Override
     public <T extends Option> List<T> options(final Class<T> type) {
         return def.options().stream()
@@ -81,6 +98,7 @@ public final class TestSuite implements CreekTestSuite {
         return List.copyOf(tests);
     }
 
+    /** @return the package the test belongs to. */
     public TestPackage pkg() {
         return pkg;
     }
@@ -110,6 +128,7 @@ public final class TestSuite implements CreekTestSuite {
         return "TestSuite{def=" + def + ", tests=" + tests + '}';
     }
 
+    /** Test suite builder */
     public static final class Builder {
 
         private final TestSuiteDef def;
@@ -120,6 +139,12 @@ public final class TestSuite implements CreekTestSuite {
             this.def = requireNonNull(def, "def");
         }
 
+        /**
+         * Build the test suite.
+         *
+         * @param pkg the test package the suite belongs to.
+         * @return the test suite.
+         */
         public TestSuite build(final TestPackage pkg) {
             return new TestSuite(tests, def, pkg);
         }

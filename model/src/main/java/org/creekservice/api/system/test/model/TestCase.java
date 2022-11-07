@@ -35,6 +35,14 @@ public final class TestCase implements CreekTestCase {
     private final List<Input> inputs;
     private final List<Expectation> expectations;
 
+    /**
+     * Factory method
+     *
+     * @param inputs the test inputs.
+     * @param expectations the test outputs.
+     * @param def the test definition.
+     * @return the test case instance.
+     */
     public static Builder testCase(
             final Collection<Input> inputs,
             final Collection<Expectation> expectations,
@@ -81,6 +89,7 @@ public final class TestCase implements CreekTestCase {
         return List.copyOf(expectations);
     }
 
+    /** @return {@code true} if the test is disabled. */
     public boolean disabled() {
         return def.disabled().isPresent();
     }
@@ -120,6 +129,7 @@ public final class TestCase implements CreekTestCase {
                 + '}';
     }
 
+    /** Test case builder. */
     public static final class Builder {
 
         private final TestCaseDef def;
@@ -135,6 +145,12 @@ public final class TestCase implements CreekTestCase {
             this.def = requireNonNull(def, "def");
         }
 
+        /**
+         * Build the test case.
+         *
+         * @param suite the test suite the test case belongs to.
+         * @return the test case.
+         */
         public TestCase build(final TestSuite suite) {
             return new TestCase(inputs, expectations, def, suite);
         }

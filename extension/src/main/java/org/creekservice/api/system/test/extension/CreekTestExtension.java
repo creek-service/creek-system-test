@@ -20,7 +20,7 @@ package org.creekservice.api.system.test.extension;
  * Base type for system test extensions to Creek.
  *
  * <p>Creek will look for extensions using {@link java.util.ServiceLoader} to load instances of this
- * type from the class & module paths. Therefore, to be loaded by Creek the extension must:
+ * type from the class and module paths. Therefore, to be loaded by Creek the extension must:
  *
  * <ul>
  *   <li>be listed in the {@code module-info.java} file as a {@code provider} of {@link
@@ -34,6 +34,10 @@ public interface CreekTestExtension {
     /** @return the extension name. */
     String name();
 
-    /** Called to allow the extension to do its thing. */
+    /**
+     * Called to allow the extension to do its thing.
+     *
+     * @param systemTest the system test api.
+     */
     void initialize(CreekSystemTest systemTest);
 }

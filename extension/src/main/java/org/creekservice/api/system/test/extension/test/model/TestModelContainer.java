@@ -79,6 +79,7 @@ public interface TestModelContainer extends TestModelCollection {
      */
     <T extends Option> NameBuilder addOption(Class<T> type);
 
+    /** Allows customisation of the model extension. */
     interface NameBuilder {
         /**
          * Sets a custom name for the model.

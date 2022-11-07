@@ -88,6 +88,7 @@ public final class TestPackagesLoader {
         Stream<Path> walk(Path start) throws IOException;
     }
 
+    /** Exception type thrown on load failures. */
     private static final class SystemTestLoadFailedException extends RuntimeException {
         SystemTestLoadFailedException(final String msg, final Throwable cause) {
             super(msg, cause);

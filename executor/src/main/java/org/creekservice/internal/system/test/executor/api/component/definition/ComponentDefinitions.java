@@ -40,6 +40,11 @@ import org.creekservice.api.system.test.extension.component.definition.Component
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinitionCollection;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 
+/**
+ * Implementation of {@link ComponentDefinitionCollection}.
+ *
+ * @param <Def> the type of definition.
+ */
 public final class ComponentDefinitions<Def extends ComponentDefinition>
         implements ComponentDefinitionCollection<Def> {
 
@@ -47,6 +52,12 @@ public final class ComponentDefinitions<Def extends ComponentDefinition>
     private final String componentType;
     private final Map<String, Def> components;
 
+    /**
+     * Create aggregate definition collection.
+     *
+     * @param components list of components.
+     * @return the aggregate definition collection.
+     */
     public static ComponentDefinitions<AggregateDefinition> aggregateDefinitions(
             final Collection<? extends ComponentDescriptor> components) {
         return new ComponentDefinitions<>(
@@ -57,6 +68,12 @@ public final class ComponentDefinitions<Def extends ComponentDefinition>
                 Thread.currentThread().getId());
     }
 
+    /**
+     * Create service definition collection.
+     *
+     * @param components list of components.
+     * @return the service definition collection.
+     */
     public static ComponentDefinitions<ServiceDefinition> serviceDefinitions(
             final Collection<? extends ComponentDescriptor> components) {
         return serviceDefinitions(components, Thread.currentThread().getId());

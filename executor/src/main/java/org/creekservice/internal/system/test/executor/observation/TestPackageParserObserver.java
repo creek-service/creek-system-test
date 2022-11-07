@@ -26,10 +26,14 @@ import java.util.stream.Collectors;
 import org.creekservice.api.system.test.parser.TestPackageParser;
 import org.slf4j.Logger;
 
+/**
+ * Implementation of {@link TestPackageParser.Observer} that logs a warning on unused test files.
+ */
 public final class TestPackageParserObserver implements TestPackageParser.Observer {
 
     private final Logger logger;
 
+    /** @param logger the logger to log to. */
     public TestPackageParserObserver(final Logger logger) {
         this.logger = requireNonNull(logger, "logger");
     }

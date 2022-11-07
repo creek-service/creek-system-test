@@ -16,12 +16,18 @@
 
 package org.creekservice.internal.system.test.parser;
 
+/** Base exception type of test parsing issues. */
 public class TestLoadFailedException extends RuntimeException {
 
+    /** @param msg a descriptive message. */
     public TestLoadFailedException(final String msg) {
         super(msg);
     }
 
+    /**
+     * @param msg a descriptive message.
+     * @param cause the underlying cause.
+     */
     public TestLoadFailedException(final String msg, final Throwable cause) {
         super(msg, cause);
     }

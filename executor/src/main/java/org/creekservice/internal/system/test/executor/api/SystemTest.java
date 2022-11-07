@@ -40,12 +40,17 @@ import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
+/** Implementation of {@link CreekSystemTest}. */
 public final class SystemTest implements CreekSystemTest {
 
     private final Tests tests;
     private final Components components;
     private final Extensions extensions;
 
+    /**
+     * @param components all known components.
+     * @param serviceDebugInfo info about which services should be debugged.
+     */
     public SystemTest(
             final Collection<? extends ComponentDescriptor> components,
             final ServiceDebugInfo serviceDebugInfo) {
@@ -87,6 +92,7 @@ public final class SystemTest implements CreekSystemTest {
         return extensions;
     }
 
+    /** Implementation of {@link CreekSystemTest.TestAccessor}. */
     public static final class Tests implements CreekSystemTest.TestAccessor {
 
         private final TestModel testModel;
@@ -110,6 +116,7 @@ public final class SystemTest implements CreekSystemTest {
         }
     }
 
+    /** Implementation of {@link ComponentAccessor}. */
     public static final class Components implements ComponentAccessor {
 
         private final Definitions definitions;
@@ -134,6 +141,7 @@ public final class SystemTest implements CreekSystemTest {
         }
     }
 
+    /** Implementation of {@link ComponentDefinitionAccessor} */
     public static final class Definitions implements ComponentDefinitionAccessor {
 
         private final ComponentDefinitions<ServiceDefinition> serviceDefinitions;
@@ -160,6 +168,7 @@ public final class SystemTest implements CreekSystemTest {
         }
     }
 
+    /** Implementation of {@link ExtensionAccessor}. */
     public static final class Extensions implements ExtensionAccessor {
 
         final Creek api;
@@ -179,6 +188,7 @@ public final class SystemTest implements CreekSystemTest {
             return api.extensions().ensureExtension(provider);
         }
 
+        /** @return the component model, e.g. supported resource descriptor types, etc. */
         @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         public ComponentModelCollection model() {
             return api.components().model();

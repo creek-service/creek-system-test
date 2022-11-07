@@ -24,6 +24,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import org.creekservice.api.base.type.Throwables;
 
+/** A type used to serialize a failure or error as XML. */
 public final class XmlIssue {
 
     private final Throwable cause;
@@ -32,18 +33,21 @@ public final class XmlIssue {
         this.cause = requireNonNull(cause, "cause");
     }
 
+    /** @return a descriptive message */
     @JacksonXmlProperty(isAttribute = true)
     @JsonGetter("message")
     public String message() {
         return requireNonNullElse(cause.getMessage(), "");
     }
 
+    /** @return the type of the issue, i.e. the exception type. */
     @JacksonXmlProperty(isAttribute = true)
     @JsonGetter("type")
     public String type() {
         return cause.getClass().getCanonicalName();
     }
 
+    /** @return the stack trace. */
     @JacksonXmlText
     @JsonGetter("stack")
     public String stack() {

@@ -61,6 +61,10 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "org.javamodularity.moduleplugin")
 
+    if (name.startsWith("test-") && name != "test-util") {
+        tasks.javadoc { onlyIf { false } }
+    }
+
     val shouldPublish = !name.startsWith("test-") || name == "test-util"
     if (shouldPublish) {
         apply(plugin = "jacoco")
@@ -73,14 +77,10 @@ subprojects {
     }
 
     extra.apply {
-        set("creekBaseVersion", "0.2.0-SNAPSHOT")
-        set("creekPlatformVersion", "0.2.0-SNAPSHOT")
-        set("creekTestVersion", "0.2.0-SNAPSHOT")
-        set("creekObsVersion", "0.2.0-SNAPSHOT")
-        set("creekServiceVersion", "0.2.0-SNAPSHOT")
+        set("creekVersion", "0.2.0-SNAPSHOT")
         set("testContainersVersion", "1.17.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.7.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.13.4")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+        set("jacksonVersion", "2.14.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.7.0")          // https://mvnrepository.com/artifact/info.picocli/picocli
         set("log4jVersion", "2.19.0")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("slf4jVersion", "2.0.3")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
@@ -92,7 +92,7 @@ subprojects {
         set("hamcrestVersion", "2.2")           // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core
     }
 
-    val creekTestVersion : String by extra
+    val creekVersion : String by extra
     val guavaVersion : String by extra
     val log4jVersion : String by extra
     val junitVersion: String by extra
@@ -101,9 +101,9 @@ subprojects {
     val hamcrestVersion : String by extra
 
     dependencies {
-        testImplementation("org.creekservice:creek-test-hamcrest:$creekTestVersion")
-        testImplementation("org.creekservice:creek-test-util:$creekTestVersion")
-        testImplementation("org.creekservice:creek-test-conformity:$creekTestVersion")
+        testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")
+        testImplementation("org.creekservice:creek-test-util:$creekVersion")
+        testImplementation("org.creekservice:creek-test-conformity:$creekVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
         testImplementation("org.junit-pioneer:junit-pioneer:$junitPioneerVersion")

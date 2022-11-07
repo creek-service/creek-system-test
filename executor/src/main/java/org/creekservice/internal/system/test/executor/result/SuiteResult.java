@@ -28,6 +28,7 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.system.test.model.TestSuite;
 
+/** Test suite results. */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class SuiteResult implements TestSuiteResult {
 
@@ -37,6 +38,12 @@ public final class SuiteResult implements TestSuiteResult {
     private final Optional<Exception> error;
     private final List<CaseResult> tests;
 
+    /**
+     * Factory method
+     *
+     * @param testSuite the test suite to build results for
+     * @return the results builder
+     */
     public static Builder testSuiteResult(final TestSuite testSuite) {
         return new Builder(testSuite, Clock.systemUTC());
     }
@@ -113,6 +120,7 @@ public final class SuiteResult implements TestSuiteResult {
                 + '}';
     }
 
+    /** A builder of test suite results. */
     public static final class Builder {
 
         private final Clock clock;
@@ -127,15 +135,34 @@ public final class SuiteResult implements TestSuiteResult {
             this.start = clock.instant();
         }
 
+        /**
+         * Add a test case result
+         *
+         * @param result the test case result.
+         * @return self.
+         */
         public Builder add(final CaseResult result) {
             tests.add(requireNonNull(result, "result"));
             return this;
         }
 
+        /**
+         * Build the suite result.
+         *
+         * @return the suite result.
+         */
         public SuiteResult build() {
             return new SuiteResult(testSuite, start, clock.instant(), Optional.empty(), tests);
         }
 
+        /**
+         * Build suite result indicating the suite failed to run.
+         *
+         * <p>For example, because of an error during suite setup.
+         *
+         * @param cause the exception detailing what failed.
+         * @return the suite result.
+         */
         public SuiteResult buildError(final Exception cause) {
             return new SuiteResult(
                     testSuite, start, clock.instant(), Optional.of(cause), List.of());

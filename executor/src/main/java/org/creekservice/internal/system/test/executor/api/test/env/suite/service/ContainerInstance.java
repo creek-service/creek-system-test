@@ -52,6 +52,13 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     private final Consumer<ServiceInstance> startedCallback;
     private Duration startUpTimeOut = Duration.ofSeconds(90);
 
+    /**
+     * @param name the name of the instance.
+     * @param imageName the docker image name.
+     * @param container the docker container.
+     * @param descriptor the service's descriptor, if the service has one.
+     * @param startedCallback a callback to be called when the instance has started.
+     */
     public ContainerInstance(
             final String name,
             final DockerImageName imageName,
@@ -227,7 +234,16 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         return this;
     }
 
+    /**
+     * Visible only for testing.
+     *
+     * @return the running container id.
+     * @deprecated not intended for public use. No backwards compatability guaranteed on new
+     *     releases.
+     */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @VisibleForTesting
+    @Deprecated
     public String containerId() {
         throwIfNotOnCorrectThread();
         return container.getContainerId();

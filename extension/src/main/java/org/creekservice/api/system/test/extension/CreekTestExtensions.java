@@ -21,11 +21,16 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
+/** Factory class for loading system test extensions. */
 public final class CreekTestExtensions {
 
     private CreekTestExtensions() {}
 
-    /** Instantiate any test extensions available at runtime. */
+    /**
+     * Instantiate any test extensions available at runtime.
+     *
+     * @return the list of system test extensions found on the model and class paths.
+     */
     public static List<CreekTestExtension> load() {
         return ServiceLoader.load(CreekTestExtension.class).stream()
                 .map(ServiceLoader.Provider::get)

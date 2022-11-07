@@ -76,6 +76,7 @@ public final class SystemTestExecutor {
      * Run the system tests.
      *
      * @param options the options used to customise the test run.
+     * @return the test run results.
      */
     public static TestExecutionResult run(final ExecutorOptions options) {
         if (options.echoOnly()) {

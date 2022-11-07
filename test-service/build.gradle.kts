@@ -22,14 +22,14 @@ plugins {
     id("com.bmuschko.docker-remote-api") version "8.1.0"
 }
 
-val creekObsVersion : String by extra
+val creekVersion : String by extra
 val slf4jVersion : String by extra
 val log4jVersion : String by extra
 
 dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    implementation("org.creekservice:creek-observability-lifecycle:$creekObsVersion")
+    implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 

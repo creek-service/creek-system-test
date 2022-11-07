@@ -40,6 +40,10 @@ public final class StartServicesUnderTestListener implements TestEnvironmentList
     private final Supplier<List<ServiceInstance>> servicesSupplier;
     private final List<ServiceInstance> started = new ArrayList<>();
 
+    /**
+     * @param servicesSupplier a supplier that can be called during test suite execution to get the
+     *     list services to start.
+     */
     public StartServicesUnderTestListener(final Supplier<List<ServiceInstance>> servicesSupplier) {
         this.servicesSupplier = requireNonNull(servicesSupplier, "servicesSupplier");
     }

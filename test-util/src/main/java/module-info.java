@@ -1,3 +1,4 @@
+/** Contains types to help system test extension authors test their extensions. */
 module creek.system.test.test.util {
     requires transitive com.github.spotbugs.annotations;
     requires transitive creek.system.test.extension;

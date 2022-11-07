@@ -1,3 +1,4 @@
+/** Parser of YAML system test packages. */
 module creek.system.test.parser {
     requires transitive creek.system.test.model;
     requires creek.base.type;

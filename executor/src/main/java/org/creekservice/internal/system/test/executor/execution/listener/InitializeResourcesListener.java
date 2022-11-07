@@ -34,11 +34,24 @@ import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironm
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
+/**
+ * Test listener that initialises any shared or unowned resources required by the services under
+ * test.
+ *
+ * <p>Shared resources are not owned by any one service. In production, they would be initialised
+ * before services were deployed. Hence, the test framework needs to also ensure shared resources
+ * are initialised, before it runs any tests.
+ *
+ * <p>Unowned resources are resources from services not under test, which the services under test
+ * are interacting with. For example, consuming an output topic that another service owns. The test
+ * framework needs to ensure such edge resources are initialised, before it runs any tests.
+ */
 public final class InitializeResourcesListener implements TestEnvironmentListener {
 
     private final SystemTest api;
     private final ResourceInitializer initializer;
 
+    /** @param api system test api. */
     public InitializeResourcesListener(final SystemTest api) {
         this(
                 api,

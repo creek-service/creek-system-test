@@ -33,9 +33,16 @@ public final class SimpleRef implements InputRef, ExpectationRef, LocationAware<
     private final String id;
     private final URI location;
 
+    /**
+     * Factory method.
+     *
+     * @param id the id of the file this ref references, i.e. the file name, with or without the
+     *     {@code .yml} extension.
+     * @return the ref instance.
+     */
     @JsonCreator
-    public static SimpleRef simpleRef(final String location) {
-        return new SimpleRef(location, UNKNOWN_LOCATION);
+    public static SimpleRef simpleRef(final String id) {
+        return new SimpleRef(id, UNKNOWN_LOCATION);
     }
 
     private SimpleRef(final String id, final URI location) {
