@@ -75,7 +75,7 @@ subprojects {
     extra.apply {
         set("creekBaseVersion", "0.2.0-SNAPSHOT")
         set("creekPlatformVersion", "0.2.0-SNAPSHOT")
-        set("creekTestVersion", "0.2.0-SNAPSHOT")
+        set("creekTestVersion", "0.2.1-SNAPSHOT")
         set("creekObsVersion", "0.2.0-SNAPSHOT")
         set("creekServiceVersion", "0.2.0-SNAPSHOT")
         set("testContainersVersion", "1.17.5")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
