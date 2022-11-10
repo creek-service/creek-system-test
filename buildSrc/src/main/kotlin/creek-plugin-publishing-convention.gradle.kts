@@ -38,7 +38,7 @@ java {
 val prependRootName = rootProject.name != project.name
 
 pluginBundle {
-    website = "https://github.com/creek-service/${rootProject.name}"
+    website = "https://www.creekservice.org/${rootProject.name}"
     vcsUrl = "https://github.com/creek-service/${rootProject.name}"
 
     tags = listOf("creek", "creekservice", "microservice", "docker", "containers")

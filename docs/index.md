@@ -4,6 +4,6 @@ permalink: /
 description: Black-box testing of service containers
 ---
 
-# Creek System Testing
+Site under construction... for now, please refer to docs on [GitHub](https://github.com/creek-service/creek-system-test/blob/main/README.md)
 
-Documentation coming soon...
+Or back to [main page](https://www.creekservice.org)
