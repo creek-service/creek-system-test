@@ -1,6 +1,6 @@
 ---
 title: System testing
-permalink: /creek-system-test/
+permalink: /
 description: Black-box testing of service containers
 ---
 
