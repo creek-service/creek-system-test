@@ -92,28 +92,36 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         requireNonEmpty(tests, "tests");
     }
 
-    /** @return the name of the suite. */
+    /**
+     * @return the name of the suite.
+     */
     @JsonGetter("name")
     @JsonPropertyDescription("Name of the suite")
     public String name() {
         return name;
     }
 
-    /** @return optional notes. */
+    /**
+     * @return optional notes.
+     */
     @JsonGetter("notes")
     @JsonPropertyDescription("(Optional) notes")
     public String notes() {
         return notes;
     }
 
-    /** @return information on why the test was disabled. */
+    /**
+     * @return information on why the test was disabled.
+     */
     @JsonGetter("disabled")
     @JsonPropertyDescription("(Optional) if present, the test is disabled")
     public Optional<Disabled> disabled() {
         return disabled;
     }
 
-    /** @return the list of services under test. */
+    /**
+     * @return the list of services under test.
+     */
     @JsonGetter("services")
     @JsonPropertyDescription(
             "List of services to start when running the suite. "
@@ -122,7 +130,9 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         return List.copyOf(services);
     }
 
-    /** @return the list of test options. */
+    /**
+     * @return the list of test options.
+     */
     @JsonGetter("options")
     @JsonPropertyDescription(
             "List of test options that can be used to configure services and test extensions.")
@@ -130,7 +140,9 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         return List.copyOf(options);
     }
 
-    /** @return the list of test cases. */
+    /**
+     * @return the list of test cases.
+     */
     @JsonGetter("tests")
     @JsonPropertyDescription(
             "List of test cases the suite contains. Tests are run in the order defined.")
@@ -138,7 +150,9 @@ public final class TestSuiteDef implements LocationAware<TestSuiteDef> {
         return List.copyOf(tests);
     }
 
-    /** @return the location in the test files the instance was loaded from. */
+    /**
+     * @return the location in the test files the instance was loaded from.
+     */
     public URI location() {
         return location;
     }

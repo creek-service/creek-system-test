@@ -36,7 +36,9 @@ public interface ComponentDefinitionCollection<T extends ComponentDefinition> ex
      */
     T get(String name);
 
-    /** @return stream of the defs the collection contains. */
+    /**
+     * @return stream of the defs the collection contains.
+     */
     default Stream<T> stream() {
         return StreamSupport.stream(spliterator(), false);
     }

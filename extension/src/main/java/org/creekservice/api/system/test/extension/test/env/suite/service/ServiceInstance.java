@@ -48,7 +48,9 @@ public interface ServiceInstance {
     /** Start the instance. No-op if already started. */
     void start();
 
-    /** @return {@code true} if the instance is running. */
+    /**
+     * @return {@code true} if the instance is running.
+     */
     boolean running();
 
     /** Stop the instance. No-op if already stopped. */
@@ -137,17 +139,23 @@ public interface ServiceInstance {
             this.stderr = requireNonNull(stderr, "stderr");
         }
 
-        /** @return the service's process's exit code. */
+        /**
+         * @return the service's process's exit code.
+         */
         public int exitCode() {
             return exitCode;
         }
 
-        /** @return the contents of stdOut */
+        /**
+         * @return the contents of stdOut
+         */
         public String stdout() {
             return stdout;
         }
 
-        /** @return the contents of stdErr */
+        /**
+         * @return the contents of stdErr
+         */
         public String stderr() {
             return stderr;
         }

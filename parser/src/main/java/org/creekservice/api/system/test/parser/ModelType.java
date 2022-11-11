@@ -221,7 +221,9 @@ public final class ModelType<T> {
         return name;
     }
 
-    /** @return the model type. */
+    /**
+     * @return the model type.
+     */
     public Class<T> type() {
         return type;
     }

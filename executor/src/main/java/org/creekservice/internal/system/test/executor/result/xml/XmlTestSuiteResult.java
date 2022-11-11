@@ -56,56 +56,74 @@ public final class XmlTestSuiteResult {
         this.hostName = requireNonNull(hostName, "hostName");
     }
 
-    /** @return the suite name. */
+    /**
+     * @return the suite name.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public String name() {
         return result.testSuite().name();
     }
 
-    /** @return the number of test case result. */
+    /**
+     * @return the number of test case result.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public long tests() {
         return result.testResults().size();
     }
 
-    /** @return the number of skipped tests. */
+    /**
+     * @return the number of skipped tests.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public long skipped() {
         return result.skipped();
     }
 
-    /** @return the number of test failures. */
+    /**
+     * @return the number of test failures.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public long failures() {
         return result.failures();
     }
 
-    /** @return the number of tests that did not run. */
+    /**
+     * @return the number of tests that did not run.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public long errors() {
         return result.errors();
     }
 
-    /** @return a suite-level error, stopping any test cases from executing. */
+    /**
+     * @return a suite-level error, stopping any test cases from executing.
+     */
     @JacksonXmlProperty
     public Optional<XmlIssue> error() {
         return result.error().map(XmlIssue::new);
     }
 
-    /** @return the time the suite execution started. */
+    /**
+     * @return the time the suite execution started.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public String timestamp() {
         final String timestampZ = DateTimeFormatter.ISO_INSTANT.format(result.start());
         return timestampZ.substring(0, timestampZ.length() - 1);
     }
 
-    /** @return the name of the host the tests executed on. */
+    /**
+     * @return the name of the host the tests executed on.
+     */
     @JacksonXmlProperty(isAttribute = true)
     public String hostname() {
         return hostName;
     }
 
-    /** @return the duration of the suite execution */
+    /**
+     * @return the duration of the suite execution
+     */
     @JacksonXmlProperty(isAttribute = true)
     public String time() {
         return String.format(
@@ -114,7 +132,9 @@ public final class XmlTestSuiteResult {
                 TimeUnit.NANOSECONDS.toMillis(result.duration().getNano()));
     }
 
-    /** @return all test case results. */
+    /**
+     * @return all test case results.
+     */
     @JacksonXmlProperty
     public List<XmlTestCaseResult> testcase() {
         return result.testResults().stream().map(XmlTestCaseResult::from).collect(toList());

@@ -59,7 +59,9 @@ public final class CreekSystemTestExtensionTester {
         this.aggregateDefinitions = ComponentDefinitions.aggregateDefinitions(components);
     }
 
-    /** @return created instance of the test helper */
+    /**
+     * @return created instance of the test helper
+     */
     public static CreekSystemTestExtensionTester extensionTester() {
         return new CreekSystemTestExtensionTester(ServiceDebugInfo.none());
     }
@@ -151,7 +153,9 @@ public final class CreekSystemTestExtensionTester {
         return services;
     }
 
-    /** @return the ids of running containers, keyed on the instance name. */
+    /**
+     * @return the ids of running containers, keyed on the instance name.
+     */
     @SuppressWarnings("deprecation")
     public Map<String, String> runningContainerIds() {
         return services.stream()
@@ -205,7 +209,9 @@ public final class CreekSystemTestExtensionTester {
             return model;
         }
 
-        /** @return the model parser. */
+        /**
+         * @return the model parser.
+         */
         public ModelParser build() {
             final ObjectMapper mapper = SystemTestMapper.create(model.modelTypes());
 

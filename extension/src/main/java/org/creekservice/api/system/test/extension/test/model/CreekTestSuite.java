@@ -22,10 +22,14 @@ import java.util.List;
 /** Public API of a test suite. */
 public interface CreekTestSuite extends Locatable {
 
-    /** @return the name of the suite */
+    /**
+     * @return the name of the suite
+     */
     String name();
 
-    /** @return the list of services under test */
+    /**
+     * @return the list of services under test
+     */
     List<String> services();
 
     /**
@@ -35,6 +39,8 @@ public interface CreekTestSuite extends Locatable {
      */
     <T extends Option> List<T> options(Class<T> type);
 
-    /** @return the test cases in the suite. */
+    /**
+     * @return the test cases in the suite.
+     */
     List<? extends CreekTestCase> tests();
 }

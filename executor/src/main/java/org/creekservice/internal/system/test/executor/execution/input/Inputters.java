@@ -35,7 +35,9 @@ public final class Inputters {
 
     private final TestModelContainer model;
 
-    /** @param model system test model */
+    /**
+     * @param model system test model
+     */
     public Inputters(final TestModelContainer model) {
         this.model = requireNonNull(model, "model");
     }

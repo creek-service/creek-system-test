@@ -136,7 +136,9 @@ public interface CreekSystemTest {
          */
         ComponentDefinitionCollection<ServiceDefinition> services();
 
-        /** @return stream of all the known component definitions. */
+        /**
+         * @return stream of all the known component definitions.
+         */
         default Stream<ComponentDefinition> stream() {
             return Stream.concat(aggregates().stream(), services().stream());
         }

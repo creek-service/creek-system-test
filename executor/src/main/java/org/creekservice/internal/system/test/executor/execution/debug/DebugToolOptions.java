@@ -50,7 +50,9 @@ public final class DebugToolOptions {
         return javaToolOptions(attachMePort, serviceDebugPort, AGENT_JAR_FILE);
     }
 
-    /** @return the path to the AttachMe agent jar file, if present in the users home directory. */
+    /**
+     * @return the path to the AttachMe agent jar file, if present in the users home directory.
+     */
     public static Optional<Path> agentJarFile() {
         return AGENT_JAR_FILE;
     }

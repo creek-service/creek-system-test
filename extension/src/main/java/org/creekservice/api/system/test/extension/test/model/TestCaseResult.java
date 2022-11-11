@@ -23,13 +23,19 @@ import java.util.Optional;
 /** The result of a single {@link CreekTestCase} execution. */
 public interface TestCaseResult {
 
-    /** @return the test case. */
+    /**
+     * @return the test case.
+     */
     CreekTestCase testCase();
 
-    /** @return how long the test took to run. */
+    /**
+     * @return how long the test took to run.
+     */
     Duration duration();
 
-    /** @return {@code true} if the test was skipped because it was disabled. */
+    /**
+     * @return {@code true} if the test was skipped because it was disabled.
+     */
     boolean skipped();
 
     /**

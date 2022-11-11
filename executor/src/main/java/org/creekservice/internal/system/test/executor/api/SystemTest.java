@@ -188,7 +188,9 @@ public final class SystemTest implements CreekSystemTest {
             return api.extensions().ensureExtension(provider);
         }
 
-        /** @return the component model, e.g. supported resource descriptor types, etc. */
+        /**
+         * @return the component model, e.g. supported resource descriptor types, etc.
+         */
         @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         public ComponentModelCollection model() {
             return api.components().model();

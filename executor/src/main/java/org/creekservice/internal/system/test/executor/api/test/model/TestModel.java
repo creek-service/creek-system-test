@@ -100,7 +100,9 @@ public final class TestModel implements TestModelContainer {
         return types.containsKey(requireNonNull(type, "type"));
     }
 
-    /** @return all known model extensions. */
+    /**
+     * @return all known model extensions.
+     */
     public List<ModelType<?>> modelTypes() {
         throwIfNotOnCorrectThread();
 

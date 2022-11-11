@@ -89,7 +89,9 @@ public final class TestCase implements CreekTestCase {
         return List.copyOf(expectations);
     }
 
-    /** @return {@code true} if the test is disabled. */
+    /**
+     * @return {@code true} if the test is disabled.
+     */
     public boolean disabled() {
         return def.disabled().isPresent();
     }

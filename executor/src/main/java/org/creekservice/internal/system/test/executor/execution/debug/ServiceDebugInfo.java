@@ -74,7 +74,9 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
                 info.serviceInstanceNames());
     }
 
-    /** @return an empty instance. */
+    /**
+     * @return an empty instance.
+     */
     public static ServiceDebugInfo none() {
         return serviceDebugInfo(0, 0, Set.of(), Set.of());
     }
