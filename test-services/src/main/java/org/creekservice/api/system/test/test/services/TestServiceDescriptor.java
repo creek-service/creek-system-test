@@ -49,6 +49,8 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
 
     public static final TestResourceOutput OwnedOutput = register(output("output"));
 
+    public TestServiceDescriptor() {}
+
     @Override
     public String name() {
         return SERVICE_NAME;

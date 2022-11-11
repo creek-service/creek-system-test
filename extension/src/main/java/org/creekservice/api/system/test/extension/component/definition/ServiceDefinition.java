@@ -25,7 +25,9 @@ import org.creekservice.api.system.test.extension.test.env.suite.service.Service
 /** Information required by Creek System Test to start a service */
 public interface ServiceDefinition extends ComponentDefinition {
 
-    /** @return the docker image name, without version info. */
+    /**
+     * @return the docker image name, without version info.
+     */
     String dockerImage();
 
     /**

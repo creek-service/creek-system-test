@@ -26,6 +26,8 @@ import java.net.URI;
  */
 public interface Locatable {
 
-    /** @return the location */
+    /**
+     * @return the location
+     */
     URI location();
 }

@@ -29,7 +29,9 @@ public final class TestSuiteEnv implements TestSuiteEnvironment {
 
     private final DockerServiceContainer services;
 
-    /** @param serviceDebugInfo info about which services should be debugged. */
+    /**
+     * @param serviceDebugInfo info about which services should be debugged.
+     */
     public TestSuiteEnv(final ServiceDebugInfo serviceDebugInfo) {
         this(new DockerServiceContainer(serviceDebugInfo));
     }

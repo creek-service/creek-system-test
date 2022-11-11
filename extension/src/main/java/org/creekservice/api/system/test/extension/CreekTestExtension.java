@@ -31,7 +31,9 @@ package org.creekservice.api.system.test.extension;
  */
 public interface CreekTestExtension {
 
-    /** @return the extension name. */
+    /**
+     * @return the extension name.
+     */
     String name();
 
     /**

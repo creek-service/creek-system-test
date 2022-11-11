@@ -23,7 +23,9 @@ import org.creekservice.api.system.test.extension.test.model.Ref;
 /** Indicates a test dependency, i.e. a test input or expectation file, was missing. */
 public class MissingDependencyException extends TestLoadFailedException {
 
-    /** @param ref the reference to the missing file. */
+    /**
+     * @param ref the reference to the missing file.
+     */
     public MissingDependencyException(final Ref ref) {
         super("Missing dependency: " + ref.id() + maybeLocation(ref));
     }

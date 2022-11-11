@@ -51,7 +51,9 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
     private final SystemTest api;
     private final ResourceInitializer initializer;
 
-    /** @param api system test api. */
+    /**
+     * @param api system test api.
+     */
     public InitializeResourcesListener(final SystemTest api) {
         this(
                 api,

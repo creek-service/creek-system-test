@@ -22,18 +22,28 @@ import java.util.List;
 /** The result of a test run. */
 public interface TestExecutionResult {
 
-    /** @return {@code true} if the result contains no test suites. */
+    /**
+     * @return {@code true} if the result contains no test suites.
+     */
     boolean isEmpty();
 
-    /** @return number of test cases that failed, i.e. assertions not met */
+    /**
+     * @return number of test cases that failed, i.e. assertions not met
+     */
     long failed();
 
-    /** @return number of test cases that failed to execute */
+    /**
+     * @return number of test cases that failed to execute
+     */
     long errors();
 
-    /** @return {@code true} if there were no failures or errors. */
+    /**
+     * @return {@code true} if there were no failures or errors.
+     */
     boolean passed();
 
-    /** @return the suite results */
+    /**
+     * @return the suite results
+     */
     List<? extends TestSuiteResult> results();
 }

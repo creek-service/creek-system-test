@@ -32,6 +32,8 @@ public final class TestAggregateDescriptor implements AggregateDescriptor {
 
     public static final TestResourceOutput OUTPUT = register(output("upstream"));
 
+    public TestAggregateDescriptor() {}
+
     @Override
     public String name() {
         return "test-agg";

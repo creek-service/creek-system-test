@@ -22,15 +22,23 @@ import java.util.List;
 /** Public API of a test case. */
 public interface CreekTestCase extends Locatable {
 
-    /** @return the name of the test case */
+    /**
+     * @return the name of the test case
+     */
     String name();
 
-    /** @return the suite the test case belongs too. */
+    /**
+     * @return the suite the test case belongs too.
+     */
     CreekTestSuite suite();
 
-    /** @return the inputs to be fed in at the start of the test case. */
+    /**
+     * @return the inputs to be fed in at the start of the test case.
+     */
     List<Input> inputs();
 
-    /** @return the expectations to be asserted at the end of the test case. */
+    /**
+     * @return the expectations to be asserted at the end of the test case.
+     */
     List<Expectation> expectations();
 }

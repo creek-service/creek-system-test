@@ -25,22 +25,34 @@ import java.util.Optional;
 /** The result of a {@link CreekTestSuite} execution */
 public interface TestSuiteResult {
 
-    /** @return the test suite. */
+    /**
+     * @return the test suite.
+     */
     CreekTestSuite testSuite();
 
-    /** @return the number of skipped tests. */
+    /**
+     * @return the number of skipped tests.
+     */
     long skipped();
 
-    /** @return the number of failed tests, i.e. tests where an expectation was not met */
+    /**
+     * @return the number of failed tests, i.e. tests where an expectation was not met
+     */
     long failures();
 
-    /** @return the number of tests that failed to execute. */
+    /**
+     * @return the number of tests that failed to execute.
+     */
     long errors();
 
-    /** @return the start time of the test suite. */
+    /**
+     * @return the start time of the test suite.
+     */
     Instant start();
 
-    /** @return how long the test suite took to run. */
+    /**
+     * @return how long the test suite took to run.
+     */
     Duration duration();
 
     /**
@@ -50,6 +62,8 @@ public interface TestSuiteResult {
      */
     Optional<Exception> error();
 
-    /** @return the results for the tests within the suite. */
+    /**
+     * @return the results for the tests within the suite.
+     */
     List<? extends TestCaseResult> testResults();
 }

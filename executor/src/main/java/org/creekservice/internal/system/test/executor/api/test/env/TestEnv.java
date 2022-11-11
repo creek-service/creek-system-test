@@ -31,7 +31,9 @@ public final class TestEnv implements TestEnvironment {
     private final TestListeners listeners;
     private final TestSuiteEnv suite;
 
-    /** @param serviceDebugInfo info about which services should be debugged. */
+    /**
+     * @param serviceDebugInfo info about which services should be debugged.
+     */
     public TestEnv(final ServiceDebugInfo serviceDebugInfo) {
         this(new TestListeners(), new TestSuiteEnv(serviceDebugInfo));
     }

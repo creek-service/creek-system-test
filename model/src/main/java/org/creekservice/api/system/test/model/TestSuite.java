@@ -60,19 +60,25 @@ public final class TestSuite implements CreekTestSuite {
         requireEqual(tests.size(), def.tests().size(), "test case size mismatch");
     }
 
-    /** @return the name of the suite. */
+    /**
+     * @return the name of the suite.
+     */
     @Override
     public String name() {
         return def.name();
     }
 
-    /** @return the location in the test files the instance was loaded from. */
+    /**
+     * @return the location in the test files the instance was loaded from.
+     */
     @Override
     public URI location() {
         return def.location();
     }
 
-    /** @return the list of services under test. */
+    /**
+     * @return the list of services under test.
+     */
     @Override
     public List<String> services() {
         return def.services();
@@ -98,7 +104,9 @@ public final class TestSuite implements CreekTestSuite {
         return List.copyOf(tests);
     }
 
-    /** @return the package the test belongs to. */
+    /**
+     * @return the package the test belongs to.
+     */
     public TestPackage pkg() {
         return pkg;
     }

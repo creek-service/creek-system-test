@@ -28,7 +28,9 @@ public final class ExecutionResult implements TestExecutionResult {
 
     private final List<SuiteResult> results;
 
-    /** @param results the list of suite results to include */
+    /**
+     * @param results the list of suite results to include
+     */
     public ExecutionResult(final List<SuiteResult> results) {
         this.results = List.copyOf(requireNonNull(results, "results"));
     }

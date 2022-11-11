@@ -114,12 +114,16 @@ public final class CaseResult implements TestCaseResult {
             this.start = clock.instant();
         }
 
-        /** @return a result indicating the test was disabled */
+        /**
+         * @return a result indicating the test was disabled
+         */
         public CaseResult disabled() {
             return new CaseResult(testCase, duration(), Optional.empty(), Optional.empty(), true);
         }
 
-        /** @return a result indicating the test passed */
+        /**
+         * @return a result indicating the test passed
+         */
         public CaseResult success() {
             return new CaseResult(testCase, duration(), Optional.empty(), Optional.empty(), false);
         }

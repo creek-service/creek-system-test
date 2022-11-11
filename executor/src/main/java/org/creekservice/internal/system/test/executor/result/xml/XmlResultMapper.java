@@ -34,7 +34,9 @@ public enum XmlResultMapper {
 
     private final ObjectMapper mapper = create();
 
-    /** @return get the mapper instance. */
+    /**
+     * @return get the mapper instance.
+     */
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     public ObjectMapper get() {
         return mapper;

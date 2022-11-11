@@ -35,7 +35,9 @@ public final class XmlResultsWriter implements ResultsWriter {
     private final Path outputDirectory;
     private final ObjectWriter writer;
 
-    /** @param outputDirectory the directory in which to persist results */
+    /**
+     * @param outputDirectory the directory in which to persist results
+     */
     public XmlResultsWriter(final Path outputDirectory) {
         this(outputDirectory, XmlResultMapper.INSTANCE.get().writerWithDefaultPrettyPrinter());
     }

@@ -26,10 +26,14 @@ import java.util.function.Predicate;
 /** Options to control the {@link SystemTestExecutor}. */
 public interface ExecutorOptions {
 
-    /** @return the root directory to search for test packages to run. */
+    /**
+     * @return the root directory to search for test packages to run.
+     */
     Path testDirectory();
 
-    /** @return the directory to output test results to. */
+    /**
+     * @return the directory to output test results to.
+     */
     Path resultDirectory();
 
     /**
@@ -45,7 +49,9 @@ public interface ExecutorOptions {
         return Optional.empty();
     }
 
-    /** @return optional filter to limit which suites to run. */
+    /**
+     * @return optional filter to limit which suites to run.
+     */
     default Predicate<Path> suitesFilter() {
         return path -> true;
     }
@@ -57,7 +63,9 @@ public interface ExecutorOptions {
         return false;
     }
 
-    /** @return info about which services should be debugged. */
+    /**
+     * @return info about which services should be debugged.
+     */
     default Optional<ServiceDebugInfo> serviceDebugInfo() {
         return Optional.empty();
     }

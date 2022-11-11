@@ -33,7 +33,9 @@ public final class TestPackageParserObserver implements TestPackageParser.Observ
 
     private final Logger logger;
 
-    /** @param logger the logger to log to. */
+    /**
+     * @param logger the logger to log to.
+     */
     public TestPackageParserObserver(final Logger logger) {
         this.logger = requireNonNull(logger, "logger");
     }

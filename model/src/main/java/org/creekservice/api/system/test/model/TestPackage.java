@@ -52,12 +52,16 @@ public final class TestPackage {
                         .collect(Collectors.toUnmodifiableList());
     }
 
-    /** @return any seed data to play in before each suite. */
+    /**
+     * @return any seed data to play in before each suite.
+     */
     public List<Input> seedData() {
         return List.copyOf(seedData);
     }
 
-    /** @return the test suites in the package. */
+    /**
+     * @return the test suites in the package.
+     */
     public List<TestSuite> suites() {
         return List.copyOf(suites);
     }

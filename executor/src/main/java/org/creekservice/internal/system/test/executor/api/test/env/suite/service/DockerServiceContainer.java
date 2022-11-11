@@ -57,7 +57,9 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
     private final AtomicInteger nextDebugServicePort;
     private final InstanceNaming naming = new InstanceNaming();
 
-    /** @param serviceDebugInfo info about which services should be debugged. */
+    /**
+     * @param serviceDebugInfo info about which services should be debugged.
+     */
     public DockerServiceContainer(final ServiceDebugInfo serviceDebugInfo) {
         this(serviceDebugInfo, DockerServiceContainer::containerFactory);
     }
