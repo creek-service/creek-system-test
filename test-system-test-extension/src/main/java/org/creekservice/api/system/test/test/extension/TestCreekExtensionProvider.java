@@ -42,6 +42,8 @@ public final class TestCreekExtensionProvider
     private static final String ENSURE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_ENSURE_RESOURCE_ID, "");
 
+    public TestCreekExtensionProvider() {}
+
     @Override
     public TestCreekExtension initialize(final CreekService api) {
         validate(api.components().descriptors().stream());

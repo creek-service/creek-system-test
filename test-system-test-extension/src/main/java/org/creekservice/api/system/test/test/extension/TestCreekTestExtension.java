@@ -28,6 +28,8 @@ import org.creekservice.api.system.test.extension.test.model.InputHandler.InputO
 /** Extension used for testing */
 public final class TestCreekTestExtension implements CreekTestExtension {
 
+    public TestCreekTestExtension() {}
+
     @Override
     public String name() {
         return "test system test extension";
