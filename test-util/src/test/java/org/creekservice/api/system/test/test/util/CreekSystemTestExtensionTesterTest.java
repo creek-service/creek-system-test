@@ -71,7 +71,7 @@ class CreekSystemTestExtensionTesterTest {
 
         when(serviceDef.name()).thenReturn("bob");
         when(serviceDef.dockerImage())
-                .thenReturn("ghcr.io/creekservice/creek-system-test-test-service");
+                .thenReturn("ghcr.io/creek-service/creek-system-test-test-service");
     }
 
     @Test

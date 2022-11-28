@@ -70,7 +70,7 @@ import org.testcontainers.utility.DockerImageName;
 class DockerServiceContainerTest {
 
     public static final DockerImageName TEST_SERVICE_IMAGE_NAME =
-            DockerImageName.parse("ghcr.io/creekservice/creek-system-test-test-service:latest");
+            DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
     private static final int ATTACH_ME_PORT = 7857;
     private static final int BASE_SERVICE_DEBUG_PORT = 9000;
     @Mock private ServiceDefinition serviceDef;

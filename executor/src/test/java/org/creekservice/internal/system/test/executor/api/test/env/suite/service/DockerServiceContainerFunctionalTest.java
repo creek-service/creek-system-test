@@ -65,7 +65,7 @@ class DockerServiceContainerFunctionalTest {
 
     private static final String SERVICE_NAME = "test-service";
     private static final String SERVICE_IMAGE =
-            "ghcr.io/creekservice/creek-system-test-test-service";
+            "ghcr.io/creek-service/creek-system-test-test-service";
 
     private DockerServiceContainer instances;
 
@@ -324,7 +324,7 @@ class DockerServiceContainerFunctionalTest {
                 List.of(containerConfig.getEnv()),
                 hasItem(
                         "JAVA_TOOL_OPTIONS="
-                                + "-javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar=port:7857,host:host.docker.internal "
+                                + "-javaagent:/opt/creek/agent/attachme-agent-1.2.1.jar=port:7857,host:host.docker.internal "
                                 + "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000"));
         assertThat(
                 containerConfig.getExposedPorts(),
