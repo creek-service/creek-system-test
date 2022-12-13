@@ -165,7 +165,9 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         container
                 .withNetwork(network)
                 .withNetworkAliases(instanceName)
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName)));
+                .withLogConsumer(
+                        new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName))
+                                .withPrefix(instanceName));
 
         return container;
     }
