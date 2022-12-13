@@ -28,6 +28,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.creekservice.api.base.annotation.VisibleForTesting;
+import org.creekservice.api.base.type.Preconditions;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
@@ -50,7 +51,8 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     private final GenericContainer<?> container;
     private final Optional<? extends ServiceDescriptor> descriptor;
     private final Consumer<ServiceInstance> startedCallback;
-    private Duration startUpTimeOut = Duration.ofSeconds(90);
+    private Duration startUpTimeOut = Duration.ofSeconds(30);
+    private Duration shutDownTimeOut = Duration.ofSeconds(30);
 
     /**
      * @param name the name of the instance.
@@ -168,13 +170,10 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
             return;
         }
 
-        LOGGER.info(
-                "Stopping {} ({}) with container-id {}",
-                name,
-                imageName,
-                container.getContainerId());
-        container.stop();
-        LOGGER.info("Stopped {} ({})", name, imageName);
+        // First, attempt a graceful shutdown:
+        gracefulStop();
+        // Then, if still running, kill, and always remove container:
+        killAndRemove();
     }
 
     @Override
@@ -234,6 +233,19 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         return this;
     }
 
+    @Override
+    public ConfigurableServiceInstance setShutdownTimeout(final Duration timeout) {
+        throwIfNotOnCorrectThread();
+        throwIfRunning();
+        Preconditions.require(timeout.toSeconds() > 0, "timeout must be at least 1 second");
+        Preconditions.require(
+                timeout.toSeconds() <= Integer.MAX_VALUE,
+                "timeout must be no more than " + Integer.MAX_VALUE + " seconds");
+
+        shutDownTimeOut = requireNonNull(timeout, "timeout");
+        return this;
+    }
+
     /**
      * Visible only for testing.
      *
@@ -271,6 +283,59 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         if (!running()) {
             throw new IllegalStateException(
                     "Container not running. service: " + name + " (" + imageName + ")");
+        }
+    }
+
+    private void gracefulStop() {
+        if (!container.isRunning()) {
+            LOGGER.warn(
+                    "{} ({}) with container-id {} had failed.",
+                    name,
+                    imageName,
+                    container.getContainerId());
+            return;
+        }
+
+        LOGGER.info(
+                "Stopping {} ({}) with container-id {}",
+                name,
+                imageName,
+                container.getContainerId());
+
+        container
+                .getDockerClient()
+                .stopContainerCmd(container.getContainerId())
+                .withTimeout(Integer.max(1, (int) shutDownTimeOut.toSeconds()))
+                .exec();
+
+        if (container.isRunning()) {
+            LOGGER.warn(
+                    "Failed to step {} ({}) after {} seconds",
+                    name,
+                    imageName,
+                    shutDownTimeOut.toSeconds());
+        } else {
+            LOGGER.info("Stopped {} ({})", name, imageName);
+        }
+    }
+
+    private void killAndRemove() {
+        final boolean killing = container.isRunning();
+        if (killing) {
+            LOGGER.info(
+                    "Killing {} ({}) with container-id {}",
+                    name,
+                    imageName,
+                    container.getContainerId());
+        }
+
+        // Performs kill under the hood
+        // See https://github.com/testcontainers/testcontainers-java/issues/1000
+        // And then removes the container
+        container.stop();
+
+        if (killing) {
+            LOGGER.info("Killed {} ({})", name, imageName);
         }
     }
 
