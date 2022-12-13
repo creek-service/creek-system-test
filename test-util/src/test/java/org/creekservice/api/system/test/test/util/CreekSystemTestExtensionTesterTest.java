@@ -143,6 +143,7 @@ class CreekSystemTestExtensionTesterTest {
         assertThat(services.iterator().hasNext(), is(false));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     void shouldDefaultToNoServicesBeingDebug() {
         assertThat(
@@ -150,6 +151,7 @@ class CreekSystemTestExtensionTesterTest {
                 is(ServiceDebugInfo.none()));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     void shouldSupportConfiguringServiceDebugInfo() {
         // Given:
@@ -163,6 +165,7 @@ class CreekSystemTestExtensionTesterTest {
                 is(debugServiceInfo));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     void shouldSupportConfiguringServicesForDebugging() {
         // Given:

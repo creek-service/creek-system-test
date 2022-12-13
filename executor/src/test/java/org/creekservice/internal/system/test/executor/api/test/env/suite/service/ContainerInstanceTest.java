@@ -27,6 +27,7 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Streams;
 import com.google.common.testing.NullPointerTester;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -73,7 +75,7 @@ class ContainerInstanceTest {
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
 
-    @Mock(answer = RETURNS_DEEP_STUBS)
+    @Mock(answer = RETURNS_DEEP_STUBS, strictness = LENIENT)
     private GenericContainer<?> container;
 
     @Mock private ServiceDescriptor descriptor;
@@ -169,9 +171,26 @@ class ContainerInstanceTest {
     }
 
     @Test
-    void shouldStop() {
+    void shouldShutdownGracefully() {
         // Given:
         givenRunning();
+
+        // When:
+        instance.stop();
+
+        // Then:
+        verify(
+                        container
+                                .getDockerClient()
+                                .stopContainerCmd(container.getContainerId())
+                                .withTimeout(30))
+                .exec();
+    }
+
+    @Test
+    void shouldKillAndRemoveOnStop() {
+        // Given:
+        when(container.getContainerId()).thenReturn("bob").thenReturn(null);
 
         // When:
         instance.stop();
@@ -181,6 +200,21 @@ class ContainerInstanceTest {
     }
 
     @Test
+    void shouldTryGracefulStopFirst() {
+        // Given:
+        givenRunning();
+
+        // When:
+        instance.stop();
+
+        // Then:
+        final InOrder inOrder = inOrder(container, container.getDockerClient());
+        inOrder.verify(container.getDockerClient()).stopContainerCmd(any());
+        inOrder.verify(container).stop();
+    }
+
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    @Test
     void shouldIgnoreStopIfNotRunning() {
         // Given:
         givenNotRunning();
@@ -189,6 +223,7 @@ class ContainerInstanceTest {
         instance.stop();
 
         // Then:
+        verify(container, never()).getDockerClient();
         verify(container, never()).stop();
     }
 
@@ -456,6 +491,37 @@ class ContainerInstanceTest {
     }
 
     @Test
+    void shouldSetShutdownTimeout() {
+        // Given:
+        givenNotRunning();
+        final Duration timeout = Duration.ofSeconds(33);
+        final ConfigurableServiceInstance result = instance.setShutdownTimeout(timeout);
+        givenRunning();
+
+        // When:
+        instance.stop();
+
+        // Then:
+        verify(container.getDockerClient().stopContainerCmd(any()))
+                .withTimeout((int) timeout.toSeconds());
+        assertThat(result, is(instance));
+    }
+
+    @Test
+    void shouldRejectInvalidShutdownTimeouts() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> instance.setShutdownTimeout(Duration.ofMillis(1)));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> instance.setShutdownTimeout(Duration.ofSeconds(1L + Integer.MAX_VALUE)));
+    }
+
+    @Test
     void shouldSetStartupAttempts() {
         // Given:
         givenNotRunning();
@@ -539,13 +605,16 @@ class ContainerInstanceTest {
     }
 
     private void givenRunning() {
+        when(container.isRunning()).thenReturn(true);
         when(container.getContainerId()).thenReturn("bob");
     }
 
     private void givenNotRunning() {
+        when(container.isRunning()).thenReturn(false);
         when(container.getContainerId()).thenReturn(null);
     }
 
+    @SuppressWarnings("deprecation")
     public static Stream<Arguments> methods() {
         return Streams.concat(
                 configureMethods(),
@@ -609,6 +678,10 @@ class ContainerInstanceTest {
                         "setStartupTimeout",
                         (Consumer<ConfigurableServiceInstance>)
                                 i -> i.setStartupTimeout(Duration.ZERO)),
+                Arguments.of(
+                        "setShutdownTimeout",
+                        (Consumer<ConfigurableServiceInstance>)
+                                i -> i.setShutdownTimeout(Duration.ZERO)),
                 Arguments.of(
                         "addExposedPorts",
                         (Consumer<ConfigurableServiceInstance>)

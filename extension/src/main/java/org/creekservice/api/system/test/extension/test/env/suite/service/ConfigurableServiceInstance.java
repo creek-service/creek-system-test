@@ -82,7 +82,18 @@ public interface ConfigurableServiceInstance extends ServiceInstance {
     ConfigurableServiceInstance setStartupLogMessage(String regex, int times);
 
     /**
-     * Set a startup timeout after which the instance will be considered failed.
+     * Set how many attempts should be made to start the instance.
+     *
+     * <p>If the max attempts is exceeded the test suite will fail.
+     *
+     * @param attempts the max attempts.
+     * @return self, for method chaining.
+     * @throws IllegalStateException if the instance is running.
+     */
+    ConfigurableServiceInstance setStartupAttempts(int attempts);
+
+    /**
+     * Set a startup timeout, after which the instance will be considered failed.
      *
      * <p>Failed containers may result in another attempt, or cause the test suite to fail.
      *
@@ -93,13 +104,14 @@ public interface ConfigurableServiceInstance extends ServiceInstance {
     ConfigurableServiceInstance setStartupTimeout(Duration timeout);
 
     /**
-     * Set how many attempts should be made to start the instance.
+     * Set a shutdown timeout, after which the instance will be killed.
      *
-     * <p>If the max attempts is exceeded the test suite will fail.
+     * <p>Containers are first sent a SIGTERM signal, which should trigger a graceful shutdown. If
+     * the container fails to stop within the configured timeout it will be sent a SIGKILL signal.
      *
-     * @param attempts the max attempts.
+     * @param timeout the timeout
      * @return self, for method chaining.
      * @throws IllegalStateException if the instance is running.
      */
-    ConfigurableServiceInstance setStartupAttempts(int attempts);
+    ConfigurableServiceInstance setShutdownTimeout(Duration timeout);
 }
