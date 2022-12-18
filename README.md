@@ -3,6 +3,7 @@
 [![build](https://github.com/creek-service/creek-system-test/actions/workflows/build.yml/badge.svg)](https://github.com/creek-service/creek-system-test/actions/workflows/build.yml)
 [![CodeQL](https://github.com/creek-service/creek-system-test/actions/workflows/codeql.yml/badge.svg)](https://github.com/creek-service/creek-system-test/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/creek-service/creek-system-test/badge)](https://api.securityscorecards.dev/projects/github.com/creek-service/creek-system-test)
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6840/badge)](https://bestpractices.coreinfrastructure.org/projects/6840)
 
 # Creek System Test
 
