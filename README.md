@@ -337,57 +337,35 @@ Happy to take contributions for a [Maven plugin](https://github.com/creek-servic
 The system tests leverage the [AttachMe][attachme-plugin] IntelliJ plugin to simplify attaching the debugger to Creek based services
 running within Docker containers. You can read more about the AttachMe plugin [here][attachme-blog].  
 
-Assuming the AttachMe plugin is installed, running and listening on the correct port, and the microservice is 
-[correctly configured](#configuring-a-service-for-debugging), then debugging the service is as simple building 
-the container image locally, setting breakpoints in the code and then passing the service, or service-instance, 
-name(s) on the command line when running system tests.
+Assuming the AttachMe plugin is installed, running and listening on the correct port, and the microservice is
+[correctly configured](#configuring-a-service-for-debugging), then debugging the service is as simple as 
+setting breakpoints in the code and then passing the service, or service-instance, name(s) on the command 
+line when running system tests.
 
-Service names match those set in the `services` field of a test suite.
-For example, `my-service`. When a service name is set, 
-all instances of the service that are started will block waiting for the debugger to attach.
+Specifying service names allows all instances of the service to be debugged.
+The service name to use is the same as the names used in the  `services` field of a test suite,
+for example, `my-service`.  
 
-Specifying service instance name allows only a specific instance of a service to be debugged.
+Specifying service instance names allows only a specific instance of a service to be debugged.
 Instance names are in the form <service-name>-<instance-number>, where instance-number is zero indexed.
-For example, `my-service-2` would mean the third instance of `my-service` to be started.
+For example, `my-service-1` would mean the second instance of `my-service` to be started.
 
-Information on how to debug the services can be found in build plugin documentation.
-For example, the [Gradle plugin][gradle-plugin].
+The exact mechanism / command line required to debug a service will depend on the build plugin used.
+See the [System Test Gradle plugin][gradle-plugin] documentation for more information.
 
 ### Configuring a service for debugging
 
 > ### NOTE
 > Template repos, such as [Aggregate Template][aggregate-template] are correctly preconfigured for service debugging
 
-To be able to debug a Creek Service the docker image must be built on a developer's machine with:
+To be able to debug a Creek Service the following must be true:
 
-1. The `~/.attachme/attacheme-agent-x.x.x.jar` present.
+1. The AttachMe agent must be present on the local machine at `~/.attachme/attacheme-agent-x.x.x.jar`.
    Running an AttachMe run configuration in IntelliJ will cause the plugin to download the agent jar to your home directory.
-2. The service's `prepareDocker` Gradle task needs to be configured to include the agent jar, if present:
-   ```kotlin
-   tasks.register<Copy>("prepareDocker") {
-    // ... 
-   
-    // Include the AttachMe agent files if present in user's home directory:
-    from (Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
-        into("agent")
-    }
-
-    // Ensure the agent dir exists even if the agent is not installed
-    from (layout.projectDirectory.file(".ensureAgent")) {
-        into("agent")
-    }
-
-    // ...
-   }
-   ```
-3. Create the `.ensureAgent` file in the root of the module. This can just be an empty file. 
-4. The service's `DockerFile` needs to be tweaked to handle the agent.
+2. The service's `DockerFile` needs to be tweaked to handle the agent.
    This includes installing the `lsof` command, as this is required by the agent.
    ```dockerfile
-   RUN yum update -y
-   RUN yum install -y tar lsof
-   RUN mkdir -p /opt/creek
-   COPY agent /opt/creek/agent
+   RUN yum install -y lsof
    ```
 
 ### How it works
@@ -395,47 +373,59 @@ To be able to debug a Creek Service the docker image must be built on a develope
 When the AttachMe plugin is first run it downloads an agent jar and script to the user's home directory under  
 `~/.attachme`.
 
-To use AttachMe normally, a user would create and run an `AttachMe` configuration and then `source` the script
-in a terminal window to set the `JAVA_TOOL_OPTIONS` environment variable to install the agent and set up the
+To use AttachMe normally, a user would create and run an `AttachMe` configuration and then `source` the `~/.attachme/config.sh` 
+script in a terminal window to set the `JAVA_TOOL_OPTIONS` environment variable to install the agent and set up the
 debugging parameters. Any java process started from the terminal, or any child processes it starts, will
 automatically pick up the `JAVA_TOOL_OPTIONS` and spawn a new debug window in IntelliJ.  
 This is very cool and useful in itself, and I'd recommend you read the [blog post][attachme-blog] on the topic to learn more.
 
-To enable debugging of services running within containers, the docker image built locally picks up the AttachMe agent
-files from your home directory and Creek sets the appropriate `JAVA_TOOLS_OPTIONS` when creating the container.
+When debugging services during system testing the agent jar is made available to the service by mounting a directory
+containing the jar into the service's container, and configuring the Java agent via the `JAVA_TOOLS_OPTIONS` environment 
+variable when creating the Docker container.
 When the service starts up, the AttachMe agent calls out to the AttachMe plugin, letting it know what port
 the service is listening on for the debugger to attach. The plugin passes this on to the IntelliJ debugger, which
 then connects to the service.
 
 > ### NOTE
-> the service is configured to wait for the debugger to attach, so if the AttachMe plugin is not running
+> the service is configured to wait for the debugger to attach, so if the AttachMe Configuration is not running
 > the service will timeout on startup.
 
 ### Known failures to debug
 
-#### Error opening zip file or JAR manifest missing
+#### Cannot run program "lsof"
 
 If you see an error like the following:
 
 ```
-Picked up JAVA_TOOL_OPTIONS: -javaagent:/opt/creek/agent/attachme-agent-1.1.0.jar=port:7857,host:host.docker.internal -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
-Error opening zip file or JAR manifest missing : /opt/creek/agent/attachme-agent-1.0.0.jar
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/opt/creek/mounts/debug/attachme-agent-1.2.1.jar=host:host.docker.internal,port:7857 -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
+Listening for transport dt_socket at address: 8000
+[attachme] Initialized agent for process PID=1
+java.lang.RuntimeException: java.io.IOException: Cannot run program "lsof": error=2, No such file or directory
+        at com.attachme.agent.CommandPortResolver.getPortCandidates(CommandPortResolver.java:45)
+        at com.attachme.agent.Agent$DebugPortTask.run(Agent.java:94)
+        at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.io.IOException: Cannot run program "lsof": error=2, No such file or directory
+        at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1128)
+        at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1071)
+        at com.attachme.agent.CommandPortResolver.getPortCandidates(CommandPortResolver.java:36)
+        ... 2 more
+Caused by: java.io.IOException: error=2, No such file or directory
+        at java.base/java.lang.ProcessImpl.forkAndExec(Native Method)
+        at java.base/java.lang.ProcessImpl.<init>(ProcessImpl.java:340)
+        at java.base/java.lang.ProcessImpl.start(ProcessImpl.java:271)
+        at java.base/java.lang.ProcessBuilder.start(ProcessBuilder.java:1107)
+        ... 4 more
 ```
-...then the docker image is missing the AttacheMe agent jar. Causes of this are generally:
- 
-1. The image has not been built locally while the agent jar was installed.
-   * Running the AttachMe run configuration in IntelliJ will pull the agent jar locally.
-   * Running `gradlle :<service>:buildAppImage` will rebuild the image with the agent jar available.
-2. The service is not correctly configured for debugging.
-   See [Configuring a service for debugging](#configuring-a-service-for-debugging)
+...then the docker image is missing `lsof`.
+See [Configuring a service for debugging](#configuring-a-service-for-debugging)
 
 #### Service being debugged hangs on startup
 
 The service will block waiting for the debugger to attach. Therefore, it's likely the debugger is not attaching.
 The most common causes this are:
 
-1. The AttachMe plugin is not running. Once the plugin is installed you will need to create a new "run configuration"
-   in IntelliJ that leverages the plugin and run it. See the [blog post][attachme-blog] for details.
+1. An AttachMe configuration is not running. Once the Intellij plugin is installed you will need to create a new 
+   "run configuration" in IntelliJ to run it. See the [blog post][attachme-blog] for details.
 2. The port the AttachMe plugin is listening does not match the one the service is calling out on. The default port
    used by the AttachMe plugin is `7857`. The same default is used by Creek. However, if you need to change the
    plugin's default for any reason, you'll need to also tell the Creek system tests. 

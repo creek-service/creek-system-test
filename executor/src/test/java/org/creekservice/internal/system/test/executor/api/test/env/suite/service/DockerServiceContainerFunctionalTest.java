@@ -28,10 +28,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -41,13 +43,19 @@ import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.InternetProtocol;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.execution.debug.DebugToolOptions;
+import org.creekservice.api.test.util.TestPaths;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -56,10 +64,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
 import org.testcontainers.DockerClientFactory;
 
+@SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
 @ExtendWith(MockitoExtension.class)
 class DockerServiceContainerFunctionalTest {
 
@@ -67,17 +78,21 @@ class DockerServiceContainerFunctionalTest {
     private static final String SERVICE_IMAGE =
             "ghcr.io/creek-service/creek-system-test-test-service";
 
-    private DockerServiceContainer instances;
-
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
+
+    @TempDir private Path tmpDir;
     @Mock private ServiceDefinition serviceDef;
     @Mock private ServiceDebugInfo serviceDebugInfo;
+    @Mock private ServiceDescriptor descriptor;
+
+    private DockerServiceContainer instances;
 
     @BeforeEach
     void setUp() {
-        when(serviceDebugInfo.attachMePort()).thenReturn(7857);
         when(serviceDebugInfo.baseServicePort()).thenReturn(8000);
-        instances = new DockerServiceContainer(serviceDebugInfo);
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(serviceDebugInfo, List.of(), Map.of()));
 
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
@@ -269,7 +284,7 @@ class DockerServiceContainerFunctionalTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    void shouldSetEnvOnInstance() {
+    void shouldSetEnvOnConfigurableInstance() {
         // Given:
         final ConfigurableServiceInstance instance = instances.add(serviceDef);
 
@@ -282,6 +297,164 @@ class DockerServiceContainerFunctionalTest {
         assertThat(
                 List.of(instanceConfig(instance).getEnv()),
                 hasItem("CREEK_TEST_ENV_KEY_0=expected value"));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldSetEnvOnInstanceUnderTest() {
+        // Given:
+        givenServiceUnderTest();
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(),
+                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // Then:
+        instance.start();
+        assertThat(instanceConfig(instance).getEnv(), is(notNullValue()));
+        assertThat(
+                List.of(instanceConfig(instance).getEnv()),
+                hasItem("CREEK_TEST_ENV_KEY=expected value"));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldNotSetEnvOn3rdPartyInstance() {
+        // Given:
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(),
+                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // Then:
+        instance.start();
+        assertThat(instanceConfig(instance).getEnv(), is(notNullValue()));
+        assertThat(
+                List.of(instanceConfig(instance).getEnv()),
+                not(hasItem("CREEK_TEST_ENV_KEY=expected value")));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void shouldNotSetEnvOn3rdPartyInstanceUnlessDebuggingThem() {
+        // Given:
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(),
+                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // Then:
+        instance.start();
+        assertThat(instanceConfig(instance).getEnv(), is(notNullValue()));
+        assertThat(
+                List.of(instanceConfig(instance).getEnv()),
+                hasItem("CREEK_TEST_ENV_KEY=expected value"));
+    }
+
+    @Test
+    void shouldSetReadOnlyMountOnInstanceUnderTest() {
+        // Given:
+        givenServiceUnderTest();
+        TestPaths.write(tmpDir.resolve("some.file"), "data");
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), true)),
+                                Map.of()));
+        final ServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+
+        // Then:
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
+
+        assertThatEventually(
+                instanceLogs::toString, containsString("/opt/creek/test_mount : read-only"));
+    }
+
+    @Test
+    void shouldSetWritableMountOnInstanceUnderTest() {
+        // Given:
+        givenServiceUnderTest();
+        TestPaths.write(tmpDir.resolve("some.file"), "data");
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
+                                Map.of()));
+        final ServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+
+        // Then:
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
+
+        assertThatEventually(
+                instanceLogs::toString, containsString("/opt/creek/test_mount : writable"));
+    }
+
+    @Test
+    void shouldNotSetMountsOn3rdPartyInstances() {
+        // Given:
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
+                                Map.of()));
+        final ServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+
+        // Then:
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        assertThatEventually(
+                instanceLogs::toString, containsString("/opt/creek/test_mount : not-present"));
+    }
+
+    @Test
+    void shouldNotSetMountsOn3rdPartyInstancesUnlessDebuggingThem() {
+        // Given:
+        instances =
+                new DockerServiceContainer(
+                        new ContainerFactory(
+                                serviceDebugInfo,
+                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
+                                Map.of()));
+        TestPaths.write(tmpDir.resolve("some.file"), "data");
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+        final ServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+
+        // Then:
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
+
+        assertThatEventually(
+                instanceLogs::toString, containsString("/opt/creek/test_mount : writable"));
     }
 
     @Test
@@ -300,42 +473,8 @@ class DockerServiceContainerFunctionalTest {
                 is(new ExposedPort[] {new ExposedPort(8080, InternetProtocol.TCP)}));
     }
 
-    @SuppressWarnings("ConstantConditions")
-    @Test
-    void shouldDebugService() {
-        // Given:
-        assumeThat(
-                "Skipping as attachMe agent not installed",
-                DebugToolOptions.agentJarFile(),
-                is(not(Optional.empty())));
-
-        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
-        final ConfigurableServiceInstance instance = instances.add(serviceDef);
-        final int start = (int) System.currentTimeMillis() / 1000;
-
-        // When:
-        instance.start();
-
-        // Then:
-        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
-        final ContainerConfig containerConfig = instanceConfig(instance);
-        assertThat(instanceConfig(instance).getEnv(), is(notNullValue()));
-        assertThat(
-                List.of(containerConfig.getEnv()),
-                hasItem(
-                        "JAVA_TOOL_OPTIONS="
-                                + "-javaagent:/opt/creek/agent/attachme-agent-1.2.1.jar=port:7857,host:host.docker.internal "
-                                + "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000"));
-        assertThat(
-                containerConfig.getExposedPorts(),
-                is(new ExposedPort[] {new ExposedPort(8000, InternetProtocol.TCP)}));
-        assertThatEventually(
-                instanceLogs::toString,
-                containsString("Listening for transport dt_socket at address: 8000"));
-    }
-
-    private StringBuilder trackContainerLogs(
-            final ConfigurableServiceInstance instance, final int start) {
+    @SuppressWarnings("deprecation")
+    private StringBuilder trackContainerLogs(final ServiceInstance instance, final int start) {
         final StringBuilder builder = new StringBuilder();
         dockerClient
                 .logContainerCmd(((ContainerInstance) instance).containerId())
@@ -394,6 +533,12 @@ class DockerServiceContainerFunctionalTest {
         };
     }
 
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    private void givenServiceUnderTest() {
+        doReturn(Optional.of(descriptor)).when(serviceDef).descriptor();
+    }
+
+    @SuppressWarnings("deprecation")
     private boolean dockerContainerRunState(
             final ServiceInstance instance, final String cachedInstanceId) {
         final String containerId = ((ContainerInstance) instance).containerId();
@@ -418,11 +563,22 @@ class DockerServiceContainerFunctionalTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private ContainerConfig instanceConfig(final ServiceInstance instance) {
         return dockerClient
                 .inspectContainerCmd(((ContainerInstance) instance).containerId())
                 .exec()
                 .getConfig();
+    }
+
+    private static MountInfo mount(
+            final Path hostPath, final Path containerPath, final boolean readOnly) {
+        final MountInfo mount =
+                mock(MountInfo.class, withSettings().strictness(Strictness.LENIENT));
+        when(mount.hostPath()).thenReturn(hostPath);
+        when(mount.containerPath()).thenReturn(containerPath);
+        when(mount.readOnly()).thenReturn(readOnly);
+        return mount;
     }
 
     private static List<ServiceInstance> instances(final DockerServiceContainer instances) {
@@ -431,6 +587,7 @@ class DockerServiceContainerFunctionalTest {
         return result;
     }
 
+    @SuppressWarnings("deprecation")
     private static String instanceId(final ServiceInstance instance) {
         return ((ContainerInstance) instance).containerId();
     }

@@ -17,13 +17,18 @@
 package org.creekservice.internal.system.test.executor.cli;
 
 import static java.lang.System.lineSeparator;
-import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
+import static org.creekservice.api.base.type.Preconditions.requireNonEmpty;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -44,6 +49,7 @@ import picocli.CommandLine.Spec;
 public final class PicoCliParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PicoCliParser.class);
+    private static final String NOT_SET = "<Not Set>";
 
     private PicoCliParser() {}
 
@@ -55,7 +61,7 @@ public final class PicoCliParser {
      */
     public static Optional<ExecutorOptions> parse(final String... args) {
         final Options options = new Options();
-        final CommandLine parser = new CommandLine(options);
+        final CommandLine parser = new CommandLine(options).setTrimQuotes(true);
 
         try {
             parser.parseArgs(args);
@@ -121,34 +127,12 @@ public final class PicoCliParser {
         private Optional<Pattern> suitePattern;
 
         @Option(
-                names = {"-e", "--echo-only"},
+                names = {"-eo", "--echo-only"},
                 hidden = true,
                 description =
                         "Hidden option used for testing. When set the running will echo its config to "
                                 + "standard out and exit.")
         private boolean echoOnly;
-
-        private int debugAttachMePort = DEFAULT_ATTACH_ME_PORT;
-
-        /**
-         * Method to allow {@code debugAttachMePort} to ve validated.
-         *
-         * @param port the debug port.
-         */
-        @Option(
-                names = {"-dap", "--debug-attachme-port"},
-                description = "The port the attachMe plugin will be listening on.")
-        public void setDebugAttachMePort(final int port) {
-            if (port <= 0) {
-                throw new ParameterException(
-                        spec.commandLine(),
-                        "Invalid value '"
-                                + port
-                                + "' for option '--debug-attachme-port': "
-                                + "value must be positive.");
-            }
-            this.debugAttachMePort = port;
-        }
 
         private int debugServicePort = DEFAULT_BASE_DEBUG_PORT;
 
@@ -204,6 +188,49 @@ public final class PicoCliParser {
             this.debugInstances = Set.copyOf(new HashSet<>(Arrays.asList(names)));
         }
 
+        @Option(
+                names = {"-e", "--env"},
+                split = ",",
+                description =
+                        "Comma seperated list of key=value environment variables to set on each service-under-test.")
+        private Map<String, String> env = Map.of();
+
+        private List<MountInfo> mounts = new ArrayList<>(2);
+
+        /**
+         * Method for adding read-only mount points.
+         *
+         * @param mounts the map of host -> container paths to mount.
+         */
+        @Option(
+                names = {"-mr", "--mount-read-only"},
+                split = ",",
+                description =
+                        "Comma seperated list of hostPath=containerPath read-only mount points to set on each service-under-test.")
+        public void addReadOnlyMount(final Map<String, String> mounts) {
+            validateMounts(mounts);
+            mounts.entrySet().stream()
+                    .map(e -> new Mount(e.getKey(), e.getValue(), true))
+                    .forEach(this.mounts::add);
+        }
+
+        /**
+         * Method for adding writable mount points.
+         *
+         * @param mounts the map of host -> container paths to mount.
+         */
+        @Option(
+                names = {"-mw", "--mount-writable"},
+                split = ",",
+                description =
+                        "Comma seperated list of hostPath=containerPath writable mount points to set on each service-under-test.")
+        public void addWritableMount(final Map<String, String> mounts) {
+            validateMounts(mounts);
+            mounts.entrySet().stream()
+                    .map(e -> new Mount(e.getKey(), e.getValue(), false))
+                    .forEach(this.mounts::add);
+        }
+
         @Override
         public Path testDirectory() {
             return testDir;
@@ -242,11 +269,17 @@ public final class PicoCliParser {
 
             return Optional.of(
                     org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo
-                            .serviceDebugInfo(
-                                    debugAttachMePort,
-                                    debugServicePort,
-                                    debugServices,
-                                    debugInstances));
+                            .serviceDebugInfo(debugServicePort, debugServices, debugInstances));
+        }
+
+        @Override
+        public Collection<MountInfo> mountInfo() {
+            return List.copyOf(mounts);
+        }
+
+        @Override
+        public Map<String, String> env() {
+            return Map.copyOf(env);
         }
 
         @Override
@@ -258,32 +291,85 @@ public final class PicoCliParser {
                     + resultDir
                     + lineSeparator()
                     + "--verifier-timeout-seconds="
-                    + verifierTimeout.map(String::valueOf).orElse("<Not Set>")
+                    + verifierTimeout.map(String::valueOf).orElse(NOT_SET)
                     + lineSeparator()
                     + "--include-suites="
-                    + suitePattern.map(Pattern::pattern).orElse("<Not Set>")
-                    + lineSeparator()
-                    + "--debug-attachme-port="
-                    + (debugAttachMePort == DEFAULT_ATTACH_ME_PORT
-                            ? "<Not Set>"
-                            : debugAttachMePort)
+                    + suitePattern.map(Pattern::pattern).orElse(NOT_SET)
                     + lineSeparator()
                     + "--debug-service-port="
-                    + (debugServicePort == DEFAULT_BASE_DEBUG_PORT ? "<Not Set>" : debugServicePort)
+                    + (debugServicePort == DEFAULT_BASE_DEBUG_PORT ? NOT_SET : debugServicePort)
                     + lineSeparator()
                     + "--debug-service="
                     + (debugServices.isEmpty()
-                            ? "<Not Set>"
-                            : debugServices.stream()
-                                    .sorted()
-                                    .collect(Collectors.joining(", ", "[", "]")))
+                            ? NOT_SET
+                            : debugServices.stream().sorted().collect(Collectors.joining(",")))
                     + lineSeparator()
                     + "--debug-service-instance="
                     + (debugInstances.isEmpty()
-                            ? "<Not Set>"
-                            : debugInstances.stream()
+                            ? NOT_SET
+                            : debugInstances.stream().sorted().collect(Collectors.joining(",")))
+                    + lineSeparator()
+                    + "--env="
+                    + (env.isEmpty()
+                            ? NOT_SET
+                            : env.entrySet().stream()
+                                    .map(e -> e.getKey() + "=" + e.getValue())
                                     .sorted()
-                                    .collect(Collectors.joining(", ", "[", "]")));
+                                    .collect(Collectors.joining(",")))
+                    + lineSeparator()
+                    + "--mount-read-only="
+                    + formatMounts(true)
+                    + lineSeparator()
+                    + "--mount-writable="
+                    + formatMounts(false);
+        }
+
+        private static void validateMounts(final Map<String, String> mounts) {
+            mounts.forEach(
+                    (hostPath, containerPath) -> {
+                        if (hostPath.trim().isEmpty()) {
+                            throw new IllegalArgumentException("Host path can not be empty");
+                        }
+                        if (containerPath.trim().isEmpty()) {
+                            throw new IllegalArgumentException("Container path can not be empty");
+                        }
+                    });
+        }
+
+        private String formatMounts(final boolean readOnly) {
+            final String collected =
+                    mounts.stream()
+                            .filter(m -> m.readOnly() == readOnly)
+                            .map(m -> m.hostPath() + "=" + m.containerPath())
+                            .collect(Collectors.joining(","));
+            return collected.isEmpty() ? NOT_SET : collected;
+        }
+
+        private static final class Mount implements MountInfo {
+            private final Path hostPath;
+            private final Path containerPath;
+            private final boolean readOnly;
+
+            Mount(final String hostPath, final String containerPath, final boolean readOnly) {
+                this.hostPath = Paths.get(requireNonEmpty(hostPath, "hostPath"));
+                this.containerPath = Paths.get(requireNonEmpty(containerPath, "containerPath"));
+                this.readOnly = readOnly;
+            }
+
+            @Override
+            public Path hostPath() {
+                return hostPath;
+            }
+
+            @Override
+            public Path containerPath() {
+                return containerPath;
+            }
+
+            @Override
+            public boolean readOnly() {
+                return readOnly;
+            }
         }
     }
 

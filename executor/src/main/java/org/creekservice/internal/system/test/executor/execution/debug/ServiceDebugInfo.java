@@ -28,7 +28,6 @@ import org.creekservice.api.system.test.executor.ExecutorOptions;
 /** Implementation of {@link ExecutorOptions.ServiceDebugInfo}. */
 public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo {
 
-    private final int attachMePort;
     private final int baseServicePort;
     private final Set<String> serviceNames;
     private final Set<String> instanceNames;
@@ -36,7 +35,6 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
     /**
      * Create debug info.
      *
-     * @param attachMePort the port the attachMe plugin is listening on.
      * @param baseServicePort The port the first service being debugged will listen on for the
      *     debugger to attach. Subsequent services being debugged will use sequential port numbers.
      * @param serviceNames the names of services to debug.
@@ -47,14 +45,12 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
      *     Debugging</a>
      */
     public static ServiceDebugInfo serviceDebugInfo(
-            final int attachMePort,
             final int baseServicePort,
             final Set<String> serviceNames,
             final Set<String> serviceInstanceNames) {
         return serviceNames.isEmpty() && serviceInstanceNames.isEmpty()
-                ? new ServiceDebugInfo(0, 0, Set.of(), Set.of())
-                : new ServiceDebugInfo(
-                        attachMePort, baseServicePort, serviceNames, serviceInstanceNames);
+                ? new ServiceDebugInfo(0, Set.of(), Set.of())
+                : new ServiceDebugInfo(baseServicePort, serviceNames, serviceInstanceNames);
     }
 
     /**
@@ -68,47 +64,31 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
             return (ServiceDebugInfo) info;
         }
         return serviceDebugInfo(
-                info.attachMePort(),
-                info.baseServicePort(),
-                info.serviceNames(),
-                info.serviceInstanceNames());
+                info.baseServicePort(), info.serviceNames(), info.serviceInstanceNames());
     }
 
     /**
      * @return an empty instance.
      */
     public static ServiceDebugInfo none() {
-        return serviceDebugInfo(0, 0, Set.of(), Set.of());
+        return serviceDebugInfo(0, Set.of(), Set.of());
     }
 
     @VisibleForTesting
     ServiceDebugInfo(
-            final int attachMePort,
             final int baseServicePort,
             final Set<String> serviceNames,
             final Set<String> instanceNames) {
-        this.attachMePort = attachMePort;
         this.baseServicePort = baseServicePort;
         this.serviceNames = toLower(requireNonNull(serviceNames, "serviceNames"));
         this.instanceNames = toLower(requireNonNull(instanceNames, "instanceNames"));
 
         if (!serviceNames.isEmpty()) {
             Preconditions.require(
-                    attachMePort > 0,
-                    "attachMePort must be greater than zero. attachMePort: " + attachMePort);
-            Preconditions.require(
                     baseServicePort > 0,
                     "baseServicePort must be greater than zero. baseServicePort: "
                             + baseServicePort);
-            Preconditions.require(
-                    attachMePort != baseServicePort,
-                    "baseServicePort must not equal attachMePort. port: " + baseServicePort);
         }
-    }
-
-    @Override
-    public int attachMePort() {
-        return attachMePort;
     }
 
     @Override
@@ -147,15 +127,14 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
             return false;
         }
         final ServiceDebugInfo that = (ServiceDebugInfo) o;
-        return attachMePort == that.attachMePort
-                && baseServicePort == that.baseServicePort
+        return baseServicePort == that.baseServicePort
                 && Objects.equals(serviceNames, that.serviceNames)
                 && Objects.equals(instanceNames, that.instanceNames);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(attachMePort, baseServicePort, serviceNames, instanceNames);
+        return Objects.hash(baseServicePort, serviceNames, instanceNames);
     }
 
     private static Set<String> toLower(final Set<String> names) {

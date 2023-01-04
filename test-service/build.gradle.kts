@@ -15,7 +15,6 @@
  */
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import java.nio.file.Paths
 
 plugins {
     application
@@ -25,11 +24,13 @@ plugins {
 val creekVersion : String by extra
 val slf4jVersion : String by extra
 val log4jVersion : String by extra
+val spotBugsVersion : String by extra
 
 dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 
@@ -53,16 +54,6 @@ tasks.register<Copy>("prepareDocker") {
         layout.buildDirectory.file("distributions/${project.name}-${project.version}.tar"),
         layout.projectDirectory.dir("include")
     )
-
-    // Include the AttachMe agent files if present in user's home directory:
-    from (Paths.get(System.getProperty("user.home")).resolve(".attachme")) {
-        into("agent")
-    }
-
-    // Ensure the agent dir exists even if the agent is not installed
-    from (layout.projectDirectory.file(".ensureAgent")) {
-        into("agent")
-    }
 
     into(buildAppImage.inputDir)
 }

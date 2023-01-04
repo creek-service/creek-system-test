@@ -17,6 +17,10 @@
 package org.creekservice.internal.system.test.test.service;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,7 @@ public final class ServiceMain {
 
     public static void main(final String... args) {
         dumpEnv();
+        logMount();
         doLogging();
         awaitShutdown();
     }
@@ -37,6 +42,27 @@ public final class ServiceMain {
         System.getenv().entrySet().stream()
                 .filter(e -> e.getKey().startsWith("CREEK_"))
                 .forEach(e -> LOGGER.info("Env: " + e.getKey() + "=" + e.getValue()));
+    }
+
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
+    private static void logMount() {
+        final Path mount = Paths.get("/opt/creek/test_mount");
+        if (!Files.isDirectory(mount)) {
+            LOGGER.info("/opt/creek/test_mount : not-present");
+            return;
+        }
+
+        if (Files.isWritable(mount)) {
+            LOGGER.info("/opt/creek/test_mount : writable");
+        } else {
+            LOGGER.info("/opt/creek/test_mount : read-only");
+        }
+
+        if (Files.isRegularFile(mount.resolve("some.file"))) {
+            LOGGER.info("some.file : present");
+        } else {
+            LOGGER.info("some.file : not-present");
+        }
     }
 
     private static void doLogging() {

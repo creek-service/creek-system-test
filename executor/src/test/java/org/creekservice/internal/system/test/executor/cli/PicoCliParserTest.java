@@ -28,7 +28,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -196,7 +198,6 @@ class PicoCliParserTest {
         // Given:
         final String[] args =
                 minimalArgs(
-                        "--debug-attachme-port=2000",
                         "--debug-service-port=4000",
                         "--debug-service=a,b",
                         "--debug-service=c",
@@ -210,9 +211,6 @@ class PicoCliParserTest {
         final Optional<ExecutorOptions.ServiceDebugInfo> debugInfo =
                 result.flatMap(ExecutorOptions::serviceDebugInfo);
         assertThat(
-                debugInfo.map(ExecutorOptions.ServiceDebugInfo::attachMePort),
-                is(Optional.of(2000)));
-        assertThat(
                 debugInfo.map(ExecutorOptions.ServiceDebugInfo::baseServicePort),
                 is(Optional.of(4000)));
         assertThat(
@@ -224,24 +222,97 @@ class PicoCliParserTest {
     }
 
     @Test
-    void shouldDefaultAttachMePort() {
+    void shouldParseSingleEnv() {
         // Given:
-        final String[] args = minimalArgs("--debug-service=a");
+        final String[] args = minimalArgs("--env=NAME=VALUE");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(result.map(ExecutorOptions::env), is(Optional.of(Map.of("NAME", "VALUE"))));
+    }
+
+    @Test
+    void shouldParseSingleMultipleEnvInSingleParam() {
+        // Given:
+        final String[] args = minimalArgs("--env=NAME=VALUE,NAME2=V2");
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
 
         // Then:
         assertThat(
-                result.flatMap(ExecutorOptions::serviceDebugInfo)
-                        .map(ExecutorOptions.ServiceDebugInfo::attachMePort),
-                is(Optional.of(7857)));
+                result.map(ExecutorOptions::env),
+                is(Optional.of(Map.of("NAME", "VALUE", "NAME2", "V2"))));
     }
 
     @Test
-    void shouldThrowOnInvalidAttachMaPort() {
+    void shouldParseEnvWithSpaceInValue() {
         // Given:
-        final String[] args = minimalArgs("--debug-attachme-port=0", "--debug-service=a");
+        final String[] args = minimalArgs("--env=NAME=\"VAL UE\"");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(result.map(ExecutorOptions::env), is(Optional.of(Map.of("NAME", "VAL UE"))));
+    }
+
+    @Test
+    void shouldParseSingleMultipleEnvInMultipleParams() {
+        // Given:
+        final String[] args = minimalArgs("--env=NAME=VALUE", "--env=NAME2=V2");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::env),
+                is(Optional.of(Map.of("NAME", "VALUE", "NAME2", "V2"))));
+    }
+
+    @Test
+    void shouldParseReadOnlyMount() {
+        // Given:
+        final String[] args = minimalArgs("--mount-read-only=/host/path=/container/path");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(1)));
+
+        final ExecutorOptions.MountInfo mount = result.get().mountInfo().iterator().next();
+        assertThat(mount.hostPath(), is(Path.of("/host/path")));
+        assertThat(mount.containerPath(), is(Path.of("/container/path")));
+        assertThat(mount.readOnly(), is(true));
+    }
+
+    @Test
+    void shouldParseWritableMount() {
+        // Given:
+        final String[] args = minimalArgs("--mount-writable=host/path=container/path");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(1)));
+
+        final ExecutorOptions.MountInfo mount = result.get().mountInfo().iterator().next();
+        assertThat(mount.hostPath(), is(Path.of("host/path")));
+        assertThat(mount.containerPath(), is(Path.of("container/path")));
+        assertThat(mount.readOnly(), is(false));
+    }
+
+    @Test
+    void shouldThrowOnReadOnlyMountWithEmptyHostPath() {
+        // Given:
+        final String[] args = minimalArgs("--mount-read-only==container/path");
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
@@ -249,8 +320,51 @@ class PicoCliParserTest {
         // Then:
         assertThat(
                 e.getMessage(),
-                startsWith(
-                        "Invalid value '0' for option '--debug-attachme-port': value must be positive."));
+                containsString("java.lang.IllegalArgumentException: Host path can not be empty"));
+    }
+
+    @Test
+    void shouldThrowOnReadOnlyMountWithEmptyContainerPath() {
+        // Given:
+        final String[] args = minimalArgs("--mount-read-only=host/path=");
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                containsString(
+                        "java.lang.IllegalArgumentException: Container path can not be empty"));
+    }
+
+    @Test
+    void shouldThrowOnWriteableMountWithEmptyHostPath() {
+        // Given:
+        final String[] args = minimalArgs("--mount-writable==container/path");
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                containsString("java.lang.IllegalArgumentException: Host path can not be empty"));
+    }
+
+    @Test
+    void shouldThrowOnWriteableMountWithEmptyContainerPath() {
+        // Given:
+        final String[] args = minimalArgs("--mount-writable=host/path=");
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                containsString(
+                        "java.lang.IllegalArgumentException: Container path can not be empty"));
     }
 
     @Test
@@ -334,13 +448,17 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--include-suites=<Not Set>"
                                         + lineSeparator()
-                                        + "--debug-attachme-port=<Not Set>"
-                                        + lineSeparator()
                                         + "--debug-service-port=<Not Set>"
                                         + lineSeparator()
                                         + "--debug-service=<Not Set>"
                                         + lineSeparator()
-                                        + "--debug-service-instance=<Not Set>")));
+                                        + "--debug-service-instance=<Not Set>"
+                                        + lineSeparator()
+                                        + "--env=<Not Set>"
+                                        + lineSeparator()
+                                        + "--mount-read-only=<Not Set>"
+                                        + lineSeparator()
+                                        + "--mount-writable=<Not Set>")));
     }
 
     @Test
@@ -350,10 +468,12 @@ class PicoCliParserTest {
                 minimalArgs(
                         "--verifier-timeout-seconds=90",
                         "--include-suites=.*include.*",
-                        "-dap=54321",
                         "-dsp=12345",
                         "-ds=a,b",
-                        "-dsi=a-0,b-1");
+                        "-dsi=a-0,b-1",
+                        "-e=A=B,C=D",
+                        "-mr=/a/b=/c,d/e=/f",
+                        "-mw=/a=/b/c,/d=/f");
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -371,13 +491,17 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--include-suites=.*include.*"
                                         + lineSeparator()
-                                        + "--debug-attachme-port=54321"
-                                        + lineSeparator()
                                         + "--debug-service-port=12345"
                                         + lineSeparator()
-                                        + "--debug-service=[a, b]"
+                                        + "--debug-service=a,b"
                                         + lineSeparator()
-                                        + "--debug-service-instance=[a-0, b-1]")));
+                                        + "--debug-service-instance=a-0,b-1"
+                                        + lineSeparator()
+                                        + "--env=A=B,C=D"
+                                        + lineSeparator()
+                                        + "--mount-read-only=/a/b=/c,d/e=/f"
+                                        + lineSeparator()
+                                        + "--mount-writable=/a=/b/c,/d=/f")));
     }
 
     private static String[] minimalArgs(final String... additional) {

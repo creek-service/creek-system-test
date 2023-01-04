@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
@@ -41,27 +42,40 @@ class ApiTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SystemTest api;
 
+    @Mock private ContainerFactory containerFactory;
     @Mock private CreekTestExtension ext0;
     @Mock private CreekTestExtension ext1;
 
     @Test
     void shouldAddLoggingTestLifecycleListener() {
         // When:
-        initializeApi(api, List.of());
+        initializeApi(api, containerFactory, List.of());
 
         // Then:
         verify(api.tests().env().listeners()).append(isA(LoggingTestEnvironmentListener.class));
     }
 
     @Test
-    void shouldAddSuiteCleanUpListener() {
+    void shouldAddContainerFactoryListener() {
         // When:
-        initializeApi(api, List.of());
+        initializeApi(api, containerFactory, List.of());
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners());
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(LoggingTestEnvironmentListener.class));
+        inOrder.verify(api.tests().env().listeners()).append(containerFactory);
+        inOrder.verify(api.tests().env().listeners()).append(isA(SuiteCleanUpListener.class));
+    }
+
+    @Test
+    void shouldAddSuiteCleanUpListener() {
+        // When:
+        initializeApi(api, containerFactory, List.of());
+
+        // Then:
+        final InOrder inOrder = inOrder(api.tests().env().listeners());
+        inOrder.verify(api.tests().env().listeners()).append(containerFactory);
         inOrder.verify(api.tests().env().listeners()).append(isA(SuiteCleanUpListener.class));
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(AddServicesUnderTestListener.class));
@@ -70,7 +84,7 @@ class ApiTest {
     @Test
     void shouldAddAddServicesUnderTestListener() {
         // When:
-        initializeApi(api, List.of(ext0));
+        initializeApi(api, containerFactory, List.of(ext0));
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
@@ -83,7 +97,7 @@ class ApiTest {
     @Test
     void shouldAddInitializeResourcesListener() {
         // When:
-        initializeApi(api, List.of(ext0));
+        initializeApi(api, containerFactory, List.of(ext0));
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
@@ -97,7 +111,7 @@ class ApiTest {
     @Test
     void shouldInitializeTestExtensions() {
         // When:
-        initializeApi(api, List.of(ext0, ext1));
+        initializeApi(api, containerFactory, List.of(ext0, ext1));
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0, ext1);
@@ -112,7 +126,7 @@ class ApiTest {
     @Test
     void shouldAddStartServicesUnderTestListener() {
         // When:
-        initializeApi(api, List.of(ext0));
+        initializeApi(api, containerFactory, List.of(ext0));
 
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);

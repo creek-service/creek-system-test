@@ -37,8 +37,8 @@ import org.creekservice.api.system.test.extension.component.definition.ServiceDe
 import org.creekservice.internal.service.api.Creek;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
-import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 /** Implementation of {@link CreekSystemTest}. */
 public final class SystemTest implements CreekSystemTest {
@@ -49,14 +49,14 @@ public final class SystemTest implements CreekSystemTest {
 
     /**
      * @param components all known components.
-     * @param serviceDebugInfo info about which services should be debugged.
+     * @param containerFactory factory for creating Docker containers
      */
     public SystemTest(
             final Collection<? extends ComponentDescriptor> components,
-            final ServiceDebugInfo serviceDebugInfo) {
+            final ContainerFactory containerFactory) {
         this(
                 new TestModel(),
-                new TestEnv(serviceDebugInfo),
+                new TestEnv(containerFactory),
                 ComponentDefinitions.serviceDefinitions(components),
                 ComponentDefinitions.aggregateDefinitions(components),
                 c -> new Creek(c.descriptors()));

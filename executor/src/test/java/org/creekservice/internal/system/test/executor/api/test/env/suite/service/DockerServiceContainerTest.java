@@ -16,19 +16,17 @@
 
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
-import static org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer.containerFactory;
 import static org.creekservice.test.util.CreateOnDifferentThread.createOnDifferentThread;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,8 +48,6 @@ import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
-import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer.ContainerFactory;
-import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +57,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -69,14 +64,11 @@ import org.testcontainers.utility.DockerImageName;
 @MockitoSettings(strictness = LENIENT)
 class DockerServiceContainerTest {
 
-    public static final DockerImageName TEST_SERVICE_IMAGE_NAME =
-            DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
-    private static final int ATTACH_ME_PORT = 7857;
-    private static final int BASE_SERVICE_DEBUG_PORT = 9000;
+    private static final String SERVICE_NAME = "bob";
+    private static final DockerImageName IMAGE_NAME = DockerImageName.parse("bob:latest");
+
     @Mock private ServiceDefinition serviceDef;
     @Mock private ServiceDescriptor serviceDescriptor;
-    @Mock private ServiceDebugInfo serviceDebugInfo;
-
     @Mock private ContainerFactory containerFactory;
 
     @Mock(answer = RETURNS_DEEP_STUBS)
@@ -87,15 +79,12 @@ class DockerServiceContainerTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @BeforeEach
     void setUp() {
-        when(serviceDebugInfo.baseServicePort()).thenReturn(BASE_SERVICE_DEBUG_PORT);
+        instances = new DockerServiceContainer(containerFactory);
 
-        instances = new DockerServiceContainer(serviceDebugInfo, containerFactory);
-
-        when(serviceDef.name()).thenReturn("bob");
-        when(serviceDef.dockerImage()).thenReturn("bob:latest");
-        when(containerFactory.create(any(), anyInt(), any()))
+        when(serviceDef.name()).thenReturn(SERVICE_NAME);
+        when(serviceDef.dockerImage()).thenReturn(IMAGE_NAME.toString());
+        when(containerFactory.create(any(), any(), any(), anyBoolean()))
                 .thenReturn((GenericContainer) container);
-        when(serviceDebugInfo.attachMePort()).thenReturn(ATTACH_ME_PORT);
     }
 
     @Test
@@ -183,46 +172,40 @@ class DockerServiceContainerTest {
     }
 
     @Test
-    void shouldCreateDockerContainerWithUniqueDebugPort() {
+    void shouldCreateContainerFor3rdPartyService() {
         // Given:
-        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
-        final DockerImageName image = DockerImageName.parse(serviceDef.dockerImage());
+        when(serviceDef.descriptor()).thenReturn(Optional.empty());
 
         // When:
         instances.add(serviceDef);
 
         // Then:
-        verify(containerFactory)
-                .create(image, ATTACH_ME_PORT, Optional.of(BASE_SERVICE_DEBUG_PORT));
+        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-0", SERVICE_NAME, false);
+    }
+
+    @Test
+    void shouldCreateContainerForServiceUnderTest() {
+        // Given:
+        doReturn(Optional.of(serviceDescriptor)).when(serviceDef).descriptor();
 
         // When:
         instances.add(serviceDef);
 
         // Then:
-        verify(containerFactory)
-                .create(image, ATTACH_ME_PORT, Optional.of(BASE_SERVICE_DEBUG_PORT + 1));
+        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-0", SERVICE_NAME, true);
     }
 
     @Test
-    void shouldCreateNonDebugContainer() {
+    void shouldCreateContainerWithUniqueInstanceNames() {
+        // Given:
+        instances.add(serviceDef);
+        clearInvocations(containerFactory);
+
         // When:
-        final GenericContainer<?> container =
-                containerFactory(TEST_SERVICE_IMAGE_NAME, ATTACH_ME_PORT, Optional.empty());
+        instances.add(serviceDef);
 
         // Then:
-        assertThat(container.getDockerImageName(), is(TEST_SERVICE_IMAGE_NAME.toString()));
-        assertThat(container, not(instanceOf(FixedHostPortGenericContainer.class)));
-    }
-
-    @Test
-    void shouldCreateDebugContainer() {
-        // When:
-        final GenericContainer<?> container =
-                containerFactory(TEST_SERVICE_IMAGE_NAME, ATTACH_ME_PORT, Optional.of(12355));
-
-        // Then:
-        assertThat(container.getDockerImageName(), is(TEST_SERVICE_IMAGE_NAME.toString()));
-        assertThat(container, instanceOf(FixedHostPortGenericContainer.class));
+        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-1", SERVICE_NAME, false);
     }
 
     @SuppressWarnings("unused")
@@ -231,9 +214,7 @@ class DockerServiceContainerTest {
     void shouldThrowIfWrongThread(
             final String ignored, final Consumer<DockerServiceContainer> method) {
         // Given:
-        instances =
-                createOnDifferentThread(
-                        () -> new DockerServiceContainer(serviceDebugInfo, containerFactory));
+        instances = createOnDifferentThread(() -> new DockerServiceContainer(containerFactory));
 
         // Then:
         assertThrows(ConcurrentModificationException.class, () -> method.accept(instances));
@@ -252,7 +233,7 @@ class DockerServiceContainerTest {
                 hasSize(publicMethodNames.size()));
     }
 
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings("unchecked")
     public static Stream<Arguments> publicMethods() {
         return Stream.of(
                 Arguments.of(
@@ -273,11 +254,7 @@ class DockerServiceContainerTest {
                 Arguments.of("get", (Consumer<DockerServiceContainer>) si -> si.get("")),
                 Arguments.of(
                         "forEach",
-                        (Consumer<DockerServiceContainer>) si -> si.forEach(mock(Consumer.class))),
-                Arguments.of(
-                        "serviceDebugInfo",
-                        (Consumer<DockerServiceContainer>)
-                                DockerServiceContainer::serviceDebugInfo));
+                        (Consumer<DockerServiceContainer>) si -> si.forEach(mock(Consumer.class))));
     }
 
     private static List<String> testedMethodNames() {
