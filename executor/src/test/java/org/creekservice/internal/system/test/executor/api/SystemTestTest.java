@@ -34,6 +34,7 @@ import org.creekservice.api.system.test.extension.component.definition.ServiceDe
 import org.creekservice.internal.service.api.Creek;
 import org.creekservice.internal.system.test.executor.api.component.definition.ComponentDefinitions;
 import org.creekservice.internal.system.test.executor.api.test.env.TestEnv;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 import org.creekservice.internal.system.test.executor.api.test.model.TestModel;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +67,9 @@ class SystemTestTest {
     @Test
     void shouldThrowNPEs() {
         final NullPointerTester tester =
-                new NullPointerTester().setDefault(ServiceDebugInfo.class, ServiceDebugInfo.none());
+                new NullPointerTester()
+                        .setDefault(ServiceDebugInfo.class, ServiceDebugInfo.none())
+                        .setDefault(ContainerFactory.class, mock(ContainerFactory.class));
         tester.testAllPublicConstructors(SystemTest.class);
         tester.testAllPublicStaticMethods(SystemTest.class);
         tester.testAllPublicInstanceMethods(api);

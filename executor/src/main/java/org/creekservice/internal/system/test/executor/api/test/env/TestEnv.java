@@ -23,7 +23,7 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.TestEnvironment;
 import org.creekservice.internal.system.test.executor.api.test.env.listener.TestListeners;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.TestSuiteEnv;
-import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 
 /** Implementation of {@link TestEnvironment} */
 public final class TestEnv implements TestEnvironment {
@@ -32,10 +32,10 @@ public final class TestEnv implements TestEnvironment {
     private final TestSuiteEnv suite;
 
     /**
-     * @param serviceDebugInfo info about which services should be debugged.
+     * @param containerFactory factory for creating Docker containers
      */
-    public TestEnv(final ServiceDebugInfo serviceDebugInfo) {
-        this(new TestListeners(), new TestSuiteEnv(serviceDebugInfo));
+    public TestEnv(final ContainerFactory containerFactory) {
+        this(new TestListeners(), new TestSuiteEnv(containerFactory));
     }
 
     @VisibleForTesting

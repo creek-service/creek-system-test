@@ -16,13 +16,14 @@
 
 package org.creekservice.api.system.test.executor;
 
-import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
 import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,12 +84,17 @@ class ExecutorOptionsTest {
     }
 
     @Test
-    void shouldDefaultAttachMeAgentPort() {
-        assertThat(debugInfo.attachMePort(), is(DEFAULT_ATTACH_ME_PORT));
+    void shouldDefaultBaseServicePort() {
+        assertThat(debugInfo.baseServicePort(), is(DEFAULT_BASE_DEBUG_PORT));
     }
 
     @Test
-    void shouldDefaultBaseServicePort() {
-        assertThat(debugInfo.baseServicePort(), is(DEFAULT_BASE_DEBUG_PORT));
+    void shouldDefaultToNoMounts() {
+        assertThat(options.mountInfo(), is(empty()));
+    }
+
+    @Test
+    void shouldDefaultToNoEnv() {
+        assertThat(options.env(), is(Map.of()));
     }
 }

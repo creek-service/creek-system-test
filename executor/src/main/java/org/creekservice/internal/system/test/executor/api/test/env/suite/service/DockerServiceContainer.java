@@ -23,25 +23,15 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
-import org.creekservice.internal.system.test.executor.execution.debug.DebugToolOptions;
-import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
 /** A local, docker based, implementation of {@link ServiceInstanceContainer}. */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class DockerServiceContainer implements ServiceInstanceContainer {
 
     // See https://github.com/creek-service/creek-system-test/issues/79 for making these
@@ -50,35 +40,20 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
     private static final Duration CONTAINER_START_UP_TIMEOUT = Duration.ofMinutes(1);
 
     private final long threadId;
-    private final ServiceDebugInfo serviceDebugInfo;
-    private final ContainerFactory containerFactory;
-    private final Network network = Network.newNetwork();
     private final Map<String, ConfigurableServiceInstance> instances = new HashMap<>();
-    private final AtomicInteger nextDebugServicePort;
     private final InstanceNaming naming = new InstanceNaming();
+    private final ContainerFactory containerFactory;
 
     /**
-     * @param serviceDebugInfo info about which services should be debugged.
+     * @param containerFactory factory for creating Docker containers
      */
-    public DockerServiceContainer(final ServiceDebugInfo serviceDebugInfo) {
-        this(serviceDebugInfo, DockerServiceContainer::containerFactory);
+    public DockerServiceContainer(final ContainerFactory containerFactory) {
+        this(containerFactory, Thread.currentThread().getId());
     }
 
-    @VisibleForTesting
-    DockerServiceContainer(
-            final ServiceDebugInfo serviceDebugInfo, final ContainerFactory containerFactory) {
-        this(serviceDebugInfo, Thread.currentThread().getId(), containerFactory);
-    }
-
-    private DockerServiceContainer(
-            final ServiceDebugInfo serviceDebugInfo,
-            final long threadId,
-            final ContainerFactory containerFactory) {
-        this.serviceDebugInfo = requireNonNull(serviceDebugInfo, "serviceDebugInfo");
-        this.threadId = threadId;
+    private DockerServiceContainer(final ContainerFactory containerFactory, final long threadId) {
         this.containerFactory = requireNonNull(containerFactory, "containerFactory");
-        this.nextDebugServicePort = new AtomicInteger();
-        clear();
+        this.threadId = threadId;
     }
 
     @Override
@@ -88,7 +63,10 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         final String instanceName = naming.instanceName(def.name());
         final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
-        final GenericContainer<?> container = createContainer(imageName, instanceName, def.name());
+        final GenericContainer<?> container =
+                containerFactory.create(
+                        imageName, instanceName, def.name(), def.descriptor().isPresent());
+
         final ConfigurableServiceInstance instance =
                 new ContainerInstance(
                                 instanceName,
@@ -135,47 +113,6 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         throwOnRunningServices();
         instances.clear();
         naming.clear();
-        nextDebugServicePort.set(serviceDebugInfo.baseServicePort());
-    }
-
-    /**
-     * Visible only for testing.
-     *
-     * @return info about which services should be debugged.
-     * @deprecated not intended for public use. No backwards compatability guaranteed on new
-     *     releases.
-     */
-    @SuppressWarnings("DeprecatedIsStillUsed")
-    @VisibleForTesting
-    @Deprecated
-    public ServiceDebugInfo serviceDebugInfo() {
-        throwIfNotOnCorrectThread();
-        return serviceDebugInfo;
-    }
-
-    private GenericContainer<?> createContainer(
-            final DockerImageName imageName, final String instanceName, final String serviceName) {
-
-        final GenericContainer<?> container =
-                containerFactory.create(
-                        imageName,
-                        serviceDebugInfo.attachMePort(),
-                        debugPort(instanceName, serviceName));
-
-        container
-                .withNetwork(network)
-                .withNetworkAliases(instanceName)
-                .withLogConsumer(
-                        new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName))
-                                .withPrefix(instanceName));
-
-        return container;
-    }
-
-    private Optional<Integer> debugPort(final String instanceName, final String serviceName) {
-        return serviceDebugInfo.shouldDebug(serviceName, instanceName)
-                ? Optional.of(nextDebugServicePort.getAndIncrement())
-                : Optional.empty();
     }
 
     private void throwOnRunningServices() {
@@ -195,35 +132,5 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         if (Thread.currentThread().getId() != threadId) {
             throw new ConcurrentModificationException("Class is not thread safe");
         }
-    }
-
-    @VisibleForTesting
-    static GenericContainer<?> containerFactory(
-            final DockerImageName imageName,
-            final int attachMePort,
-            final Optional<Integer> maybeDebugPort) {
-        return maybeDebugPort
-                .map(debugPort -> debugContainer(imageName, attachMePort, debugPort))
-                .orElseGet(() -> new GenericContainer<>(imageName));
-    }
-
-    @SuppressWarnings("deprecation") // Deprecated as uncommon, but this is valid use case.
-    private static GenericContainer<?> debugContainer(
-            final DockerImageName imageName, final int attachMePort, final int serviceDebugPort) {
-        final Map<String, String> env =
-                DebugToolOptions.javaToolOptions(attachMePort, serviceDebugPort)
-                        .map(jto -> Map.of("JAVA_TOOL_OPTIONS", jto))
-                        .orElse(Map.of());
-
-        return new FixedHostPortGenericContainer<>(imageName.toString())
-                .withExposedPorts(serviceDebugPort)
-                .withFixedExposedPort(serviceDebugPort, serviceDebugPort)
-                .withEnv(env);
-    }
-
-    @VisibleForTesting
-    interface ContainerFactory {
-        GenericContainer<?> create(
-                DockerImageName imageName, int attachMePort, Optional<Integer> maybeDebugPort);
     }
 }

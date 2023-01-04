@@ -19,6 +19,9 @@ package org.creekservice.api.system.test.executor;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -64,6 +67,18 @@ public interface ExecutorOptions {
     }
 
     /**
+     * Info about the which services should be debugged.
+     *
+     * <p>In addition to providing this information, actually debugging a service requires the
+     * caller to provide the actual debugging mechanism. This will generally involve providing a
+     * {@link #mountInfo() mount} containing a Java agent, and enabling the agent by setting {@code
+     * JAVA_TOOLS_OPTIONS} environment variable via {@link #env()}.
+     *
+     * <p>When the {@code JAVA_TOOLS_OPTIONS} environment variable is set on a service being
+     * debugged, the test executor will search for the text {@code ${SERVICE_DEBUG_PORT}} in the
+     * variable's value and replace with the port number the Docker container is configured to
+     * expose to allow debugging.
+     *
      * @return info about which services should be debugged.
      */
     default Optional<ServiceDebugInfo> serviceDebugInfo() {
@@ -71,7 +86,32 @@ public interface ExecutorOptions {
     }
 
     /**
-     * Controls if any services, or service instances, should be configured to request the InteliJ
+     * @return info about any mounts to mount into the Docker containers running the
+     *     services-under-test or service-being-debugged.
+     */
+    default Collection<MountInfo> mountInfo() {
+        return List.of();
+    }
+
+    /**
+     * Provides an optional map of environment variables that will be set on each service-under-test
+     * instance or service-being-debugged.
+     *
+     * <p>For example, this can be used to set the {@code JAVA_TOOLS_OPTIONS} required to enable
+     * coverage and/or service debugging.
+     *
+     * <p>When debugging services, the all instances of the text {@code ${SERVICE_DEBUG_PORT}} found
+     * in the {@code JAVA_TOOLS_OPTIONS} value, if present, will be replaced with the port the
+     * service is configured to listen for the debugger on.
+     *
+     * @return map of environment variables to set on each service-under-test.
+     */
+    default Map<String, String> env() {
+        return Map.of();
+    }
+
+    /**
+     * Controls if any services, or service instances, should be configured to request the IntelliJ
      * debugger to attach when they start up.
      *
      * @see <a
@@ -80,26 +120,11 @@ public interface ExecutorOptions {
      */
     interface ServiceDebugInfo {
 
-        /** The default attachMe port that the IntelliJ attachMe plugin uses. */
-        int DEFAULT_ATTACH_ME_PORT = 7857;
-
         /**
          * The start of the default range of ports on the local machine that services will listen on
          * for the debugger.
          */
         int DEFAULT_BASE_DEBUG_PORT = 8000;
-
-        /**
-         * The port on which the attachMe plugin is listening on.
-         *
-         * <p>This is the port the attachMe agent running within the microservice's process will
-         * call out on to ask the debugger to attach.
-         *
-         * @return the port the attachMe plugin is listening on.
-         */
-        default int attachMePort() {
-            return DEFAULT_ATTACH_ME_PORT;
-        }
 
         /**
          * The base debug port.
@@ -129,5 +154,23 @@ public interface ExecutorOptions {
          * @return set of service instances to debug.
          */
         Set<String> serviceInstanceNames();
+    }
+
+    /** Information about a single mount. */
+    interface MountInfo {
+        /**
+         * @return the path on the host machine to mount.
+         */
+        Path hostPath();
+
+        /**
+         * @return the path within the Docker container to mount.
+         */
+        Path containerPath();
+
+        /**
+         * @return {@code true} if the mount is read-only.
+         */
+        boolean readOnly();
     }
 }

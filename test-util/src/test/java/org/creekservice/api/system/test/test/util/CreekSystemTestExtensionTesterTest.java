@@ -16,11 +16,12 @@
 
 package org.creekservice.api.system.test.test.util;
 
-import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_ATTACH_ME_PORT;
 import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
+import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.mount;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -35,9 +36,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
+import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
@@ -64,10 +68,12 @@ class CreekSystemTestExtensionTesterTest {
     private ServiceDefinition serviceDef;
 
     private CreekSystemTestExtensionTester tester;
+    private CreekSystemTestExtensionTester.TesterBuilder builder;
 
     @BeforeEach
     void setUp() {
-        tester = CreekSystemTestExtensionTester.extensionTester();
+        builder = CreekSystemTestExtensionTester.tester();
+        tester = builder.build();
 
         when(serviceDef.name()).thenReturn("bob");
         when(serviceDef.dockerImage())
@@ -143,49 +149,61 @@ class CreekSystemTestExtensionTesterTest {
         assertThat(services.iterator().hasNext(), is(false));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void shouldDefaultToNoServicesBeingDebug() {
-        assertThat(
-                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
-                is(ServiceDebugInfo.none()));
+        assertThat(tester.serviceDebugInfo(), is(ServiceDebugInfo.none()));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void shouldSupportConfiguringServiceDebugInfo() {
         // Given:
-        final ServiceDebugInfo debugServiceInfo =
-                serviceDebugInfo(123, 321, Set.of("a"), Set.of("b"));
-        tester = tester.withDebugServices(debugServiceInfo);
+        final ServiceDebugInfo debugServiceInfo = serviceDebugInfo(321, Set.of("a"), Set.of("b"));
+        tester = builder.withDebugServices(debugServiceInfo).build();
 
         // Then:
-        assertThat(
-                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
-                is(debugServiceInfo));
+        assertThat(tester.serviceDebugInfo(), is(debugServiceInfo));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void shouldSupportConfiguringServicesForDebugging() {
         // Given:
-        tester = tester.withDebugServices("a");
+        tester = builder.withDebugServices("a").build();
 
         // Then:
         assertThat(
-                ((DockerServiceContainer) tester.dockerServicesContainer()).serviceDebugInfo(),
-                is(
-                        serviceDebugInfo(
-                                DEFAULT_ATTACH_ME_PORT,
-                                DEFAULT_BASE_DEBUG_PORT,
-                                Set.of("a"),
-                                Set.of())));
+                tester.serviceDebugInfo(),
+                is(serviceDebugInfo(DEFAULT_BASE_DEBUG_PORT, Set.of("a"), Set.of())));
+    }
+
+    @Test
+    void shouldSupportMounts() {
+        // Given:
+        tester =
+                builder.withReadOnlyMount(Paths.get("r/host/path"), Paths.get("r/container/path"))
+                        .withWritableMount(Paths.get("w/host/path"), Paths.get("w/container/path"))
+                        .build();
+
+        // Then:
+        assertThat(
+                tester.mountInfo(),
+                contains(
+                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
+                        mount(Paths.get("w/host/path"), Paths.get("w/container/path"), false)));
+    }
+
+    @Test
+    void shouldSupportEnv() {
+        // Given:
+        tester = builder.withEnv("k", "v").withEnv("k2", "v2").build();
+
+        // Then:
+        assertThat(tester.env(), is(Map.of("k", "v", "k2", "v2")));
     }
 
     @Test
     void shouldBuildRefParser() throws Exception {
         // Given:
-        final YamlParserBuilder builder = tester.yamlParser();
+        final YamlParserBuilder builder = CreekSystemTestExtensionTester.yamlParser();
         builder.model().addRef(TestRef.class).withName("test/ref");
 
         // When:
@@ -204,7 +222,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldBuildInputParser() throws Exception {
         // Given:
-        final YamlParserBuilder builder = tester.yamlParser();
+        final YamlParserBuilder builder = CreekSystemTestExtensionTester.yamlParser();
         builder.model()
                 .addInput(TestInput.class, mock(TestInputHandler.class))
                 .withName("test/input");
@@ -225,7 +243,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldBuildExpectationParser() throws Exception {
         // Given:
-        final YamlParserBuilder builder = tester.yamlParser();
+        final YamlParserBuilder builder = CreekSystemTestExtensionTester.yamlParser();
         builder.model()
                 .addExpectation(TestExpectation.class, mock(TestExpectationHandler.class))
                 .withName("test/expectation");
@@ -246,7 +264,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldBuildOtherParser() throws Exception {
         // Given:
-        final YamlParserBuilder builder = tester.yamlParser();
+        final YamlParserBuilder builder = CreekSystemTestExtensionTester.yamlParser();
 
         // When:
         final ModelParser parser = builder.build();
@@ -263,7 +281,7 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldThrowOnParseFailed() {
         // Given:
-        final ModelParser parser = tester.yamlParser().build();
+        final ModelParser parser = CreekSystemTestExtensionTester.yamlParser().build();
 
         // When:
         final Exception e =
@@ -271,6 +289,31 @@ class CreekSystemTestExtensionTesterTest {
 
         // Then:
         assertThat(e.getMessage(), startsWith("Cannot deserialize value"));
+    }
+
+    @Test
+    void shouldImplementHashCodeAndEqualsOnMount() {
+        new EqualsTester()
+                .addEqualityGroup(
+                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
+                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true))
+                .addEqualityGroup(mount(Paths.get("diff"), Paths.get("r/container/path"), true))
+                .addEqualityGroup(mount(Paths.get("r/host/path"), Paths.get("diff"), true))
+                .addEqualityGroup(
+                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), false))
+                .testEquals();
+    }
+
+    @Test
+    void shouldToStringOnMount() {
+        // Given:
+        final MountInfo mount =
+                mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true);
+
+        // Then:
+        assertThat(
+                mount.toString(),
+                is("Mount{hostPath=r/host/path, containerPath=r/container/path, readOnly=true}"));
     }
 
     public static final class TestRef implements InputRef, ExpectationRef {

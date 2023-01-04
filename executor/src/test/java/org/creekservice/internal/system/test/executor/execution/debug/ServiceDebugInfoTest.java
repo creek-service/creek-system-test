@@ -40,7 +40,7 @@ class ServiceDebugInfoTest {
         tester.testAllPublicStaticMethods(ServiceDebugInfo.class);
         tester.testAllPublicInstanceMethods(ServiceDebugInfo.none());
         tester.testAllPublicInstanceMethods(
-                ServiceDebugInfo.serviceDebugInfo(7548, 8000, Set.of("a"), Set.of("b")));
+                ServiceDebugInfo.serviceDebugInfo(8000, Set.of("a"), Set.of("b")));
     }
 
     @Test
@@ -49,21 +49,20 @@ class ServiceDebugInfoTest {
                 .addEqualityGroup(
                         ServiceDebugInfo.none(),
                         ServiceDebugInfo.none(),
-                        serviceDebugInfo(7548, 8000, Set.of(), Set.of()))
+                        serviceDebugInfo(8000, Set.of(), Set.of()))
                 .addEqualityGroup(
-                        serviceDebugInfo(7548, 8000, Set.of("s"), Set.of("i")),
-                        serviceDebugInfo(7548, 8000, Set.of("S"), Set.of("I")))
-                .addEqualityGroup(serviceDebugInfo(1, 8000, Set.of("s"), Set.of("i")))
-                .addEqualityGroup(serviceDebugInfo(7548, 1, Set.of("s"), Set.of("i")))
-                .addEqualityGroup(serviceDebugInfo(7548, 8000, Set.of("diff"), Set.of("i")))
-                .addEqualityGroup(serviceDebugInfo(7548, 8000, Set.of("s"), Set.of("diff")))
+                        serviceDebugInfo(8000, Set.of("s"), Set.of("i")),
+                        serviceDebugInfo(8000, Set.of("S"), Set.of("I")))
+                .addEqualityGroup(serviceDebugInfo(1, Set.of("s"), Set.of("i")))
+                .addEqualityGroup(serviceDebugInfo(8000, Set.of("diff"), Set.of("i")))
+                .addEqualityGroup(serviceDebugInfo(8000, Set.of("s"), Set.of("diff")))
                 .testEquals();
     }
 
     @Test
     void shouldNotCopyImmutable() {
         // Given:
-        final ServiceDebugInfo info = serviceDebugInfo(7548, 8000, Set.of("s"), Set.of("i"));
+        final ServiceDebugInfo info = serviceDebugInfo(8000, Set.of("s"), Set.of("i"));
 
         // When:
         final ServiceDebugInfo result = ServiceDebugInfo.copyOf(info);
@@ -76,7 +75,6 @@ class ServiceDebugInfoTest {
     void shouldCopy() {
         // Given:
         final ExecutorOptions.ServiceDebugInfo info = mock(ExecutorOptions.ServiceDebugInfo.class);
-        when(info.attachMePort()).thenReturn(5897);
         when(info.baseServicePort()).thenReturn(3894);
         when(info.serviceNames()).thenReturn(Set.of("s"));
         when(info.serviceInstanceNames()).thenReturn(Set.of("i"));
@@ -85,34 +83,17 @@ class ServiceDebugInfoTest {
         final ServiceDebugInfo result = ServiceDebugInfo.copyOf(info);
 
         // Then:
-        assertThat(result, is(serviceDebugInfo(5897, 3894, Set.of("s"), Set.of("i"))));
-    }
-
-    @Test
-    void shouldThrowOnInvalidAttachMePort() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> serviceDebugInfo(-1, 8000, Set.of("s"), Set.of("i")));
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> serviceDebugInfo(0, 8000, Set.of("s"), Set.of("i")));
+        assertThat(result, is(serviceDebugInfo(3894, Set.of("s"), Set.of("i"))));
     }
 
     @Test
     void shouldThrowOnInvalidBaseServiceMePort() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> serviceDebugInfo(7548, -1, Set.of("s"), Set.of("i")));
+                () -> serviceDebugInfo(-1, Set.of("s"), Set.of("i")));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> serviceDebugInfo(7548, 0, Set.of("s"), Set.of("i")));
-    }
-
-    @Test
-    void shouldThrowOnMatchingPorts() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> serviceDebugInfo(700, 700, Set.of("s"), Set.of("i")));
+                () -> serviceDebugInfo(0, Set.of("s"), Set.of("i")));
     }
 
     @Test
@@ -123,7 +104,7 @@ class ServiceDebugInfoTest {
     @Test
     void shouldKnownWhichServicesToDebug() {
         // Given:
-        final ServiceDebugInfo info = serviceDebugInfo(7548, 8000, Set.of("s0", "s1"), Set.of("i"));
+        final ServiceDebugInfo info = serviceDebugInfo(8000, Set.of("s0", "s1"), Set.of("i"));
 
         // Then:
         assertThat(info.shouldDebug("s0", "n/a"), is(true));
@@ -134,7 +115,7 @@ class ServiceDebugInfoTest {
     @Test
     void shouldKnownWhichInstancesToDebug() {
         // Given:
-        final ServiceDebugInfo info = serviceDebugInfo(7548, 8000, Set.of("s"), Set.of("i0", "i1"));
+        final ServiceDebugInfo info = serviceDebugInfo(8000, Set.of("s"), Set.of("i0", "i1"));
 
         // Then:
         assertThat(info.shouldDebug("n/a", "i0"), is(true));
@@ -144,7 +125,7 @@ class ServiceDebugInfoTest {
 
     @Test
     void shouldBeCaseInsensitive() {
-        final ServiceDebugInfo info = serviceDebugInfo(7548, 8000, Set.of("s"), Set.of("I"));
+        final ServiceDebugInfo info = serviceDebugInfo(8000, Set.of("s"), Set.of("I"));
         assertThat(info.shouldDebug("S", "n/a"), is(true));
         assertThat(info.shouldDebug("n/a", "i"), is(true));
     }

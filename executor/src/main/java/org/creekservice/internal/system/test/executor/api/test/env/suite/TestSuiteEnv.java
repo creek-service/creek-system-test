@@ -21,8 +21,8 @@ import static java.util.Objects.requireNonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.suite.TestSuiteEnvironment;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
-import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 
 /** Implementation of {@link TestSuiteEnvironment}. */
 public final class TestSuiteEnv implements TestSuiteEnvironment {
@@ -30,10 +30,10 @@ public final class TestSuiteEnv implements TestSuiteEnvironment {
     private final DockerServiceContainer services;
 
     /**
-     * @param serviceDebugInfo info about which services should be debugged.
+     * @param containerFactory factory for creating Docker containers
      */
-    public TestSuiteEnv(final ServiceDebugInfo serviceDebugInfo) {
-        this(new DockerServiceContainer(serviceDebugInfo));
+    public TestSuiteEnv(final ContainerFactory containerFactory) {
+        this(new DockerServiceContainer(containerFactory));
     }
 
     @VisibleForTesting

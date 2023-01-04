@@ -93,7 +93,9 @@ public final class SystemTestExecutor {
                 initializeApi(
                         options.serviceDebugInfo()
                                 .map(ServiceDebugInfo::copyOf)
-                                .orElse(ServiceDebugInfo.none()));
+                                .orElse(ServiceDebugInfo.none()),
+                        options.mountInfo(),
+                        options.env());
 
         final TestExecutionResult result = executor(options, api).execute();
         if (result.isEmpty()) {

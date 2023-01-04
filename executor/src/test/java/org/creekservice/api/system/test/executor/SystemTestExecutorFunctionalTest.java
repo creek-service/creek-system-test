@@ -549,7 +549,14 @@ class SystemTestExecutorFunctionalTest {
             executor.waitFor(1, TimeUnit.MINUTES);
             return executor.exitValue();
         } catch (final Exception e) {
-            throw new AssertionError("Error executing: " + cmd, e);
+            throw new AssertionError(
+                    "Error executing: "
+                            + cmd
+                            + ", stdErr: "
+                            + stdErr.get()
+                            + ", stdOut: "
+                            + stdOut.get(),
+                    e);
         }
     }
 
