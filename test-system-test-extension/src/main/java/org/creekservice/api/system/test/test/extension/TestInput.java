@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.test.extension;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.creekservice.api.system.test.extension.test.model.Input;
 

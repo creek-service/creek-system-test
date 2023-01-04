@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
-
 import java.util.Optional;
 
 /** A collection of extensions to the Creek Service model. */

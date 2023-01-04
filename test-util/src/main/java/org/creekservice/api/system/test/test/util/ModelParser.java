@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.test.util;
 
-
 import java.io.IOException;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.Input;

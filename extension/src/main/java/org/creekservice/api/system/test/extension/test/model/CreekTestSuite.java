@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
-
 import java.util.List;
 
 /** Public API of a test suite. */

@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.parser;
 
-
 import java.util.Collection;
 import org.creekservice.internal.system.test.parser.YamlTestPackageParser;
 

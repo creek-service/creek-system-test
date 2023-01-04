@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.env.listener;
 
-
 import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestCaseResult;

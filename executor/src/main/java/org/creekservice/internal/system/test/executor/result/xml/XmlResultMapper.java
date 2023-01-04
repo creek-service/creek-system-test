@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.executor.result.xml;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

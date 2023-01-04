@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.env.suite;
 
-
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
 
 /** The environment in which test suites execute. */

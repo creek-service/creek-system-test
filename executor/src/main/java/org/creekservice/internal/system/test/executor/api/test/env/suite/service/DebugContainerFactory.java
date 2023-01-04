@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;

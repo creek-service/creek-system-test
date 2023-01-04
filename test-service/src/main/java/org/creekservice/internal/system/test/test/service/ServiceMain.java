@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.test.service;
 
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.file.Files;
 import java.nio.file.Path;

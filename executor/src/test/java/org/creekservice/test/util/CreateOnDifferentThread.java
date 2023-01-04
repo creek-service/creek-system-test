@@ -16,7 +16,6 @@
 
 package org.creekservice.test.util;
 
-
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 

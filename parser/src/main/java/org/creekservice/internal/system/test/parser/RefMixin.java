@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.parser;
 
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.creekservice.api.system.test.model.SimpleRef;
 
