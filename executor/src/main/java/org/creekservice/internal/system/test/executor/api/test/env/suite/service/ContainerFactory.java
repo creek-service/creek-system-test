@@ -151,11 +151,16 @@ public final class ContainerFactory implements TestEnvironmentListener {
     }
 
     private void configureServiceUnderTest(
-            final String instanceName, final GenericContainer<?> container, final Optional<Integer> serviceDebugPort) {
+            final String instanceName,
+            final GenericContainer<?> container,
+            final Optional<Integer> serviceDebugPort) {
         final Map<String, String> configuredEnv = configuredEnv(serviceDebugPort);
         if (!configuredEnv.isEmpty()) {
-            LOGGER.info("Setting container env. instance: "
-                    + instanceName + ", env : " + configuredEnv);
+            LOGGER.info(
+                    "Setting container env. instance: "
+                            + instanceName
+                            + ", env : "
+                            + configuredEnv);
             container.withEnv(configuredEnv);
         }
 
