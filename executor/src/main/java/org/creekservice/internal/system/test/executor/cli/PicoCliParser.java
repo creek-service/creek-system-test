@@ -35,6 +35,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
+import org.creekservice.api.base.type.Lists;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
 import org.creekservice.api.system.test.executor.SystemTestExecutor;
 import org.slf4j.Logger;
@@ -195,7 +196,7 @@ public final class PicoCliParser {
                         "Comma seperated list of key=value environment variables to set on each service-under-test.")
         private Map<String, String> env = Map.of();
 
-        private List<MountInfo> mounts = new ArrayList<>(2);
+        private List<MountInfo> readOnlyMounts = new ArrayList<>(2);
 
         /**
          * Method for adding read-only mount points.
@@ -207,12 +208,15 @@ public final class PicoCliParser {
                 split = ",",
                 description =
                         "Comma seperated list of hostPath=containerPath read-only mount points to set on each service-under-test.")
-        public void addReadOnlyMount(final Map<String, String> mounts) {
+        public void setReadOnlyMount(final Map<String, String> mounts) {
             validateMounts(mounts);
-            mounts.entrySet().stream()
-                    .map(e -> new Mount(e.getKey(), e.getValue(), true))
-                    .forEach(this.mounts::add);
+            readOnlyMounts =
+                    mounts.entrySet().stream()
+                            .map(e -> new Mount(e.getKey(), e.getValue(), true))
+                            .collect(Collectors.toUnmodifiableList());
         }
+
+        private List<MountInfo> writeableMounts = new ArrayList<>(1);
 
         /**
          * Method for adding writable mount points.
@@ -224,11 +228,12 @@ public final class PicoCliParser {
                 split = ",",
                 description =
                         "Comma seperated list of hostPath=containerPath writable mount points to set on each service-under-test.")
-        public void addWritableMount(final Map<String, String> mounts) {
+        public void setWritableMount(final Map<String, String> mounts) {
             validateMounts(mounts);
-            mounts.entrySet().stream()
-                    .map(e -> new Mount(e.getKey(), e.getValue(), false))
-                    .forEach(this.mounts::add);
+            writeableMounts =
+                    mounts.entrySet().stream()
+                            .map(e -> new Mount(e.getKey(), e.getValue(), false))
+                            .collect(Collectors.toUnmodifiableList());
         }
 
         @Override
@@ -274,7 +279,7 @@ public final class PicoCliParser {
 
         @Override
         public Collection<MountInfo> mountInfo() {
-            return List.copyOf(mounts);
+            return Lists.combineList(readOnlyMounts, writeableMounts);
         }
 
         @Override
@@ -300,28 +305,42 @@ public final class PicoCliParser {
                     + (debugServicePort == DEFAULT_BASE_DEBUG_PORT ? NOT_SET : debugServicePort)
                     + lineSeparator()
                     + "--debug-service="
-                    + (debugServices.isEmpty()
-                            ? NOT_SET
-                            : debugServices.stream().sorted().collect(Collectors.joining(",")))
+                    + formatList(debugServices)
                     + lineSeparator()
                     + "--debug-service-instance="
-                    + (debugInstances.isEmpty()
-                            ? NOT_SET
-                            : debugInstances.stream().sorted().collect(Collectors.joining(",")))
+                    + formatList(debugInstances)
                     + lineSeparator()
                     + "--env="
-                    + (env.isEmpty()
-                            ? NOT_SET
-                            : env.entrySet().stream()
-                                    .map(e -> e.getKey() + "=" + e.getValue())
-                                    .sorted()
-                                    .collect(Collectors.joining(",")))
+                    + formatMap(env)
                     + lineSeparator()
                     + "--mount-read-only="
-                    + formatMounts(true)
+                    + formatMounts(readOnlyMounts)
                     + lineSeparator()
                     + "--mount-writable="
-                    + formatMounts(false);
+                    + formatMounts(writeableMounts);
+        }
+
+        private String formatList(final Set<String> list) {
+            return list.isEmpty()
+                    ? NOT_SET
+                    : list.stream().sorted().collect(Collectors.joining(","));
+        }
+
+        private String formatMap(final Map<String, String> map) {
+            return map.isEmpty()
+                    ? NOT_SET
+                    : map.entrySet().stream()
+                            .map(e -> e.getKey() + "=" + e.getValue())
+                            .sorted()
+                            .collect(Collectors.joining(","));
+        }
+
+        private static String formatMounts(final List<MountInfo> mounts) {
+            return mounts.isEmpty()
+                    ? NOT_SET
+                    : mounts.stream()
+                            .map(m -> m.hostPath() + "=" + m.containerPath())
+                            .collect(Collectors.joining(","));
         }
 
         private static void validateMounts(final Map<String, String> mounts) {
@@ -334,15 +353,6 @@ public final class PicoCliParser {
                             throw new IllegalArgumentException("Container path can not be empty");
                         }
                     });
-        }
-
-        private String formatMounts(final boolean readOnly) {
-            final String collected =
-                    mounts.stream()
-                            .filter(m -> m.readOnly() == readOnly)
-                            .map(m -> m.hostPath() + "=" + m.containerPath())
-                            .collect(Collectors.joining(","));
-            return collected.isEmpty() ? NOT_SET : collected;
         }
 
         private static final class Mount implements MountInfo {
