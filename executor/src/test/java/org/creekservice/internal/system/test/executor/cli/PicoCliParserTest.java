@@ -310,6 +310,24 @@ class PicoCliParserTest {
     }
 
     @Test
+    void shouldParseMultipleMounts() {
+        // Given:
+        final String[] args =
+                minimalArgs(
+                        "--mount-read-only=/host/path=/container/path",
+                        "--mount-read-only=/host/path2=/container/path2",
+                        "--mount-writable=host/path=container/path",
+                        "--mount-writable=host/path2=container/path2");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(4)));
+    }
+
+    @Test
     void shouldThrowOnReadOnlyMountWithEmptyHostPath() {
         // Given:
         final String[] args = minimalArgs("--mount-read-only==container/path");

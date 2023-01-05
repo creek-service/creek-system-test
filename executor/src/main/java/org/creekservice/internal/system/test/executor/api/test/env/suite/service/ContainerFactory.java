@@ -114,7 +114,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
                         : regularFactory.create(imageName);
 
         if (serviceUnderTest || serviceDebugPort.isPresent()) {
-            configureServiceUnderTest(container, serviceDebugPort);
+            configureServiceUnderTest(instanceName, container, serviceDebugPort);
         }
 
         container
@@ -151,17 +151,20 @@ public final class ContainerFactory implements TestEnvironmentListener {
     }
 
     private void configureServiceUnderTest(
-            final GenericContainer<?> container, final Optional<Integer> serviceDebugPort) {
+            final String instanceName, final GenericContainer<?> container, final Optional<Integer> serviceDebugPort) {
         final Map<String, String> configuredEnv = configuredEnv(serviceDebugPort);
         if (!configuredEnv.isEmpty()) {
-            LOGGER.debug("Setting container env. env: " + configuredEnv);
+            LOGGER.info("Setting container env. instance: "
+                    + instanceName + ", env : " + configuredEnv);
             container.withEnv(configuredEnv);
         }
 
         mountInfo.forEach(
                 mount -> {
-                    LOGGER.debug(
-                            "Adding container mount. hostPath "
+                    LOGGER.info(
+                            "Adding container mount. instance: "
+                                    + instanceName
+                                    + ". hostPath "
                                     + mount.hostPath()
                                     + ", containerPath: "
                                     + mount.containerPath()
