@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.test.services;
 
-
 import java.net.URI;
 import org.creekservice.api.system.test.test.service.extension.TestResource;
 import org.creekservice.api.system.test.test.service.extension.TestResourceInput;

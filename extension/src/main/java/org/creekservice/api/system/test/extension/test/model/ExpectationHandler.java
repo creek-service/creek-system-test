@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
-
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;

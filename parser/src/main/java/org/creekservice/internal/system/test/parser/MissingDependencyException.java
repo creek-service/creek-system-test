@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.parser;
 
-
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.creekservice.api.system.test.extension.test.model.Ref;
 

@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.test.env.suite.service;
 
-
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 
 /** A container of services */

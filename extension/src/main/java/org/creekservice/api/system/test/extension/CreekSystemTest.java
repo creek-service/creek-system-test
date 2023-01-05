@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension;
 
-
 import java.util.stream.Stream;
 import org.creekservice.api.service.extension.CreekExtension;
 import org.creekservice.api.service.extension.CreekExtensionOptions;

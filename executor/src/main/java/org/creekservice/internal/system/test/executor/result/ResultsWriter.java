@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.executor.result;
 
-
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 
 /** A writer of test execution results */

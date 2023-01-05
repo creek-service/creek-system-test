@@ -16,7 +16,6 @@
 
 package org.creekservice.internal.system.test.executor.api;
 
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

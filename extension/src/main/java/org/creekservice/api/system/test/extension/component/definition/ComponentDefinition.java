@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.extension.component.definition;
 
-
 import java.util.Optional;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 

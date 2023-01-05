@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.parser;
 
-
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;

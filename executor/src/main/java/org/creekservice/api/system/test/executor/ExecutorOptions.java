@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.executor;
 
-
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;

@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.test.service.extension;
 
-
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 
 public interface TestResource extends ResourceDescriptor {}

@@ -16,7 +16,6 @@
 
 package org.creekservice.api.system.test.test.extension;
 
-
 import java.util.Collection;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
