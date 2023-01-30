@@ -189,6 +189,7 @@ class TestPackagesLoaderTest {
         }
     }
 
+    @SuppressWarnings("try")
     @Test
     void shouldLoadLazily() {
         // When:
