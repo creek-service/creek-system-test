@@ -17,7 +17,8 @@
 /**
  * Standard configuration for Creek library publishing
  *
- * <p>Version: 1.2
+ * <p>Version: 1.3
+ *  - 1.3: Switch to setting 'system' from issue-management
  *
  * <p> Apply this plugin only to subprojects if in multi-module setup.
  *
@@ -97,11 +98,6 @@ publishing {
                     url.set("https://www.creekservice.org")
                 }
 
-                issueManagement {
-                    name.set("GitHub issues")
-                    url.set("https://github.com/creek-service/${rootProject.name}/issues")
-                }
-
                 developers {
                     developer {
                         name.set("Andy Coates")
@@ -115,6 +111,11 @@ publishing {
                     connection.set("scm:git:git://github.com/creek-service/${rootProject.name}.git")
                     developerConnection.set("scm:git:ssh://github.com/creek-service/${rootProject.name}.git")
                     url.set("https://github.com/creek-service/${rootProject.name}")
+                }
+
+                issueManagement {
+                    system.set("GitHub issues")
+                    url.set("https://github.com/creek-service/${rootProject.name}/issues")
                 }
             }
         }
