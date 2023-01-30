@@ -343,7 +343,7 @@ class ContainerInstanceTest {
     void shouldExecInContainer() throws Exception {
         // Given:
         givenRunning();
-        when(container.execInContainer(any())).thenReturn(containerExecResult);
+        when(container.execInContainer(any(String[].class))).thenReturn(containerExecResult);
         when(containerExecResult.getExitCode()).thenReturn(22);
         when(containerExecResult.getStdout()).thenReturn("stdout stuff");
         when(containerExecResult.getStderr()).thenReturn("stderr stuff");
@@ -363,7 +363,7 @@ class ContainerInstanceTest {
         // Given:
         givenRunning();
         final IOException cause = new IOException("Boom");
-        when(container.execInContainer(any())).thenThrow(cause);
+        when(container.execInContainer(any(String[].class))).thenThrow(cause);
 
         // When:
         final Exception e = assertThrows(RuntimeIOException.class, instance::execOnInstance);
@@ -378,7 +378,7 @@ class ContainerInstanceTest {
         // Given:
         givenRunning();
         final InterruptedException cause = new InterruptedException("Boom");
-        when(container.execInContainer(any())).thenThrow(cause);
+        when(container.execInContainer(any(String[].class))).thenThrow(cause);
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, instance::execOnInstance);
