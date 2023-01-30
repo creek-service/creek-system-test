@@ -20,6 +20,7 @@ import static java.lang.System.lineSeparator;
 import static org.creekservice.api.base.type.Preconditions.requireNonEmpty;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -360,6 +361,7 @@ public final class PicoCliParser {
             private final Path containerPath;
             private final boolean readOnly;
 
+            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Trusted user input")
             Mount(final String hostPath, final String containerPath, final boolean readOnly) {
                 this.hostPath = Paths.get(requireNonEmpty(hostPath, "hostPath"));
                 this.containerPath = Paths.get(requireNonEmpty(containerPath, "containerPath"));
