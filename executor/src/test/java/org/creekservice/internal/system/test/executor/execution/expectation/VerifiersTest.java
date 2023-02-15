@@ -92,7 +92,7 @@ class VerifiersTest {
                 e.getMessage(),
                 startsWith(
                         "No handler registered for expectation type: "
-                                + "org.creekservice.api.system.test.extension.test.model.Expectation$MockitoMock"));
+                            + "org.creekservice.api.system.test.extension.test.model.Expectation$MockitoMock"));
     }
 
     @Test

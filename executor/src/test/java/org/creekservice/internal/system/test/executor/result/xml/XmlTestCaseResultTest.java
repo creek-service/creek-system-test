@@ -99,7 +99,8 @@ class XmlTestCaseResultTest {
                 xml,
                 is(
                         "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
-                                + "  <failure message=\"Expectation not met\" type=\"java.lang.AssertionError\">"
+                                + "  <failure message=\"Expectation not met\""
+                                + " type=\"java.lang.AssertionError\">"
                                 + stackTrace
                                 + "</failure>\n"
                                 + "</testcase>\n"));
@@ -120,7 +121,8 @@ class XmlTestCaseResultTest {
                 xml,
                 is(
                         "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
-                                + "  <error message=\"bad state\" type=\"java.lang.IllegalStateException\">"
+                                + "  <error message=\"bad state\""
+                                + " type=\"java.lang.IllegalStateException\">"
                                 + stackTrace
                                 + "</error>\n"
                                 + "</testcase>\n"));

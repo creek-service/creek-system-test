@@ -87,11 +87,14 @@ class XmlTestSuiteResultTest {
         assertThat(
                 xml,
                 is(
-                        "<testsuite errors=\"3\" failures=\"4\" hostname=\"some-host\" name=\"the suite\" "
-                                + "skipped=\"1\" tests=\"2\" time=\"1234.567\" timestamp=\"1970-01-15T06:56:07.890\">\n"
+                        "<testsuite errors=\"3\" failures=\"4\" hostname=\"some-host\" name=\"the"
+                                + " suite\" skipped=\"1\" tests=\"2\" time=\"1234.567\""
+                                + " timestamp=\"1970-01-15T06:56:07.890\">\n"
                                 + "  <testcase>\n"
-                                + "    <testcase classname=\"the suite\" name=\"test 0\" time=\"12.345\"/>\n"
-                                + "    <testcase classname=\"the suite\" name=\"test 1\" time=\"23.587\"/>\n"
+                                + "    <testcase classname=\"the suite\" name=\"test 0\""
+                                + " time=\"12.345\"/>\n"
+                                + "    <testcase classname=\"the suite\" name=\"test 1\""
+                                + " time=\"23.587\"/>\n"
                                 + "  </testcase>\n"
                                 + "</testsuite>\n"));
     }
@@ -113,9 +116,11 @@ class XmlTestSuiteResultTest {
         assertThat(
                 xml,
                 is(
-                        "<testsuite errors=\"4\" failures=\"4\" hostname=\"some-host\" name=\"the suite\" "
-                                + "skipped=\"0\" tests=\"0\" time=\"1234.567\" timestamp=\"1970-01-15T06:56:07.890\">\n"
-                                + "  <error message=\"Boom\" type=\"java.lang.IllegalArgumentException\">"
+                        "<testsuite errors=\"4\" failures=\"4\" hostname=\"some-host\" name=\"the"
+                                + " suite\" skipped=\"0\" tests=\"0\" time=\"1234.567\""
+                                + " timestamp=\"1970-01-15T06:56:07.890\">\n"
+                                + "  <error message=\"Boom\""
+                                + " type=\"java.lang.IllegalArgumentException\">"
                                 + stackTrace
                                 + "</error>\n"
                                 + "</testsuite>\n"));

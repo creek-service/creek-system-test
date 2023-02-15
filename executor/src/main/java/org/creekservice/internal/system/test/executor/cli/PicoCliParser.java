@@ -113,9 +113,10 @@ public final class PicoCliParser {
                 paramLabel = "SECONDS",
                 description = {
                     "Set an optional custom verifier timeout.",
-                    "The verifier timeout is the maximum amount of time the system tests "
-                            + "will wait for a defined expectation to be met. A longer timeout will mean "
-                            + "tests have more time for expectations to be met, but may run slower as a consequence."
+                    "The verifier timeout is the maximum amount of time the system tests will wait"
+                        + " for a defined expectation to be met. A longer timeout will mean tests"
+                        + " have more time for expectations to be met, but may run slower as a"
+                        + " consequence."
                 })
         private Optional<Long> verifierTimeout;
 
@@ -124,7 +125,8 @@ public final class PicoCliParser {
                 paramLabel = "REGEX",
                 description = {
                     "Set an optional regular expression pattern to limit the test suites to run.",
-                    "Only test suites whose relative path matches the supplied pattern will be included."
+                    "Only test suites whose relative path matches the supplied pattern will be"
+                            + " included."
                 })
         private Optional<Pattern> suitePattern;
 
@@ -132,8 +134,8 @@ public final class PicoCliParser {
                 names = {"-eo", "--echo-only"},
                 hidden = true,
                 description =
-                        "Hidden option used for testing. When set the running will echo its config to "
-                                + "standard out and exit.")
+                        "Hidden option used for testing. When set the running will echo its config"
+                                + " to standard out and exit.")
         private boolean echoOnly;
 
         private int debugServicePort = DEFAULT_BASE_DEBUG_PORT;
@@ -146,8 +148,9 @@ public final class PicoCliParser {
         @Option(
                 names = {"-dsp", "--debug-service-port"},
                 description =
-                        "The port the first service being debugged will listen on for the debugger to attach. "
-                                + "Subsequent services being debugged will use sequential port numbers.")
+                        "The port the first service being debugged will listen on for the debugger"
+                            + " to attach. Subsequent services being debugged will use sequential"
+                            + " port numbers.")
         public void setDebugServicePort(final int port) {
             if (port <= 0) {
                 throw new ParameterException(
@@ -194,7 +197,8 @@ public final class PicoCliParser {
                 names = {"-e", "--env"},
                 split = ",",
                 description =
-                        "Comma seperated list of key=value environment variables to set on each service-under-test.")
+                        "Comma seperated list of key=value environment variables to set on each"
+                                + " service-under-test.")
         private Map<String, String> env = Map.of();
 
         private List<MountInfo> readOnlyMounts = new ArrayList<>(2);
@@ -208,7 +212,8 @@ public final class PicoCliParser {
                 names = {"-mr", "--mount-read-only"},
                 split = ",",
                 description =
-                        "Comma seperated list of hostPath=containerPath read-only mount points to set on each service-under-test.")
+                        "Comma seperated list of hostPath=containerPath read-only mount points to"
+                                + " set on each service-under-test.")
         public void setReadOnlyMount(final Map<String, String> mounts) {
             validateMounts(mounts);
             readOnlyMounts =
@@ -228,7 +233,8 @@ public final class PicoCliParser {
                 names = {"-mw", "--mount-writable"},
                 split = ",",
                 description =
-                        "Comma seperated list of hostPath=containerPath writable mount points to set on each service-under-test.")
+                        "Comma seperated list of hostPath=containerPath writable mount points to"
+                                + " set on each service-under-test.")
         public void setWritableMount(final Map<String, String> mounts) {
             validateMounts(mounts);
             writeableMounts =

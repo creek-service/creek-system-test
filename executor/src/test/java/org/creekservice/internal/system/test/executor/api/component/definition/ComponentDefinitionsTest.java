@@ -110,7 +110,8 @@ class ComponentDefinitionsTest {
                 startsWith(
                         "Two or more "
                                 + componentType
-                                + " descriptors where found with the same name. Names must be unique."));
+                                + " descriptors where found with the same name. Names must be"
+                                + " unique."));
         assertThat(e.getMessage(), containsString("name: component-1"));
         assertThat(
                 e.getMessage(),

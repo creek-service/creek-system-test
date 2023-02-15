@@ -69,7 +69,8 @@ class CaseResultTest {
         assertThat(
                 result.toString(),
                 is(
-                        "CaseResult{test=test-a, duration=PT42.899S, skipped=true, failure=<none>, error=<none>}"));
+                        "CaseResult{test=test-a, duration=PT42.899S, skipped=true, failure=<none>,"
+                                + " error=<none>}"));
     }
 
     @Test
@@ -86,7 +87,8 @@ class CaseResultTest {
         assertThat(
                 result.toString(),
                 is(
-                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>, error=<none>}"));
+                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>,"
+                                + " error=<none>}"));
     }
 
     @Test
@@ -106,7 +108,8 @@ class CaseResultTest {
         assertThat(
                 result.toString(),
                 is(
-                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=boom, error=<none>}"));
+                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=boom,"
+                                + " error=<none>}"));
     }
 
     @Test
@@ -126,6 +129,7 @@ class CaseResultTest {
         assertThat(
                 result.toString(),
                 is(
-                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>, error=boom}"));
+                        "CaseResult{test=test-a, duration=PT42.899S, skipped=false, failure=<none>,"
+                                + " error=boom}"));
     }
 }
