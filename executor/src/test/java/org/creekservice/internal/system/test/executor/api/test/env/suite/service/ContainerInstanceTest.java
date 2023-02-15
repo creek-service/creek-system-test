@@ -240,7 +240,8 @@ class ContainerInstanceTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Failed to start service: a-0, image: ghcr.io/creek-service/creek-system-test-test-service:latest"));
+                        "Failed to start service: a-0, image:"
+                                + " ghcr.io/creek-service/creek-system-test-test-service:latest"));
         assertThat(e.getCause(), is(sameInstance(cause)));
     }
 
@@ -336,7 +337,8 @@ class ContainerInstanceTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "Container not running. service: a-0 (ghcr.io/creek-service/creek-system-test-test-service:latest)"));
+                        "Container not running. service: a-0"
+                            + " (ghcr.io/creek-service/creek-system-test-test-service:latest)"));
     }
 
     @Test
@@ -584,8 +586,9 @@ class ContainerInstanceTest {
         assertThat(
                 e.getMessage(),
                 is(
-                        "A service can not be modified when running. "
-                                + "service: a-0 (ghcr.io/creek-service/creek-system-test-test-service:latest) with container-id bob"));
+                        "A service can not be modified when running. service: a-0"
+                            + " (ghcr.io/creek-service/creek-system-test-test-service:latest) with"
+                            + " container-id bob"));
     }
 
     @Test

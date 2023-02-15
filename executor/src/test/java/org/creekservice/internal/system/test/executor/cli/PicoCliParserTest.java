@@ -412,7 +412,8 @@ class PicoCliParserTest {
         assertThat(
                 e.getMessage(),
                 startsWith(
-                        "Invalid value '0' for option '--debug-service-port': value must be positive."));
+                        "Invalid value '0' for option '--debug-service-port': value must be"
+                                + " positive."));
     }
 
     @Test
