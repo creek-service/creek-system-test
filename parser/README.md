@@ -1,3 +1,4 @@
+[![javadoc](https://javadoc.io/badge2/org.creekservice/creek-system-test-parser/javadoc.svg)](https://javadoc.io/doc/org.creekservice/creek-system-test-parser)
 # Creek system test parser
 
 Parser of system test files.

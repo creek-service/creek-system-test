@@ -51,15 +51,17 @@ First, let's define the terminology we'll be using:
 
 ## Modules in this repository
 
-* **[executor](executor):** functionality for executing system tests.
-* **[extension](extension):** defines types required to implement extensions to the system tests.
-* **[model](model):** system test model.
-* **[parser](parser):** code for parsing system tests.
+* **[executor](executor)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-system-test-executor)]: functionality for executing system tests.
+* **[extension](extension)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-system-test-extension)]: defines types required to implement extensions to the system tests.
+* **[model](model)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-system-test-model)]: system test model.
+* **[parser](parser)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-system-test-parser)]: code for parsing system tests.
+* **[test-util](test-util)** [[JavaDocs](https://javadoc.io/doc/org.creekservice/creek-system-test-test-util)]: contains some utilities to help test system test extensions.
+
+Internal / Non-published:
 * **[test-service](test-service):** creates a docker image container a simple microservice used for testing within this repo
 * **[test-services](test-services):** creates a jar containing the metadata for [test-service](test-service), i.e. the service descriptor. 
 * **[test-service-extension-metadata](test-service-extension-metadata):** the metadata types for a fictitious service extension used internally during testing.
 * **[test-system-test-extension](test-system-test-extension):** a system test extension used internally during testing.
-* **[test-util](test-util)**: contains some utilities to help test system test extensions.
 
 ## Writing system tests
 
