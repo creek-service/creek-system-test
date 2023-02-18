@@ -1,3 +1,4 @@
+[![javadoc](https://javadoc.io/badge2/org.creekservice/creek-system-test-model/javadoc.svg)](https://javadoc.io/doc/org.creekservice/creek-system-test-model)
 # Creek system test model
 
 The base types used when deserializing system test packages.

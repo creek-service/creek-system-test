@@ -1,3 +1,4 @@
+[![javadoc](https://javadoc.io/badge2/org.creekservice/creek-system-test-executor/javadoc.svg)](https://javadoc.io/doc/org.creekservice/creek-system-test-executor)
 # Creek system test runner
 
 Provides functionality for executing system tests.
