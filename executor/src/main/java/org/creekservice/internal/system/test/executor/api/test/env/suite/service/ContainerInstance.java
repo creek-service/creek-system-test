@@ -123,8 +123,9 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                     imageName,
                     container.getContainerId());
         } catch (final Exception e) {
+            final String logs = container.getLogs();
             stop();
-            throw new FailedToStartServiceException(name, imageName, container, e);
+            throw new FailedToStartServiceException(name, imageName, logs, e);
         }
     }
 
@@ -343,7 +344,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         FailedToStartServiceException(
                 final String name,
                 final DockerImageName imageName,
-                final GenericContainer<?> container,
+                final String logs,
                 final Throwable cause) {
             super(
                     "Failed to start service: "
@@ -355,7 +356,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                             + cause.getMessage()
                             + lineSeparator()
                             + "Logs: "
-                            + container.getLogs(),
+                            + logs,
                     cause);
         }
     }
