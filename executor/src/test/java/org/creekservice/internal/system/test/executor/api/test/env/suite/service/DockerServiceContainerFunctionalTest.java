@@ -18,6 +18,7 @@ package org.creekservice.internal.system.test.executor.api.test.env.suite.servic
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNullElse;
+import static org.creekservice.api.observability.lifecycle.LoggableLifecycle.SERVICE_TYPE;
 import static org.creekservice.api.test.hamcrest.AssertEventually.assertThatEventually;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,10 +48,13 @@ import com.github.dockerjava.api.model.InternetProtocol;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
+import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
@@ -68,6 +73,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
 import org.testcontainers.DockerClientFactory;
 
 @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -226,7 +232,7 @@ class DockerServiceContainerFunctionalTest {
     }
 
     @Test
-    void shouldThrowOnServiceStartFailure() {
+    void shouldThrowOnUnknownDockerImage() {
         // Given:
         when(serviceDef.dockerImage()).thenReturn("i-do-not-exist");
         final ServiceInstance instance = instances.add(serviceDef);
@@ -239,7 +245,32 @@ class DockerServiceContainerFunctionalTest {
                 e.getMessage(),
                 startsWith(
                         "Failed to start service: test-service-0, image: i-do-not-exist:latest"));
-        assertThat(e.getMessage(), containsString("Cause: Container startup failed"));
+        assertThat(e.getCause().getMessage(), containsString("Container startup failed"));
+
+        assertThat(e.getCause().getCause().getMessage(), containsString("Can't get Docker image"));
+    }
+
+    @Test
+    void shouldThrowOnServiceStartFailure() {
+        // Given:
+        doAnswer(tellServiceToFail()).when(serviceDef).configureInstance(any());
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // When:
+        final Exception e = assertThrows(RuntimeException.class, instance::start);
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                startsWith(
+                        "Failed to start service: test-service-0, image: "
+                                + SERVICE_IMAGE
+                                + ":latest"));
+        assertThat(
+                e.getMessage(),
+                containsString(
+                        "CREEK_SERVICE_SHOULD_FAIL is set, so this service is going bye-byes!"));
+        assertThat(e.getMessage(), containsString("Service going BOOM!"));
     }
 
     @Test
@@ -569,6 +600,21 @@ class DockerServiceContainerFunctionalTest {
                 .inspectContainerCmd(((ContainerInstance) instance).containerId())
                 .exec()
                 .getConfig();
+    }
+
+    private Answer<Void> tellServiceToFail() {
+        return inv -> {
+            final ConfigurableServiceInstance instance = inv.getArgument(0);
+            instance.addEnv("CREEK_SERVICE_SHOULD_FAIL", "true")
+                    .setStartupLogMessage(
+                            ".*"
+                                    + Pattern.quote(BasicLifecycle.started.logMessage(SERVICE_TYPE))
+                                    + ".*",
+                            1)
+                    .setStartupAttempts(1)
+                    .setStartupTimeout(Duration.ofSeconds(3));
+            return null;
+        };
     }
 
     private static MountInfo mount(
