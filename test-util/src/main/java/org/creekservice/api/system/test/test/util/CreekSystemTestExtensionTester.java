@@ -247,7 +247,7 @@ public final class CreekSystemTestExtensionTester {
         public TesterBuilder withDebugServices(final String... serviceNames) {
             return withDebugServices(
                     ServiceDebugInfo.serviceDebugInfo(
-                            DEFAULT_BASE_DEBUG_PORT, Set.of(serviceNames), Set.of()));
+                            DEFAULT_BASE_DEBUG_PORT, Set.of(serviceNames), Set.of(), Map.of()));
         }
 
         /**

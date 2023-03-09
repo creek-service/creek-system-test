@@ -71,12 +71,7 @@ public interface ExecutorOptions {
      * <p>In addition to providing this information, actually debugging a service requires the
      * caller to provide the actual debugging mechanism. This will generally involve providing a
      * {@link #mountInfo() mount} containing a Java agent, and enabling the agent by setting {@code
-     * JAVA_TOOLS_OPTIONS} environment variable via {@link #env()}.
-     *
-     * <p>When the {@code JAVA_TOOLS_OPTIONS} environment variable is set on a service being
-     * debugged, the test executor will search for the text {@code ${SERVICE_DEBUG_PORT}} in the
-     * variable's value and replace with the port number the Docker container is configured to
-     * expose to allow debugging.
+     * JAVA_TOOLS_OPTIONS} environment variable via {@link ServiceDebugInfo#env()}.
      *
      * @return info about which services should be debugged.
      */
@@ -94,14 +89,10 @@ public interface ExecutorOptions {
 
     /**
      * Provides an optional map of environment variables that will be set on each service-under-test
-     * instance or service-being-debugged.
+     * instance.
      *
      * <p>For example, this can be used to set the {@code JAVA_TOOLS_OPTIONS} required to enable
-     * coverage and/or service debugging.
-     *
-     * <p>When debugging services, the all instances of the text {@code ${SERVICE_DEBUG_PORT}} found
-     * in the {@code JAVA_TOOLS_OPTIONS} value, if present, will be replaced with the port the
-     * service is configured to listen for the debugger on.
+     * coverage metrics capture.
      *
      * @return map of environment variables to set on each service-under-test.
      */
@@ -153,6 +144,26 @@ public interface ExecutorOptions {
          * @return set of service instances to debug.
          */
         Set<String> serviceInstanceNames();
+
+        /**
+         * Provides an optional map of environment variables that will be set on each service being
+         * debugged.
+         *
+         * <p>Note: This will overwrite any environment variables with matching names in {@link
+         * ExecutorOptions#env()}. It is the callers responsibility to merge values, if required.
+         *
+         * <p>For example, this can be used to set the {@code JAVA_TOOLS_OPTIONS} required to enable
+         * service debugging.
+         *
+         * <p>When debugging services, all instances of the text {@code ${SERVICE_DEBUG_PORT}} found
+         * in the {@code JAVA_TOOLS_OPTIONS} value, if present, will be replaced with the port the
+         * service is configured to listen for the debugger on.
+         *
+         * @return map of environment variables to set on each service being debugged.
+         */
+        default Map<String, String> env() {
+            return Map.of();
+        }
     }
 
     /** Information about a single mount. */

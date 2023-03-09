@@ -194,6 +194,14 @@ public final class PicoCliParser {
         }
 
         @Option(
+                names = {"-de", "--debug-env"},
+                split = ",",
+                description =
+                        "Comma seperated list of key=value environment variables to set on each"
+                                + " service being debugged.")
+        private Map<String, String> debugEnv = Map.of();
+
+        @Option(
                 names = {"-e", "--env"},
                 split = ",",
                 description =
@@ -281,7 +289,8 @@ public final class PicoCliParser {
 
             return Optional.of(
                     org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo
-                            .serviceDebugInfo(debugServicePort, debugServices, debugInstances));
+                            .serviceDebugInfo(
+                                    debugServicePort, debugServices, debugInstances, debugEnv));
         }
 
         @Override

@@ -274,6 +274,67 @@ class PicoCliParserTest {
     }
 
     @Test
+    void shouldParseSingleDebugEnv() {
+        // Given:
+        final String[] args = minimalArgs("--debug-env=NAME=VALUE", "--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::env),
+                is(Optional.of(Map.of("NAME", "VALUE"))));
+    }
+
+    @Test
+    void shouldParseSingleMultipleDebugEnvInSingleParam() {
+        // Given:
+        final String[] args = minimalArgs("--debug-env=NAME=VALUE,NAME2=V2", "--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::env),
+                is(Optional.of(Map.of("NAME", "VALUE", "NAME2", "V2"))));
+    }
+
+    @Test
+    void shouldParseDebugEnvWithSpaceInValue() {
+        // Given:
+        final String[] args = minimalArgs("--debug-env=NAME=\"VAL UE\"", "--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::env),
+                is(Optional.of(Map.of("NAME", "VAL UE"))));
+    }
+
+    @Test
+    void shouldParseSingleMultipleDebugEnvInMultipleParams() {
+        // Given:
+        final String[] args =
+                minimalArgs("--debug-env=NAME=VALUE", "-de=NAME2=V2", "--debug-service=a");
+
+        // When:
+        final Optional<ExecutorOptions> result = parse(args);
+
+        // Then:
+        assertThat(
+                result.flatMap(ExecutorOptions::serviceDebugInfo)
+                        .map(ExecutorOptions.ServiceDebugInfo::env),
+                is(Optional.of(Map.of("NAME", "VALUE", "NAME2", "V2"))));
+    }
+
+    @Test
     void shouldParseReadOnlyMount() {
         // Given:
         final String[] args = minimalArgs("--mount-read-only=/host/path=/container/path");

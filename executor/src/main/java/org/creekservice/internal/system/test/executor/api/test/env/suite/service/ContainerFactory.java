@@ -113,8 +113,10 @@ public final class ContainerFactory implements TestEnvironmentListener {
                         ? debugFactory.create(imageName, serviceDebugPort.get())
                         : regularFactory.create(imageName);
 
+        setEnv(instanceName, container, serviceUnderTest, serviceDebugPort);
+
         if (serviceUnderTest || serviceDebugPort.isPresent()) {
-            configureServiceUnderTest(instanceName, container, serviceDebugPort);
+            setMounts(instanceName, container);
         }
 
         container
@@ -132,6 +134,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
         reset();
     }
 
+    @SuppressWarnings("resource")
     private void reset() {
         network.updateAndGet(
                 existing -> {
@@ -150,20 +153,37 @@ public final class ContainerFactory implements TestEnvironmentListener {
                 : Optional.empty();
     }
 
-    private void configureServiceUnderTest(
-            final String instanceName,
-            final GenericContainer<?> container,
-            final Optional<Integer> serviceDebugPort) {
-        final Map<String, String> configuredEnv = configuredEnv(serviceDebugPort);
-        if (!configuredEnv.isEmpty()) {
-            LOGGER.info(
-                    "Setting container env. instance: "
-                            + instanceName
-                            + ", env : "
-                            + configuredEnv);
-            container.withEnv(configuredEnv);
+    private Map<String, String> buildEnv(
+            final boolean serviceUnderTest, final Optional<Integer> serviceDebugPort) {
+        final Map<String, String> baseEnv = serviceUnderTest ? env : Map.of();
+        if (serviceDebugPort.isEmpty()) {
+            return baseEnv;
         }
 
+        final Map<String, String> configured = new HashMap<>(baseEnv);
+        configured.putAll(serviceDebugInfo.env());
+        configured.computeIfPresent(
+                "JAVA_TOOL_OPTIONS",
+                (k, v) ->
+                        v.replaceAll(
+                                "\\$\\{SERVICE_DEBUG_PORT}",
+                                String.valueOf(serviceDebugPort.get())));
+        return Map.copyOf(configured);
+    }
+
+    private void setEnv(
+            final String instanceName,
+            final GenericContainer<?> container,
+            final boolean serviceUnderTest,
+            final Optional<Integer> serviceDebugPort) {
+        final Map<String, String> env = buildEnv(serviceUnderTest, serviceDebugPort);
+        if (!env.isEmpty()) {
+            LOGGER.info("Setting container env. instance: " + instanceName + ", env : " + env);
+            container.withEnv(env);
+        }
+    }
+
+    private void setMounts(final String instanceName, final GenericContainer<?> container) {
         mountInfo.forEach(
                 mount -> {
                     LOGGER.info(
@@ -181,20 +201,5 @@ public final class ContainerFactory implements TestEnvironmentListener {
                             mount.containerPath().toString(),
                             mount.readOnly() ? BindMode.READ_ONLY : BindMode.READ_WRITE);
                 });
-    }
-
-    private Map<String, String> configuredEnv(final Optional<Integer> serviceDebugPort) {
-        if (serviceDebugPort.isEmpty()) {
-            return env;
-        }
-
-        final Map<String, String> configured = new HashMap<>(env);
-        configured.computeIfPresent(
-                "JAVA_TOOL_OPTIONS",
-                (k, v) ->
-                        v.replaceAll(
-                                "\\$\\{SERVICE_DEBUG_PORT}",
-                                String.valueOf(serviceDebugPort.get())));
-        return Map.copyOf(configured);
     }
 }

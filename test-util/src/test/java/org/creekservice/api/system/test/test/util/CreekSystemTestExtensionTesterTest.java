@@ -157,7 +157,8 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldSupportConfiguringServiceDebugInfo() {
         // Given:
-        final ServiceDebugInfo debugServiceInfo = serviceDebugInfo(321, Set.of("a"), Set.of("b"));
+        final ServiceDebugInfo debugServiceInfo =
+                serviceDebugInfo(321, Set.of("a"), Set.of("b"), Map.of("k", "v"));
         tester = builder.withDebugServices(debugServiceInfo).build();
 
         // Then:
@@ -172,7 +173,7 @@ class CreekSystemTestExtensionTesterTest {
         // Then:
         assertThat(
                 tester.serviceDebugInfo(),
-                is(serviceDebugInfo(DEFAULT_BASE_DEBUG_PORT, Set.of("a"), Set.of())));
+                is(serviceDebugInfo(DEFAULT_BASE_DEBUG_PORT, Set.of("a"), Set.of(), Map.of())));
     }
 
     @Test
