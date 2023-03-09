@@ -82,13 +82,13 @@ public final class ServiceMain {
         LOGGER.info(BasicLifecycle.started.logMessage(BasicLifecycle.SERVICE_TYPE));
     }
 
-    @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
+    @SuppressWarnings("BusyWait")
     private static void awaitShutdown() {
         while (true) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
-                // meh
+                return;
             }
         }
     }
