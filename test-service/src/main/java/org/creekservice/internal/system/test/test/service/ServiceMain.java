@@ -32,6 +32,7 @@ public final class ServiceMain {
 
     public static void main(final String... args) {
         dumpEnv();
+        maybeFail();
         logMount();
         doLogging();
         awaitShutdown();
@@ -41,6 +42,13 @@ public final class ServiceMain {
         System.getenv().entrySet().stream()
                 .filter(e -> e.getKey().startsWith("CREEK_"))
                 .forEach(e -> LOGGER.info("Env: " + e.getKey() + "=" + e.getValue()));
+    }
+
+    private static void maybeFail() {
+        if (System.getenv("CREEK_SERVICE_SHOULD_FAIL") != null) {
+            LOGGER.error("CREEK_SERVICE_SHOULD_FAIL is set, so this service is going bye-byes!");
+            throw new RuntimeException("Service going BOOM!");
+        }
     }
 
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
