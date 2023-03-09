@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
@@ -190,6 +191,10 @@ class CreekSystemTestExtensionTesterTest {
                 contains(
                         mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
                         mount(Paths.get("w/host/path"), Paths.get("w/container/path"), false)));
+
+        assertThat(tester.mountInfo().get(0).hostPath(), is(Path.of("r/host/path")));
+        assertThat(tester.mountInfo().get(0).containerPath(), is(Path.of("r/container/path")));
+        assertThat(tester.mountInfo().get(0).readOnly(), is(true));
     }
 
     @Test
