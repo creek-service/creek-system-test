@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
@@ -157,7 +158,8 @@ class CreekSystemTestExtensionTesterTest {
     @Test
     void shouldSupportConfiguringServiceDebugInfo() {
         // Given:
-        final ServiceDebugInfo debugServiceInfo = serviceDebugInfo(321, Set.of("a"), Set.of("b"));
+        final ServiceDebugInfo debugServiceInfo =
+                serviceDebugInfo(321, Set.of("a"), Set.of("b"), Map.of("k", "v"));
         tester = builder.withDebugServices(debugServiceInfo).build();
 
         // Then:
@@ -172,7 +174,7 @@ class CreekSystemTestExtensionTesterTest {
         // Then:
         assertThat(
                 tester.serviceDebugInfo(),
-                is(serviceDebugInfo(DEFAULT_BASE_DEBUG_PORT, Set.of("a"), Set.of())));
+                is(serviceDebugInfo(DEFAULT_BASE_DEBUG_PORT, Set.of("a"), Set.of(), Map.of())));
     }
 
     @Test
@@ -189,6 +191,10 @@ class CreekSystemTestExtensionTesterTest {
                 contains(
                         mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
                         mount(Paths.get("w/host/path"), Paths.get("w/container/path"), false)));
+
+        assertThat(tester.mountInfo().get(0).hostPath(), is(Path.of("r/host/path")));
+        assertThat(tester.mountInfo().get(0).containerPath(), is(Path.of("r/container/path")));
+        assertThat(tester.mountInfo().get(0).readOnly(), is(true));
     }
 
     @Test

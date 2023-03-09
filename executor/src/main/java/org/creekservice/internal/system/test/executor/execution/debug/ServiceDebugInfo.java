@@ -19,6 +19,7 @@ package org.creekservice.internal.system.test.executor.execution.debug;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.creekservice.api.base.annotation.VisibleForTesting;
@@ -31,6 +32,7 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
     private final int baseServicePort;
     private final Set<String> serviceNames;
     private final Set<String> instanceNames;
+    private final Map<String, String> env;
 
     /**
      * Create debug info.
@@ -39,6 +41,7 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
      *     debugger to attach. Subsequent services being debugged will use sequential port numbers.
      * @param serviceNames the names of services to debug.
      * @param serviceInstanceNames the names of service instances to debug.
+     * @param env the environment variables to set on service being debugged.
      * @return the debug info.
      * @see <a
      *     href="https://github.com/creek-service/creek-system-test#debugging-system-tests">Service
@@ -47,10 +50,11 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
     public static ServiceDebugInfo serviceDebugInfo(
             final int baseServicePort,
             final Set<String> serviceNames,
-            final Set<String> serviceInstanceNames) {
+            final Set<String> serviceInstanceNames,
+            final Map<String, String> env) {
         return serviceNames.isEmpty() && serviceInstanceNames.isEmpty()
-                ? new ServiceDebugInfo(0, Set.of(), Set.of())
-                : new ServiceDebugInfo(baseServicePort, serviceNames, serviceInstanceNames);
+                ? new ServiceDebugInfo(0, Set.of(), Set.of(), Map.of())
+                : new ServiceDebugInfo(baseServicePort, serviceNames, serviceInstanceNames, env);
     }
 
     /**
@@ -64,24 +68,29 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
             return (ServiceDebugInfo) info;
         }
         return serviceDebugInfo(
-                info.baseServicePort(), info.serviceNames(), info.serviceInstanceNames());
+                info.baseServicePort(),
+                info.serviceNames(),
+                info.serviceInstanceNames(),
+                info.env());
     }
 
     /**
      * @return an empty instance.
      */
     public static ServiceDebugInfo none() {
-        return serviceDebugInfo(0, Set.of(), Set.of());
+        return serviceDebugInfo(0, Set.of(), Set.of(), Map.of());
     }
 
     @VisibleForTesting
     ServiceDebugInfo(
             final int baseServicePort,
             final Set<String> serviceNames,
-            final Set<String> instanceNames) {
+            final Set<String> instanceNames,
+            final Map<String, String> env) {
         this.baseServicePort = baseServicePort;
         this.serviceNames = toLower(requireNonNull(serviceNames, "serviceNames"));
         this.instanceNames = toLower(requireNonNull(instanceNames, "instanceNames"));
+        this.env = Map.copyOf(requireNonNull(env, "env"));
 
         if (!serviceNames.isEmpty()) {
             Preconditions.require(
@@ -104,6 +113,11 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
     @Override
     public Set<String> serviceInstanceNames() {
         return Set.copyOf(instanceNames);
+    }
+
+    @Override
+    public Map<String, String> env() {
+        return Map.copyOf(env);
     }
 
     /**
@@ -129,12 +143,13 @@ public final class ServiceDebugInfo implements ExecutorOptions.ServiceDebugInfo 
         final ServiceDebugInfo that = (ServiceDebugInfo) o;
         return baseServicePort == that.baseServicePort
                 && Objects.equals(serviceNames, that.serviceNames)
-                && Objects.equals(instanceNames, that.instanceNames);
+                && Objects.equals(instanceNames, that.instanceNames)
+                && Objects.equals(env, that.env);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(baseServicePort, serviceNames, instanceNames);
+        return Objects.hash(baseServicePort, serviceNames, instanceNames, env);
     }
 
     private static Set<String> toLower(final Set<String> names) {

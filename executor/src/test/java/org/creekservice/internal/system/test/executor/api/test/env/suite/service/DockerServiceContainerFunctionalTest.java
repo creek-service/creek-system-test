@@ -70,6 +70,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
@@ -331,8 +333,9 @@ class DockerServiceContainerFunctionalTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test
-    void shouldSetEnvOnInstanceUnderTest() {
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
+    void shouldSetEnvOnInstanceUnderTest(final boolean debug) {
         // Given:
         givenServiceUnderTest();
         instances =
@@ -341,6 +344,7 @@ class DockerServiceContainerFunctionalTest {
                                 serviceDebugInfo,
                                 List.of(),
                                 Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
         final ServiceInstance instance = instances.add(serviceDef);
 
         // Then:
@@ -352,8 +356,9 @@ class DockerServiceContainerFunctionalTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test
-    void shouldNotSetEnvOn3rdPartyInstance() {
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
+    void shouldNotSetEnvOn3rdPartyInstance(final boolean debug) {
         // Given:
         instances =
                 new DockerServiceContainer(
@@ -361,6 +366,7 @@ class DockerServiceContainerFunctionalTest {
                                 serviceDebugInfo,
                                 List.of(),
                                 Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
         final ServiceInstance instance = instances.add(serviceDef);
 
         // Then:
@@ -372,16 +378,21 @@ class DockerServiceContainerFunctionalTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test
-    void shouldNotSetEnvOn3rdPartyInstanceUnlessDebuggingThem() {
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
+    void shouldSetDebugEnvOnOnInstanceIfDebugging(final boolean serviceUnderTest) {
         // Given:
+        if (serviceUnderTest) {
+            givenServiceUnderTest();
+        }
         instances =
                 new DockerServiceContainer(
                         new ContainerFactory(
                                 serviceDebugInfo,
                                 List.of(),
-                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+                                Map.of("CREEK_TEST_ENV_KEY", "original value")));
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("CREEK_TEST_ENV_KEY", "expected value"));
         final ServiceInstance instance = instances.add(serviceDef);
 
         // Then:

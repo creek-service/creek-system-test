@@ -17,6 +17,7 @@
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.quality.Strictness.LENIENT;
 
 import com.google.common.testing.NullPointerTester;
@@ -52,6 +54,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
+@SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
 class ContainerFactoryTest {
@@ -236,7 +239,7 @@ class ContainerFactoryTest {
     }
 
     @CartesianTest
-    void shouldNotSetEnvIfEmpty(
+    void shouldNotSetEnvIfEnvIsEmpty(
             @Values(booleans = {true, false}) final boolean serviceUnderTest,
             @Values(booleans = {true, false}) final boolean debug) {
         // Given:
@@ -271,27 +274,65 @@ class ContainerFactoryTest {
     }
 
     @Test
-    void shouldSetEnvOn3rdPartyServiceIfDebugging() {
+    void shouldSetDebugEnvOnServicesUnderTestIfBeingDebugged() {
         // Given:
-        containerFactory =
-                new ContainerFactory(
-                        serviceDebugInfo,
-                        List.of(),
-                        Map.of("a", "b"),
-                        regularFactory,
-                        debugFactory,
-                        networkSupplier);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("a", "b"));
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
 
         // Then:
         verify(container).withEnv(Map.of("a", "b"));
     }
 
     @Test
-    void shouldNotSetEnvOn3rdPartyServiceIfNotDebugging() {
+    void shouldOverwriteEnvWithDebugEnvOnServicesUnderTestIfBeingDebugged() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("common", "env-1", "env-only", "env-2"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.env())
+                .thenReturn(Map.of("common", "debug-1", "debug-only", "debug-2"));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
+        // Then:
+        verify(container)
+                .withEnv(Map.of("common", "debug-1", "env-only", "env-2", "debug-only", "debug-2"));
+    }
+
+    @Test
+    void shouldNotSetDebugEnvOnServicesUnderTestIfNotBeingDebugged() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("a", "orig"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("a", "debug"));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
+        // Then:
+        verify(container).withEnv(Map.of("a", "orig"));
+    }
+
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
+    void shouldNotSetEnvOn3rdPartyService(final boolean debug) {
         // Given:
         containerFactory =
                 new ContainerFactory(
@@ -301,29 +342,66 @@ class ContainerFactoryTest {
                         regularFactory,
                         debugFactory,
                         networkSupplier);
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+
+        // Then:
+        verify(container, never()).withEnv(any());
+    }
+
+    @Test
+    void shouldSetDebugEnvOn3rdPartyServiceIfDebugging() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("a", "orig"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("a", "debug"));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+
+        // Then:
+        verify(container).withEnv(Map.of("a", "debug"));
+    }
+
+    @Test
+    void shouldNotSetDebugEnvOn3rdPartyServiceIfNotDebugging() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("a", "orig"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("a", "debug"));
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
 
         // When:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
 
         // Then:
-        verify(container, never()).withEnv(Map.of("a", "b"));
+        verify(container, never()).withEnv(any());
     }
 
     @ValueSource(booleans = {true, false})
     @ParameterizedTest
     void shouldReplaceServiceDebugPortInJavaToolOptions(final boolean serviceUnderTest) {
         // Given:
-        containerFactory =
-                new ContainerFactory(
-                        serviceDebugInfo,
-                        List.of(),
+        when(serviceDebugInfo.env())
+                .thenReturn(
                         Map.of(
                                 "JAVA_TOOL_OPTIONS",
-                                "a${SERVICE_DEBUG_PORT}b${SERVICE_DEBUG_PORT}c"),
-                        regularFactory,
-                        debugFactory,
-                        networkSupplier);
+                                "a${SERVICE_DEBUG_PORT}b${SERVICE_DEBUG_PORT}c"));
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
@@ -345,13 +423,17 @@ class ContainerFactoryTest {
                         regularFactory,
                         debugFactory,
                         networkSupplier);
+        when(serviceDebugInfo.env()).thenReturn(Map.of("b", "${SERVICE_DEBUG_PORT}"));
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
 
         // Then:
-        verify(container).withEnv(Map.of("a", "${SERVICE_DEBUG_PORT}"));
+        final Map<String, String> expectedA = Map.of("b", "${SERVICE_DEBUG_PORT}");
+        final Map<String, String> expectedB =
+                Map.of("a", "${SERVICE_DEBUG_PORT}", "b", "${SERVICE_DEBUG_PORT}");
+        verify(container).withEnv(argThat(either(is(expectedA)).or(is(expectedB))));
     }
 
     @ValueSource(booleans = {true, false})
