@@ -97,4 +97,9 @@ class ExecutorOptionsTest {
     void shouldDefaultToNoEnv() {
         assertThat(options.env(), is(Map.of()));
     }
+
+    @Test
+    void shouldDefaultToNoDebugEnv() {
+        assertThat(debugInfo.env(), is(Map.of()));
+    }
 }
