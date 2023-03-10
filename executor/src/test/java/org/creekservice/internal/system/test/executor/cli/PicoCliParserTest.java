@@ -534,6 +534,8 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--debug-service-instance=<Not Set>"
                                         + lineSeparator()
+                                        + "--debug-env=<Not Set>"
+                                        + lineSeparator()
                                         + "--env=<Not Set>"
                                         + lineSeparator()
                                         + "--mount-read-only=<Not Set>"
@@ -551,6 +553,7 @@ class PicoCliParserTest {
                         "-dsp=12345",
                         "-ds=a,b",
                         "-dsi=a-0,b-1",
+                        "-de=E=F",
                         "-e=A=B,C=D",
                         "-mr=/a/b=/c,d/e=/f",
                         "-mw=/a=/b/c,/d=/f");
@@ -576,6 +579,8 @@ class PicoCliParserTest {
                                         + "--debug-service=a,b"
                                         + lineSeparator()
                                         + "--debug-service-instance=a-0,b-1"
+                                        + lineSeparator()
+                                        + "--debug-env=E=F"
                                         + lineSeparator()
                                         + "--env=A=B,C=D"
                                         + lineSeparator()
