@@ -326,6 +326,9 @@ public final class PicoCliParser {
                     + "--debug-service-instance="
                     + formatList(debugInstances)
                     + lineSeparator()
+                    + "--debug-env="
+                    + formatMap(debugEnv)
+                    + lineSeparator()
                     + "--env="
                     + formatMap(env)
                     + lineSeparator()
