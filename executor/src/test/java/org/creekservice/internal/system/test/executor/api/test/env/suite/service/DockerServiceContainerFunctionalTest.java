@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Pattern;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
@@ -97,7 +98,7 @@ class DockerServiceContainerFunctionalTest {
 
     @BeforeEach
     void setUp() {
-        when(serviceDebugInfo.baseServicePort()).thenReturn(8000);
+        when(serviceDebugInfo.baseServicePort()).thenReturn(8000 + new Random().nextInt(20_000));
         instances =
                 new DockerServiceContainer(
                         new ContainerFactory(serviceDebugInfo, List.of(), Map.of()));
