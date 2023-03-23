@@ -214,7 +214,7 @@ public final class PicoCliParser {
         /**
          * Method for adding read-only mount points.
          *
-         * @param mounts the map of host -> container paths to mount.
+         * @param mounts the map of host to container paths to mount.
          */
         @Option(
                 names = {"-mr", "--mount-read-only"},
@@ -235,7 +235,7 @@ public final class PicoCliParser {
         /**
          * Method for adding writable mount points.
          *
-         * @param mounts the map of host -> container paths to mount.
+         * @param mounts the map of host to container paths to mount.
          */
         @Option(
                 names = {"-mw", "--mount-writable"},

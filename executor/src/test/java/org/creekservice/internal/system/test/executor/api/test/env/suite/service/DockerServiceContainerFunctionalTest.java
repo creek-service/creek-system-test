@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Pattern;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
@@ -78,13 +79,14 @@ import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 import org.testcontainers.DockerClientFactory;
 
-@SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
+@SuppressFBWarnings({"DMI_HARDCODED_ABSOLUTE_FILENAME", "PREDICTABLE_RANDOM"})
 @ExtendWith(MockitoExtension.class)
 class DockerServiceContainerFunctionalTest {
 
     private static final String SERVICE_NAME = "test-service";
     private static final String SERVICE_IMAGE =
             "ghcr.io/creek-service/creek-system-test-test-service";
+    private static final Random RNG = new Random();
 
     private final DockerClient dockerClient = DockerClientFactory.lazyClient();
 
@@ -97,7 +99,7 @@ class DockerServiceContainerFunctionalTest {
 
     @BeforeEach
     void setUp() {
-        when(serviceDebugInfo.baseServicePort()).thenReturn(8000);
+        when(serviceDebugInfo.baseServicePort()).thenReturn(8000 + RNG.nextInt(20_000));
         instances =
                 new DockerServiceContainer(
                         new ContainerFactory(serviceDebugInfo, List.of(), Map.of()));
