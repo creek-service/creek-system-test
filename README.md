@@ -438,7 +438,7 @@ The most common causes this are:
 
 Creek is designed to be extendable. See how to [extend system tests](extension).
 
-[kafka-test-ext]: https://github.com/creek-service/creek-kafka/tree/main/test-extension
+[kafka-test-ext]: https://www.creekservice.org/creek-kafka/#system-test-extension
 [gradle-plugin]: https://github.com/creek-service/creek-system-test-gradle-plugin
 [attachme-plugin]: https://plugins.jetbrains.com/plugin/13263-attachme
 [attachme-blog]: https://blog.jetbrains.com/scala/2020/01/14/attachme-attach-the-intellij-idea-debugger-to-forked-jvms-automatically/
