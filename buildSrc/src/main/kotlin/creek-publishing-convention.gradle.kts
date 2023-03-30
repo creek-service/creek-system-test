@@ -17,7 +17,8 @@
 /**
  * Standard configuration for Creek library publishing
  *
- * <p>Version: 1.4
+  * <p>Version: 1.5
+ *  - 1.5: Switch to using `gradlePlugin`, as required by Gradle 8.0
  *  - 1.4: Fix website URL to avoid redirect
  *  - 1.3: Switch to setting 'system' from issue-management
  *
