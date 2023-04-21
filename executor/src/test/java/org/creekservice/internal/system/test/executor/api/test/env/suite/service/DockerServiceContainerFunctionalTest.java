@@ -249,9 +249,7 @@ class DockerServiceContainerFunctionalTest {
                 e.getMessage(),
                 startsWith(
                         "Failed to start service: test-service-0, image: i-do-not-exist:latest"));
-        assertThat(e.getCause().getMessage(), containsString("Container startup failed"));
-
-        assertThat(e.getCause().getCause().getMessage(), containsString("Can't get Docker image"));
+        assertThat(e.getCause().getMessage(), containsString("Can't get Docker image"));
     }
 
     @Test
