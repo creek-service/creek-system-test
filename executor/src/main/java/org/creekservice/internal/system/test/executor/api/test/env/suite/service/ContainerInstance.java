@@ -311,7 +311,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
         if (container.isRunning()) {
             LOGGER.warn(
-                    "Failed to step {} ({}) after {} seconds",
+                    "Failed to stop {} ({}) after {} seconds",
                     name,
                     imageName,
                     shutDownTimeOut.toSeconds());
