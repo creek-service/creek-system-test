@@ -52,7 +52,7 @@ subprojects {
         set("spotBugsVersion", "4.8.0")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.15.3")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.7.5")          // https://mvnrepository.com/artifact/info.picocli/picocli
-        set("log4jVersion", "2.21.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+        set("log4jVersion", "2.22.0")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("slf4jVersion", "2.0.9")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
         set("guavaVersion", "32.1.3-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
