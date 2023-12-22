@@ -29,6 +29,7 @@ import org.creekservice.internal.system.test.executor.api.test.env.suite.service
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
+import org.creekservice.internal.system.test.executor.execution.listener.PrepareResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
 import org.creekservice.internal.system.test.executor.observation.LoggingTestEnvironmentListener;
@@ -77,6 +78,7 @@ public final class Api {
         api.tests().env().listeners().append(addServicesListener);
         creekTestExtensions.forEach(ext -> ext.initialize(api));
         api.tests().env().listeners().append(new InitializeResourcesListener(api));
+        api.tests().env().listeners().append(new PrepareResourcesListener(api));
         api.tests()
                 .env()
                 .listeners()

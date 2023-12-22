@@ -18,6 +18,7 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,6 +26,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.OwnedResource;
+import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.platform.resource.ResourceInitializer;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
@@ -57,7 +60,19 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
     public InitializeResourcesListener(final SystemTest api) {
         this(
                 api,
-                ResourceInitializer.resourceInitializer(api.extensions().model()::resourceHandler));
+                ResourceInitializer.resourceInitializer(
+                        new ResourceInitializer.ResourceCreator() {
+                            @SuppressWarnings({"unchecked", "rawtypes"})
+                            @Override
+                            public <T extends ResourceDescriptor & OwnedResource> void ensure(
+                                    final Collection<T> creatableResources) {
+                                api.extensions()
+                                        .model()
+                                        .resourceHandler(
+                                                creatableResources.iterator().next().getClass())
+                                        .ensure((Collection) creatableResources);
+                            }
+                        }));
     }
 
     @VisibleForTesting
