@@ -68,6 +68,7 @@ public final class SystemTestMapper {
                         .enable(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)
                         .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
                         .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+                        .enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
                         .serializationInclusion(JsonInclude.Include.NON_EMPTY);
 
         registerModelTypes(builder, modelTypes);
