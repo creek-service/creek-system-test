@@ -65,4 +65,13 @@ class SuiteCleanUpListenerTest {
         actionCaptor.getValue().accept(service);
         verify(service).stop();
     }
+
+    @Test
+    void shouldCloseExtensionsAfterSuite() {
+        // When:
+        listener.afterSuite(null, null);
+
+        // Then:
+        verify(api.extensions()).close();
+    }
 }
