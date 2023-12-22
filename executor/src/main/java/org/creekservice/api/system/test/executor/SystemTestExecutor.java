@@ -25,9 +25,11 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.JarVersion;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
+import org.creekservice.api.system.test.parser.TestPackageParser;
 import org.creekservice.api.system.test.parser.TestPackagesLoader;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.cli.PicoCliParser;
@@ -89,15 +91,7 @@ public final class SystemTestExecutor {
                     "Not a directory: " + options.testDirectory().toUri());
         }
 
-        final SystemTest api =
-                initializeApi(
-                        options.serviceDebugInfo()
-                                .map(ServiceDebugInfo::copyOf)
-                                .orElse(ServiceDebugInfo.none()),
-                        options.mountInfo(),
-                        options.env());
-
-        final TestExecutionResult result = executor(options, api).execute();
+        final TestExecutionResult result = executor(options).execute();
         if (result.isEmpty()) {
             throw new TestExecutionFailedException(
                     "No tests found under: " + options.testDirectory().toUri());
@@ -134,22 +128,33 @@ public final class SystemTestExecutor {
                 .collect(Collectors.joining(" "));
     }
 
-    private static TestPackagesExecutor executor(
-            final ExecutorOptions options, final SystemTest api) {
+    private static TestPackagesExecutor executor(final ExecutorOptions options) {
+
+        final Supplier<SystemTest> apiSupplier =
+                () ->
+                        initializeApi(
+                                options.serviceDebugInfo()
+                                        .map(ServiceDebugInfo::copyOf)
+                                        .orElse(ServiceDebugInfo.none()),
+                                options.mountInfo(),
+                                options.env());
 
         final TestPackagesLoader loader =
                 testPackagesLoader(
-                        options.testDirectory(),
-                        yamlParser(
-                                api.tests().model().modelTypes(),
-                                new TestPackageParserObserver(LOGGER)),
-                        options.suitesFilter());
+                        options.testDirectory(), createParser(apiSupplier), options.suitesFilter());
 
         return new TestPackagesExecutor(
                 loader,
                 new TestSuiteExecutor(
-                        api, options.verifierTimeout().orElse(DEFAULT_VERIFIER_TIMEOUT)),
+                        apiSupplier, options.verifierTimeout().orElse(DEFAULT_VERIFIER_TIMEOUT)),
                 new XmlResultsWriter(options.resultDirectory()));
+    }
+
+    private static TestPackageParser createParser(final Supplier<SystemTest> apiSupplier) {
+        // Initialize API and test extensions once here to obtain the list of model extensions:
+        final SystemTest api = apiSupplier.get();
+
+        return yamlParser(api.tests().model().modelTypes(), new TestPackageParserObserver(LOGGER));
     }
 
     private static final class TestExecutionFailedException extends RuntimeException {

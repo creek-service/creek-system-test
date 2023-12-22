@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
-import org.creekservice.api.platform.metadata.ResourceHandler;
 import org.creekservice.api.service.extension.CreekExtension;
 import org.creekservice.api.service.extension.CreekExtensionProvider;
 import org.creekservice.api.service.extension.CreekService;
+import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.api.system.test.test.service.extension.TestResource;
 
 public final class TestCreekExtensionProvider
@@ -36,11 +36,15 @@ public final class TestCreekExtensionProvider
 
     public static final String ENV_FAIL_VALIDATE_RESOURCE_ID = "creek-test-ext-fail-validate-id";
     public static final String ENV_FAIL_ENSURE_RESOURCE_ID = "creek-test-ext-fail-ensure-id";
+    public static final String ENV_FAIL_PREPARE_RESOURCE_ID = "creek-test-ext-fail-prepare-id";
 
     private static final String VALIDATE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_VALIDATE_RESOURCE_ID, "");
     private static final String ENSURE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_ENSURE_RESOURCE_ID, "");
+
+    private static final String PREPARE_FAIL_ID =
+            getenv().getOrDefault(ENV_FAIL_PREPARE_RESOURCE_ID, "");
 
     public TestCreekExtensionProvider() {}
 
@@ -69,6 +73,11 @@ public final class TestCreekExtensionProvider
         public String name() {
             return "test";
         }
+
+        @Override
+        public void close() {
+            System.out.println("Closing " + this.getClass().getSimpleName());
+        }
     }
 
     private static final class TestResourceHandler implements ResourceHandler<TestResource> {
@@ -87,6 +96,20 @@ public final class TestCreekExtensionProvider
             System.out.println("Ensuring resources: " + ids);
         }
 
+        @Override
+        public void prepare(final Collection<? extends TestResource> resources) {
+            if (resources.isEmpty()) {
+                throw new AssertionError("prepare called with empty resources");
+            }
+
+            final List<URI> ids = ids(resources);
+            if (ids.stream().map(URI::toString).anyMatch(id -> id.equals(PREPARE_FAIL_ID))) {
+                throw new PrepareFailedException(PREPARE_FAIL_ID);
+            }
+
+            System.out.println("Preparing resources: " + ids);
+        }
+
         private static List<URI> ids(final Collection<? extends TestResource> resourceGroup) {
             return resourceGroup.stream().map(ResourceDescriptor::id).collect(Collectors.toList());
         }
@@ -100,6 +123,12 @@ public final class TestCreekExtensionProvider
         private static final class EnsureFailedException extends RuntimeException {
             EnsureFailedException(final String failId) {
                 super("Ensure failed for resource: " + failId);
+            }
+        }
+
+        private static final class PrepareFailedException extends RuntimeException {
+            PrepareFailedException(final String failId) {
+                super("Prepare failed for resource: " + failId);
             }
         }
     }
