@@ -108,7 +108,7 @@ class XmlTestCaseResultTest {
                                 + lineSeparator()
                                 + "  <failure message=\"Expectation not met\""
                                 + " type=\"java.lang.AssertionError\">"
-                                + stackTrace
+                                + stackTrace.replaceAll("\r", "&#xd;")
                                 + "</failure>"
                                 + lineSeparator()
                                 + "</testcase>"
@@ -133,7 +133,7 @@ class XmlTestCaseResultTest {
                                 + lineSeparator()
                                 + "  <error message=\"bad state\""
                                 + " type=\"java.lang.IllegalStateException\">"
-                                + stackTrace.replaceAll(lineSeparator(), "\n")
+                                + stackTrace.replaceAll("\r", "&#xd;")
                                 + "</error>"
                                 + lineSeparator()
                                 + "</testcase>"

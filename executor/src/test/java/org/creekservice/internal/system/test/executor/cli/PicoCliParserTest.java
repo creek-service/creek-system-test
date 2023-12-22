@@ -555,15 +555,15 @@ class PicoCliParserTest {
     @Test
     void shouldImplementToStringOnFullOptions() {
         // Given:
-        final Path mrS0 = Path.of(File.separator, "a", "b");
-        final Path mrD0 = Path.of(File.separator, "c");
+        final Path mrS0 = Path.of("a", "b");
+        final Path mrD0 = Path.of("c");
         final Path mrS1 = Path.of("d", "e");
-        final Path mrD1 = Path.of(File.separator, "f");
+        final Path mrD1 = Path.of("f");
 
-        final Path mwS0 = Path.of(File.separator, "a");
-        final Path mwD0 = Path.of(File.separator, "b", "c");
-        final Path mwS1 = Path.of(File.separator, "d");
-        final Path mwD1 = Path.of(File.separator, "f");
+        final Path mwS0 = Path.of("a");
+        final Path mwD0 = Path.of("b", "c");
+        final Path mwS1 = Path.of("d");
+        final Path mwD1 = Path.of("g");
 
         final String[] args =
                 minimalArgs(
