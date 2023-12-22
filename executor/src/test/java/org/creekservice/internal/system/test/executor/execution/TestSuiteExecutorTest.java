@@ -66,11 +66,11 @@ class TestSuiteExecutorTest {
     @Mock private TestEnvironmentListener listener;
     @Mock private CaseResult testResult;
     @Captor private ArgumentCaptor<Consumer<TestEnvironmentListener>> actionCaptor;
-    private TestSuiteExecutor suiteExecutor;
+    private TestSuiteExecutor.Executor suiteExecutor;
 
     @BeforeEach
     void setUp() {
-        suiteExecutor = new TestSuiteExecutor(listeners, inputters, testExecutor);
+        suiteExecutor = new TestSuiteExecutor.Executor(listeners, inputters, testExecutor);
 
         when(testCase0.name()).thenReturn("test0");
         when(testCase0.suite()).thenReturn(testSuite);
@@ -98,7 +98,7 @@ class TestSuiteExecutorTest {
         final SuiteResult result = suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        assertAfterTestCalled(result);
+        assertAfterSuiteCalled(result);
     }
 
     @Test
@@ -142,7 +142,7 @@ class TestSuiteExecutorTest {
         final InOrder inOrder = inOrder(testExecutor);
         inOrder.verify(testExecutor).executeTest(testCase0);
         inOrder.verify(testExecutor).executeTest(testCase1);
-        assertAfterTestCalled(result);
+        assertAfterSuiteCalled(result);
     }
 
     @Test
@@ -164,7 +164,7 @@ class TestSuiteExecutorTest {
                 result.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
 
-        assertAfterTestCalled(result);
+        assertAfterSuiteCalled(result);
     }
 
     @Test
@@ -186,7 +186,7 @@ class TestSuiteExecutorTest {
                 is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
         assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
 
-        assertAfterTestCalled(result);
+        assertAfterSuiteCalled(result);
     }
 
     @Test
@@ -227,7 +227,7 @@ class TestSuiteExecutorTest {
         when(testSuite.tests()).thenReturn(List.of(tests));
     }
 
-    private void assertAfterTestCalled(final SuiteResult result) {
+    private void assertAfterSuiteCalled(final SuiteResult result) {
         verify(listeners).forEachReverse(actionCaptor.capture());
         actionCaptor.getValue().accept(listener);
         verify(listener).afterSuite(testSuite, result);

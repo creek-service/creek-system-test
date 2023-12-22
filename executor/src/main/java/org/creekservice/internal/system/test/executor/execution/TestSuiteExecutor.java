@@ -20,41 +20,30 @@ import static java.util.Objects.requireNonNull;
 import static org.creekservice.internal.system.test.executor.result.SuiteResult.testSuiteResult;
 
 import java.time.Duration;
+import java.util.function.Supplier;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
-import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
-/** Executor or test suites. */
+/** Executor of test suites. */
 public final class TestSuiteExecutor {
 
-    private final Inputters inputters;
-    private final TestListenerCollection listeners;
-    private final TestCaseExecutor testExecutor;
+    private final Supplier<SystemTest> apiSupplier;
+    private final Duration verifierTimeout;
 
     /**
-     * @param api the system test api.
+     * @param apiSupplier Supplier of initialized system test api. A fresh api instance is created
+     *     per test suite.
      * @param verifierTimeout the default verifier timeout, i.e. how long to wait for expectations
      *     to be met.
      */
-    public TestSuiteExecutor(final SystemTest api, final Duration verifierTimeout) {
-        this(
-                api.tests().env().listeners(),
-                new Inputters(api.tests().model()),
-                new TestCaseExecutor(api, verifierTimeout));
-    }
-
-    @VisibleForTesting
-    TestSuiteExecutor(
-            final TestListenerCollection listeners,
-            final Inputters inputters,
-            final TestCaseExecutor testExecutor) {
-        this.listeners = requireNonNull(listeners, "listeners");
-        this.inputters = requireNonNull(inputters, "inputter");
-        this.testExecutor = requireNonNull(testExecutor, "testExecutor");
+    public TestSuiteExecutor(
+            final Supplier<SystemTest> apiSupplier, final Duration verifierTimeout) {
+        this.apiSupplier = requireNonNull(apiSupplier, "apiSupplier");
+        this.verifierTimeout = requireNonNull(verifierTimeout, "verifierTimeout");
     }
 
     /**
@@ -64,49 +53,75 @@ public final class TestSuiteExecutor {
      * @return the test result.
      */
     public SuiteResult executeSuite(final TestSuite testSuite) {
-        final SuiteResult result = execute(testSuite);
+        return new Executor(apiSupplier.get(), verifierTimeout).executeSuite(testSuite);
+    }
 
-        try {
-            afterSuite(testSuite, result);
-        } catch (final Exception e) {
-            throw new SuiteExecutionFailedException("Suite teardown", testSuite, e);
+    @VisibleForTesting
+    static final class Executor {
+        private final TestListenerCollection listeners;
+        private final Inputters inputters;
+        private final TestCaseExecutor testExecutor;
+
+        Executor(final SystemTest api, final Duration verifierTimeout) {
+            this(
+                    api.tests().env().listeners(),
+                    new Inputters(api.tests().model()),
+                    new TestCaseExecutor(api, verifierTimeout));
         }
 
-        return result;
-    }
-
-    private SuiteResult execute(final TestSuite testSuite) {
-        final SuiteResult.Builder builder = testSuiteResult(testSuite);
-
-        try {
-            beforeSuite(testSuite);
-        } catch (final Exception e) {
-            final SuiteExecutionFailedException cause =
-                    new SuiteExecutionFailedException("Suite setup", testSuite, e);
-
-            return builder.buildError(cause);
+        Executor(
+                final TestListenerCollection listeners,
+                final Inputters inputters,
+                final TestCaseExecutor testExecutor) {
+            this.listeners = requireNonNull(listeners, "listeners");
+            this.inputters = requireNonNull(inputters, "inputter");
+            this.testExecutor = requireNonNull(testExecutor, "testExecutor");
         }
 
-        runSuite(testSuite, builder);
+        SuiteResult executeSuite(final TestSuite testSuite) {
+            final SuiteResult result = execute(testSuite);
 
-        return builder.build();
-    }
+            try {
+                afterSuite(testSuite, result);
+            } catch (final Exception e) {
+                throw new SuiteExecutionFailedException("Suite teardown", testSuite, e);
+            }
 
-    private void beforeSuite(final TestSuite testSuite) {
-        listeners.forEach(listener -> listener.beforeSuite(testSuite));
-        inputters.input(testSuite.pkg().seedData(), testSuite);
-    }
+            return result;
+        }
 
-    private void runSuite(final TestSuite testSuite, final SuiteResult.Builder builder) {
-        try {
+        private SuiteResult execute(final TestSuite testSuite) {
+            final SuiteResult.Builder builder = testSuiteResult(testSuite);
+
+            try {
+                beforeSuite(testSuite);
+            } catch (final Exception e) {
+                final SuiteExecutionFailedException cause =
+                        new SuiteExecutionFailedException("Suite setup", testSuite, e);
+
+                return builder.buildError(cause);
+            }
+
+            try {
+                runSuite(testSuite, builder);
+                return builder.build();
+            } catch (final Exception e) {
+                throw new SuiteExecutionFailedException("Suite execution", testSuite, e);
+            }
+        }
+
+        private void beforeSuite(final TestSuite testSuite) {
+            listeners.forEach(listener -> listener.beforeSuite(testSuite));
+            inputters.input(testSuite.pkg().seedData(), testSuite);
+        }
+
+        private void runSuite(final TestSuite testSuite, final SuiteResult.Builder builder) {
             testSuite.tests().stream().map(testExecutor::executeTest).forEach(builder::add);
-        } catch (final Exception e) {
-            throw new SuiteExecutionFailedException("Suite execution", testSuite, e);
         }
-    }
 
-    private void afterSuite(final TestSuite testSuite, final TestSuiteResult result) {
-        listeners.forEachReverse(listener -> listener.afterSuite(testSuite, result));
+        private void afterSuite(final TestSuite testSuite, final SuiteResult result) {
+            listeners.forEachReverse(listener -> listener.afterSuite(testSuite, result));
+        }
     }
 
     private static final class SuiteExecutionFailedException extends RuntimeException {
