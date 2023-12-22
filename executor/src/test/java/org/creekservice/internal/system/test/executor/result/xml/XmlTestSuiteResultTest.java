@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.system.test.executor.result.xml;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doReturn;
@@ -89,14 +90,20 @@ class XmlTestSuiteResultTest {
                 is(
                         "<testsuite errors=\"3\" failures=\"4\" hostname=\"some-host\" name=\"the"
                                 + " suite\" skipped=\"1\" tests=\"2\" time=\"1234.567\""
-                                + " timestamp=\"1970-01-15T06:56:07.890\">\n"
-                                + "  <testcase>\n"
+                                + " timestamp=\"1970-01-15T06:56:07.890\">"
+                                + lineSeparator()
+                                + "  <testcase>"
+                                + lineSeparator()
                                 + "    <testcase classname=\"the suite\" name=\"test 0\""
-                                + " time=\"12.345\"/>\n"
+                                + " time=\"12.345\"/>"
+                                + lineSeparator()
                                 + "    <testcase classname=\"the suite\" name=\"test 1\""
-                                + " time=\"23.587\"/>\n"
-                                + "  </testcase>\n"
-                                + "</testsuite>\n"));
+                                + " time=\"23.587\"/>"
+                                + lineSeparator()
+                                + "  </testcase>"
+                                + lineSeparator()
+                                + "</testsuite>"
+                                + lineSeparator()));
     }
 
     @Test
@@ -118,11 +125,14 @@ class XmlTestSuiteResultTest {
                 is(
                         "<testsuite errors=\"4\" failures=\"4\" hostname=\"some-host\" name=\"the"
                                 + " suite\" skipped=\"0\" tests=\"0\" time=\"1234.567\""
-                                + " timestamp=\"1970-01-15T06:56:07.890\">\n"
+                                + " timestamp=\"1970-01-15T06:56:07.890\">"
+                                + lineSeparator()
                                 + "  <error message=\"Boom\""
                                 + " type=\"java.lang.IllegalArgumentException\">"
                                 + stackTrace
-                                + "</error>\n"
-                                + "</testsuite>\n"));
+                                + "</error>"
+                                + lineSeparator()
+                                + "</testsuite>"
+                                + lineSeparator()));
     }
 }

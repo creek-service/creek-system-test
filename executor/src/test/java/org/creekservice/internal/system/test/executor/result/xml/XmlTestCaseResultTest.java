@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.system.test.executor.result.xml;
 
+import static java.lang.System.lineSeparator;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
@@ -64,7 +65,9 @@ class XmlTestCaseResultTest {
         // Then:
         assertThat(
                 xml,
-                is("<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\"/>\n"));
+                is(
+                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\"/>"
+                                + lineSeparator()));
     }
 
     @Test
@@ -79,9 +82,12 @@ class XmlTestCaseResultTest {
         assertThat(
                 xml,
                 is(
-                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
-                                + "  <skipped/>\n"
-                                + "</testcase>\n"));
+                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">"
+                                + lineSeparator()
+                                + "  <skipped/>"
+                                + lineSeparator()
+                                + "</testcase>"
+                                + lineSeparator()));
     }
 
     @Test
@@ -98,12 +104,15 @@ class XmlTestCaseResultTest {
         assertThat(
                 xml,
                 is(
-                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
+                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">"
+                                + lineSeparator()
                                 + "  <failure message=\"Expectation not met\""
                                 + " type=\"java.lang.AssertionError\">"
                                 + stackTrace
-                                + "</failure>\n"
-                                + "</testcase>\n"));
+                                + "</failure>"
+                                + lineSeparator()
+                                + "</testcase>"
+                                + lineSeparator()));
     }
 
     @Test
@@ -120,11 +129,14 @@ class XmlTestCaseResultTest {
         assertThat(
                 xml,
                 is(
-                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">\n"
+                        "<testcase classname=\"the suite\" name=\"the test\" time=\"1234.567\">"
+                                + lineSeparator()
                                 + "  <error message=\"bad state\""
                                 + " type=\"java.lang.IllegalStateException\">"
                                 + stackTrace
-                                + "</error>\n"
-                                + "</testcase>\n"));
+                                + "</error>"
+                                + lineSeparator()
+                                + "</testcase>"
+                                + lineSeparator()));
     }
 }

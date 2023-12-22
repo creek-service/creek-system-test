@@ -31,6 +31,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.test.util.TestPaths;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
@@ -156,6 +157,10 @@ class XmlResultsWriterTest {
 
         // Then:
         assertThat(
+                "Directory content:"
+                        + TestPaths.listDirectory(outputDir)
+                                .map(Path::toString)
+                                .collect(Collectors.joining(System.lineSeparator())),
                 outputDir.resolve("TEST-_some____Weird_--_____________Name.xml"),
                 fileContains("some xml"));
     }

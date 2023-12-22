@@ -40,6 +40,9 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 class PicoCliParserTest {
 
+    private static final Path TESTS_PATH = Path.of("test", "path");
+    private static final Path RESULTS_PATH = Path.of("result", "path");
+
     @Test
     void shouldReturnEmptyOnHelp() {
         // Given:
@@ -87,10 +90,10 @@ class PicoCliParserTest {
         // Then:
         assertThat(
                 result.map(ExecutorOptions::testDirectory).map(Path::toString),
-                is(Optional.of("test/path")));
+                is(Optional.of(TESTS_PATH.toString())));
         assertThat(
                 result.map(ExecutorOptions::resultDirectory).map(Path::toString),
-                is(Optional.of("result/path")));
+                is(Optional.of(RESULTS_PATH.toString())));
         assertThat(result.flatMap(ExecutorOptions::verifierTimeout), is(Optional.empty()));
         assertThat(
                 result.map(ExecutorOptions::suitesFilter).map(f -> f.test(Paths.get("any"))),
@@ -101,7 +104,7 @@ class PicoCliParserTest {
     @Test
     void shouldThrowIfTestPathNotProvided() {
         // Given:
-        final String[] args = {"-rd", "result/path"};
+        final String[] args = {"-rd", RESULTS_PATH.toString()};
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
@@ -115,7 +118,7 @@ class PicoCliParserTest {
     @Test
     void shouldThrowIfResultPathNotProvided() {
         // Given:
-        final String[] args = {"-td", "test/path"};
+        final String[] args = {"-td", TESTS_PATH.toString()};
 
         // When:
         final Exception e = assertThrows(RuntimeException.class, () -> parse(args));
@@ -520,9 +523,11 @@ class PicoCliParserTest {
                 result.map(Object::toString),
                 is(
                         Optional.of(
-                                "--test-directory=test/path"
+                                "--test-directory="
+                                        + TESTS_PATH
                                         + lineSeparator()
-                                        + "--result-directory=result/path"
+                                        + "--result-directory="
+                                        + RESULTS_PATH
                                         + lineSeparator()
                                         + "--verifier-timeout-seconds=<Not Set>"
                                         + lineSeparator()
@@ -546,6 +551,16 @@ class PicoCliParserTest {
     @Test
     void shouldImplementToStringOnFullOptions() {
         // Given:
+        final Path mrS0 = Path.of("/", "a", "b");
+        final Path mrD0 = Path.of("/", "c");
+        final Path mrS1 = Path.of("d", "e");
+        final Path mrD1 = Path.of("/", "f");
+
+        final Path mwS0 = Path.of("/", "a");
+        final Path mwD0 = Path.of("/", "b", "c");
+        final Path mwS1 = Path.of("/", "d");
+        final Path mwD1 = Path.of("/", "f");
+
         final String[] args =
                 minimalArgs(
                         "--verifier-timeout-seconds=90",
@@ -555,8 +570,8 @@ class PicoCliParserTest {
                         "-dsi=a-0,b-1",
                         "-de=E=F",
                         "-e=A=B,C=D",
-                        "-mr=/a/b=/c,d/e=/f",
-                        "-mw=/a=/b/c,/d=/f");
+                        "-mr=" + mrS0 + "=" + mrD0 + "," + mrS1 + "=" + mrD1,
+                        "-mw=" + mwS0 + "=" + mwD0 + "," + mwS1 + "=" + mwD1);
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -566,9 +581,11 @@ class PicoCliParserTest {
                 result.map(Object::toString),
                 is(
                         Optional.of(
-                                "--test-directory=test/path"
+                                "--test-directory="
+                                        + TESTS_PATH
                                         + lineSeparator()
-                                        + "--result-directory=result/path"
+                                        + "--result-directory="
+                                        + RESULTS_PATH
                                         + lineSeparator()
                                         + "--verifier-timeout-seconds=90"
                                         + lineSeparator()
@@ -584,14 +601,29 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--env=A=B,C=D"
                                         + lineSeparator()
-                                        + "--mount-read-only=/a/b=/c,d/e=/f"
+                                        + "--mount-read-only="
+                                        + mrS0
+                                        + "="
+                                        + mrD0
+                                        + ","
+                                        + mrS1
+                                        + "="
+                                        + mrD1
                                         + lineSeparator()
-                                        + "--mount-writable=/a=/b/c,/d=/f")));
+                                        + "--mount-writable="
+                                        + mwS0
+                                        + "="
+                                        + mwD0
+                                        + ","
+                                        + mwS1
+                                        + "="
+                                        + mwD1)));
     }
 
     private static String[] minimalArgs(final String... additional) {
         final List<String> args =
-                new ArrayList<>(List.of("-td", "test/path", "-rd", "result/path"));
+                new ArrayList<>(
+                        List.of("-td", TESTS_PATH.toString(), "-rd", RESULTS_PATH.toString()));
         args.addAll(List.of(additional));
         return args.toArray(String[]::new);
     }
