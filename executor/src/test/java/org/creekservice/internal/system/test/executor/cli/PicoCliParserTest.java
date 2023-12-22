@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -154,8 +155,8 @@ class PicoCliParserTest {
 
         // Then:
         final Predicate<Path> filter = result.get().suitesFilter();
-        assertThat(filter.test(Path.of("/some/included/path")), is(true));
-        assertThat(filter.test(Path.of("/some/excluded/path")), is(false));
+        assertThat(filter.test(Path.of("some", "included", "path")), is(true));
+        assertThat(filter.test(Path.of(File.separator, "some", "excluded", "path")), is(false));
     }
 
     @Test
@@ -340,7 +341,10 @@ class PicoCliParserTest {
     @Test
     void shouldParseReadOnlyMount() {
         // Given:
-        final String[] args = minimalArgs("--mount-read-only=/host/path=/container/path");
+        final Path mountSource = Path.of(File.separator, "host", "path");
+        final Path mountDestination = Path.of("/", "container", "path");
+        final String[] args =
+                minimalArgs("--mount-read-only=" + mountSource + "=" + mountDestination);
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -350,8 +354,8 @@ class PicoCliParserTest {
                 result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(1)));
 
         final ExecutorOptions.MountInfo mount = result.get().mountInfo().iterator().next();
-        assertThat(mount.hostPath(), is(Path.of("/host/path")));
-        assertThat(mount.containerPath(), is(Path.of("/container/path")));
+        assertThat(mount.hostPath(), is(mountSource));
+        assertThat(mount.containerPath(), is(mountDestination));
         assertThat(mount.readOnly(), is(true));
     }
 
@@ -551,15 +555,15 @@ class PicoCliParserTest {
     @Test
     void shouldImplementToStringOnFullOptions() {
         // Given:
-        final Path mrS0 = Path.of("/", "a", "b");
-        final Path mrD0 = Path.of("/", "c");
+        final Path mrS0 = Path.of(File.separator, "a", "b");
+        final Path mrD0 = Path.of(File.separator, "c");
         final Path mrS1 = Path.of("d", "e");
-        final Path mrD1 = Path.of("/", "f");
+        final Path mrD1 = Path.of(File.separator, "f");
 
-        final Path mwS0 = Path.of("/", "a");
-        final Path mwD0 = Path.of("/", "b", "c");
-        final Path mwS1 = Path.of("/", "d");
-        final Path mwD1 = Path.of("/", "f");
+        final Path mwS0 = Path.of(File.separator, "a");
+        final Path mwD0 = Path.of(File.separator, "b", "c");
+        final Path mwS1 = Path.of(File.separator, "d");
+        final Path mwD1 = Path.of(File.separator, "f");
 
         final String[] args =
                 minimalArgs(

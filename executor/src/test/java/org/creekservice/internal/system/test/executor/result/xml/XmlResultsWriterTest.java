@@ -49,6 +49,9 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class XmlResultsWriterTest {
 
+    private static final boolean RUNNING_ON_WINDOWS =
+            System.getProperty("os.name").toLowerCase().contains("win");
+
     @Mock private ObjectWriter objectWriter;
     @Mock private TestExecutionResult result;
 
@@ -156,12 +159,18 @@ class XmlResultsWriterTest {
         writer.write(result);
 
         // Then:
+        // Windows path, for some reason, has additional '_' characters in the name:
+        final Path expectedFileName =
+                RUNNING_ON_WINDOWS
+                        ? Path.of("TEST-_some____Weird_--_______________Name.xml")
+                        : Path.of("TEST-_some____Weird_--_____________Name.xml");
+
         assertThat(
                 "Directory content:"
                         + TestPaths.listDirectory(outputDir)
                                 .map(Path::toString)
                                 .collect(Collectors.joining(System.lineSeparator())),
-                outputDir.resolve("TEST-_some____Weird_--_____________Name.xml"),
+                outputDir.resolve(expectedFileName),
                 fileContains("some xml"));
     }
 

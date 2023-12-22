@@ -133,7 +133,7 @@ class XmlTestCaseResultTest {
                                 + lineSeparator()
                                 + "  <error message=\"bad state\""
                                 + " type=\"java.lang.IllegalStateException\">"
-                                + stackTrace
+                                + stackTrace.replaceAll(lineSeparator(), "\n")
                                 + "</error>"
                                 + lineSeparator()
                                 + "</testcase>"

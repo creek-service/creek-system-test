@@ -129,7 +129,7 @@ class XmlTestSuiteResultTest {
                                 + lineSeparator()
                                 + "  <error message=\"Boom\""
                                 + " type=\"java.lang.IllegalArgumentException\">"
-                                + stackTrace
+                                + stackTrace.replaceAll(lineSeparator(), "\n")
                                 + "</error>"
                                 + lineSeparator()
                                 + "</testsuite>"
