@@ -26,7 +26,7 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
  * A test lifecycle listener that resets theServiceContainer and stops any services left running at
- * the end of a test suite.
+ * the end of a test suite, and closes any extensions.
  */
 public final class SuiteCleanUpListener implements TestEnvironmentListener {
 
@@ -47,5 +47,6 @@ public final class SuiteCleanUpListener implements TestEnvironmentListener {
     @Override
     public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
         api.tests().env().currentSuite().services().forEach(ServiceInstance::stop);
+        api.extensions().close();
     }
 }

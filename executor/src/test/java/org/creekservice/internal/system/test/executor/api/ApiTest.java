@@ -26,6 +26,7 @@ import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
 import org.creekservice.internal.system.test.executor.execution.listener.AddServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.InitializeResourcesListener;
+import org.creekservice.internal.system.test.executor.execution.listener.PrepareResourcesListener;
 import org.creekservice.internal.system.test.executor.execution.listener.StartServicesUnderTestListener;
 import org.creekservice.internal.system.test.executor.execution.listener.SuiteCleanUpListener;
 import org.creekservice.internal.system.test.executor.observation.LoggingTestEnvironmentListener;
@@ -104,6 +105,18 @@ class ApiTest {
         inOrder.verify(ext0).initialize(api);
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(InitializeResourcesListener.class));
+        inOrder.verify(api.tests().env().listeners()).append(isA(PrepareResourcesListener.class));
+    }
+
+    @Test
+    void shouldAddPrepareResourcesListener() {
+        // When:
+        initializeApi(api, containerFactory, List.of(ext0));
+
+        // Then:
+        final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
+        inOrder.verify(ext0).initialize(api);
+        inOrder.verify(api.tests().env().listeners()).append(isA(PrepareResourcesListener.class));
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(StartServicesUnderTestListener.class));
     }

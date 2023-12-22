@@ -396,11 +396,8 @@ class SystemTestExecutorFunctionalTest {
 
     @Test
     void shouldLogTestLifecycle() {
-        // Given:
-        final String[] args = minimalArgs();
-
         // When:
-        runExecutor(args);
+        runExecutor(minimalArgs());
 
         // Then:
         assertThat(stdErr.get(), is(""));
@@ -446,6 +443,46 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
+    void shouldNotInitialiseOwnedResources() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), not(containsString("Ensuring resources: [test://output]")));
+    }
+
+    @Test
+    void shouldNotInitialiseUnmanagedResources() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), not(containsString("Ensuring resources: [test://internal]")));
+    }
+
+    @Test
+    void shouldAllowExtensionsToPrepareForAllKnownResources() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Preparing resources: [test://internal]"));
+        assertThat(
+                stdOut.get(),
+                containsString("Preparing resources: [test://upstream, test://output]"));
+        assertThat(stdOut.get(), containsString("Preparing resources: [test://shared]"));
+    }
+
+    @Test
+    void shouldCloseExtensions() {
+        // When:
+        runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Closing TestCreekExtension"));
+    }
+
+    @Test
     void shouldProcessSeedData() {
         // When:
         runExecutor(minimalArgs());
@@ -487,6 +524,29 @@ class SystemTestExecutorFunctionalTest {
                 stdOut.get(),
                 containsString(
                         "Ensure failed for resource: " + TestServiceDescriptor.UnownedInput1.id()));
+        assertThat(
+                stdErr.get(),
+                containsString(
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(exitCode, is(1));
+    }
+
+    @Test
+    void shouldReportPrepareResourceFailures() {
+        // Given:
+        givenEnv(
+                TestCreekExtensionProvider.ENV_FAIL_PREPARE_RESOURCE_ID,
+                TestServiceDescriptor.UnownedInput1.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdOut.get(),
+                containsString(
+                        "Prepare failed for resource: "
+                                + TestServiceDescriptor.UnownedInput1.id()));
         assertThat(
                 stdErr.get(),
                 containsString(

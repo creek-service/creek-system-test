@@ -195,5 +195,10 @@ public final class SystemTest implements CreekSystemTest {
         public ComponentModelCollection model() {
             return api.components().model();
         }
+
+        /** Close all extensions. */
+        public void close() {
+            api.extensions().close();
+        }
     }
 }
