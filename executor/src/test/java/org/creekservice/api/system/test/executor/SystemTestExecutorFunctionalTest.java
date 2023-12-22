@@ -48,9 +48,11 @@ import org.creekservice.api.system.test.test.extension.TestCreekExtensionProvide
 import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@Tag("ContainerisedTest")
 class SystemTestExecutorFunctionalTest {
 
     // Change this to true locally to debug using attach me plugin:
