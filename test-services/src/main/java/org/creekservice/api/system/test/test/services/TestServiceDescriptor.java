@@ -44,8 +44,7 @@ public final class TestServiceDescriptor implements ServiceDescriptor {
     private static final TestResourceInput UnownedInput2 =
             register(SharedResources.SHARED).toInput();
 
-    @SuppressWarnings("unused")
-    private static final TestResourceInternal UnmanagedInternal = register(internal("internal"));
+    public static final TestResourceInternal UnmanagedInternal = register(internal("internal"));
 
     public static final TestResourceOutput OwnedOutput = register(output("output"));
 
