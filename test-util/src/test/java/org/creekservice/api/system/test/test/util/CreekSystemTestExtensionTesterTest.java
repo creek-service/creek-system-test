@@ -57,11 +57,13 @@ import org.creekservice.internal.system.test.executor.api.component.definition.C
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.DockerServiceContainer;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@Tag("ContainerisedTest")
 @ExtendWith(MockitoExtension.class)
 class CreekSystemTestExtensionTesterTest {
 

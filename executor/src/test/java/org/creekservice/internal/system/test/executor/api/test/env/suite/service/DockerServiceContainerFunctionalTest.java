@@ -68,6 +68,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -81,6 +82,7 @@ import org.testcontainers.DockerClientFactory;
 
 @SuppressFBWarnings({"DMI_HARDCODED_ABSOLUTE_FILENAME", "PREDICTABLE_RANDOM"})
 @ExtendWith(MockitoExtension.class)
+@Tag("ContainerisedTest")
 class DockerServiceContainerFunctionalTest {
 
     private static final String SERVICE_NAME = "test-service";
