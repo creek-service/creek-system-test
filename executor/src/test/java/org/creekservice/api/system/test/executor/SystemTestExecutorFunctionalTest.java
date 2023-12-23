@@ -19,6 +19,8 @@ package org.creekservice.api.system.test.executor;
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.OwnedOutput;
+import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.UnmanagedInternal;
+import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.UnownedInput1;
 import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.creekservice.api.test.util.coverage.CodeCoverage.codeCoverageCmdLineArg;
 import static org.creekservice.api.test.util.debug.RemoteDebug.remoteDebugArguments;
@@ -45,7 +47,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.Suppliers;
 import org.creekservice.api.system.test.test.extension.TestCreekExtensionProvider;
-import org.creekservice.api.system.test.test.services.TestServiceDescriptor;
 import org.creekservice.api.test.util.TestPaths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -512,20 +513,48 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
-    void shouldReportEnsureResourceFailures() {
+    void shouldReportExtensionInitializationFailure() {
         // Given:
-        givenEnv(
-                TestCreekExtensionProvider.ENV_FAIL_ENSURE_RESOURCE_ID,
-                TestServiceDescriptor.UnownedInput1.id());
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_INITIALIZE_RESOURCE_ID, OwnedOutput.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdErr.get(), containsString("Extension initialization failed"));
+        assertThat(exitCode, is(2));
+    }
+
+    @Test
+    void shouldReportResourceValidationFailure() {
+        // Given:
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, UnmanagedInternal.id());
 
         // When:
         final int exitCode = runExecutor(minimalArgs());
 
         // Then:
         assertThat(
-                stdOut.get(),
+                stdErr.get(),
+                containsString("Validation failed for resource group: " + UnmanagedInternal.id()));
+        assertThat(
+                stdErr.get(),
                 containsString(
-                        "Ensure failed for resource: " + TestServiceDescriptor.UnownedInput1.id()));
+                        "There were failing tests. See the report at: " + resultDir.toUri()));
+        assertThat(exitCode, is(1));
+    }
+
+    @Test
+    void shouldReportEnsureResourceFailures() {
+        // Given:
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_ENSURE_RESOURCE_ID, UnownedInput1.id());
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(
+                stdOut.get(), containsString("Ensure failed for resource: " + UnownedInput1.id()));
         assertThat(
                 stdErr.get(),
                 containsString(
@@ -536,39 +565,19 @@ class SystemTestExecutorFunctionalTest {
     @Test
     void shouldReportPrepareResourceFailures() {
         // Given:
-        givenEnv(
-                TestCreekExtensionProvider.ENV_FAIL_PREPARE_RESOURCE_ID,
-                TestServiceDescriptor.UnownedInput1.id());
+        givenEnv(TestCreekExtensionProvider.ENV_FAIL_PREPARE_RESOURCE_ID, UnownedInput1.id());
 
         // When:
         final int exitCode = runExecutor(minimalArgs());
 
         // Then:
         assertThat(
-                stdOut.get(),
-                containsString(
-                        "Prepare failed for resource: "
-                                + TestServiceDescriptor.UnownedInput1.id()));
+                stdOut.get(), containsString("Prepare failed for resource: " + UnownedInput1.id()));
         assertThat(
                 stdErr.get(),
                 containsString(
                         "There were failing tests. See the report at: " + resultDir.toUri()));
         assertThat(exitCode, is(1));
-    }
-
-    @Test
-    void shouldReportResourceValidationFailure() {
-        // Given:
-        givenEnv(TestCreekExtensionProvider.ENV_FAIL_VALIDATE_RESOURCE_ID, OwnedOutput.id());
-
-        // When:
-        final int exitCode = runExecutor(minimalArgs());
-
-        // Then:
-        assertThat(
-                stdErr.get(),
-                containsString("Validation failed for resource group: " + OwnedOutput.id()));
-        assertThat(exitCode, is(2));
     }
 
     @Test

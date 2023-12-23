@@ -61,16 +61,20 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
         this(
                 api,
                 ResourceInitializer.resourceInitializer(
-                        new ResourceInitializer.ResourceCreator() {
-                            @SuppressWarnings({"unchecked", "rawtypes"})
+                        new ResourceInitializer.Callbacks() {
+                            @Override
+                            public <T extends ResourceDescriptor> void validate(
+                                    final Class<T> type, final Collection<T> resources) {
+                                api.extensions().model().resourceHandler(type).validate(resources);
+                            }
+
                             @Override
                             public <T extends ResourceDescriptor & OwnedResource> void ensure(
-                                    final Collection<T> creatableResources) {
+                                    final Class<T> type, final Collection<T> creatableResources) {
                                 api.extensions()
                                         .model()
-                                        .resourceHandler(
-                                                creatableResources.iterator().next().getClass())
-                                        .ensure((Collection) creatableResources);
+                                        .resourceHandler(type)
+                                        .ensure(creatableResources);
                             }
                         }));
     }
