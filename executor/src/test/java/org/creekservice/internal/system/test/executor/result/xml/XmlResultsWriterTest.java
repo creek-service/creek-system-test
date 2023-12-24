@@ -31,6 +31,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.TestExecutionResult;
 import org.creekservice.api.test.util.TestPaths;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
@@ -47,6 +48,9 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class XmlResultsWriterTest {
+
+    private static final boolean RUNNING_ON_WINDOWS =
+            System.getProperty("os.name").toLowerCase().contains("win");
 
     @Mock private ObjectWriter objectWriter;
     @Mock private TestExecutionResult result;
@@ -155,8 +159,18 @@ class XmlResultsWriterTest {
         writer.write(result);
 
         // Then:
+        // Windows path, for some reason, has additional '_' characters in the name:
+        final Path expectedFileName =
+                RUNNING_ON_WINDOWS
+                        ? Path.of("TEST-_some____Weird_--_______________Name.xml")
+                        : Path.of("TEST-_some____Weird_--_____________Name.xml");
+
         assertThat(
-                outputDir.resolve("TEST-_some____Weird_--_____________Name.xml"),
+                "Directory content:"
+                        + TestPaths.listDirectory(outputDir)
+                                .map(Path::toString)
+                                .collect(Collectors.joining(System.lineSeparator())),
+                outputDir.resolve(expectedFileName),
                 fileContains("some xml"));
     }
 

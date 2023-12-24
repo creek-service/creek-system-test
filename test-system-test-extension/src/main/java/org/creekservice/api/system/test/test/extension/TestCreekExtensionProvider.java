@@ -34,15 +34,18 @@ import org.creekservice.api.system.test.test.service.extension.TestResource;
 public final class TestCreekExtensionProvider
         implements CreekExtensionProvider<TestCreekExtensionProvider.TestCreekExtension> {
 
+    public static final String ENV_FAIL_INITIALIZE_RESOURCE_ID =
+            "creek-test-ext-fail-initialize-id";
     public static final String ENV_FAIL_VALIDATE_RESOURCE_ID = "creek-test-ext-fail-validate-id";
     public static final String ENV_FAIL_ENSURE_RESOURCE_ID = "creek-test-ext-fail-ensure-id";
     public static final String ENV_FAIL_PREPARE_RESOURCE_ID = "creek-test-ext-fail-prepare-id";
 
+    private static final String INITIALIZE_FAIL_ID =
+            getenv().getOrDefault(ENV_FAIL_INITIALIZE_RESOURCE_ID, "");
     private static final String VALIDATE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_VALIDATE_RESOURCE_ID, "");
     private static final String ENSURE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_ENSURE_RESOURCE_ID, "");
-
     private static final String PREPARE_FAIL_ID =
             getenv().getOrDefault(ENV_FAIL_PREPARE_RESOURCE_ID, "");
 
@@ -50,19 +53,19 @@ public final class TestCreekExtensionProvider
 
     @Override
     public TestCreekExtension initialize(final CreekService api) {
-        validate(api.components().descriptors().stream());
+        maybeFailToInitialize(api.components().descriptors().stream());
         api.components().model().addResource(TestResource.class, new TestResourceHandler());
         return new TestCreekExtension();
     }
 
-    private void validate(final Stream<ComponentDescriptor> components) {
+    private void maybeFailToInitialize(final Stream<ComponentDescriptor> components) {
 
         final boolean fail =
                 components
                         .flatMap(ComponentDescriptor::resources)
-                        .anyMatch(res -> res.id().toString().equals(VALIDATE_FAIL_ID));
+                        .anyMatch(res -> res.id().toString().equals(INITIALIZE_FAIL_ID));
         if (fail) {
-            throw new TestResourceHandler.ValidateFailedException(VALIDATE_FAIL_ID);
+            throw new InitializationFailedException();
         }
     }
 
@@ -81,6 +84,20 @@ public final class TestCreekExtensionProvider
     }
 
     private static final class TestResourceHandler implements ResourceHandler<TestResource> {
+
+        @Override
+        public void validate(final Collection<? extends TestResource> resources) {
+            if (resources.isEmpty()) {
+                throw new AssertionError("validate called with empty resources");
+            }
+
+            final List<URI> ids = ids(resources);
+            if (ids.stream().map(URI::toString).anyMatch(id -> id.equals(VALIDATE_FAIL_ID))) {
+                throw new ValidateFailedException(VALIDATE_FAIL_ID);
+            }
+
+            System.out.println("Validating resources: " + ids);
+        }
 
         @Override
         public void ensure(final Collection<? extends TestResource> resources) {
@@ -113,23 +130,29 @@ public final class TestCreekExtensionProvider
         private static List<URI> ids(final Collection<? extends TestResource> resourceGroup) {
             return resourceGroup.stream().map(ResourceDescriptor::id).collect(Collectors.toList());
         }
+    }
 
-        private static final class ValidateFailedException extends RuntimeException {
-            ValidateFailedException(final String id) {
-                super("Validation failed for resource group: " + id);
-            }
+    private static final class InitializationFailedException extends RuntimeException {
+        InitializationFailedException() {
+            super("Extension initialization failed");
         }
+    }
 
-        private static final class EnsureFailedException extends RuntimeException {
-            EnsureFailedException(final String failId) {
-                super("Ensure failed for resource: " + failId);
-            }
+    private static final class ValidateFailedException extends RuntimeException {
+        ValidateFailedException(final String id) {
+            super("Validation failed for resource group: " + id);
         }
+    }
 
-        private static final class PrepareFailedException extends RuntimeException {
-            PrepareFailedException(final String failId) {
-                super("Prepare failed for resource: " + failId);
-            }
+    private static final class EnsureFailedException extends RuntimeException {
+        EnsureFailedException(final String failId) {
+            super("Ensure failed for resource: " + failId);
+        }
+    }
+
+    private static final class PrepareFailedException extends RuntimeException {
+        PrepareFailedException(final String failId) {
+            super("Prepare failed for resource: " + failId);
         }
     }
 }

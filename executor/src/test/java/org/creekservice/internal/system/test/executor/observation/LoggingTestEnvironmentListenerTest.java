@@ -16,6 +16,7 @@
 
 package org.creekservice.internal.system.test.executor.observation;
 
+import static java.lang.System.lineSeparator;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,7 +108,11 @@ class LoggingTestEnvironmentListenerTest {
         listener.afterTest(test, testResult);
 
         // Then:
-        verify(logger).info("Finished test 'Bob': ERROR: msg\n" + Throwables.stackTrace(cause));
+        verify(logger)
+                .info(
+                        "Finished test 'Bob': ERROR: msg"
+                                + lineSeparator()
+                                + Throwables.stackTrace(cause));
     }
 
     @Test
@@ -121,7 +126,11 @@ class LoggingTestEnvironmentListenerTest {
         listener.afterTest(test, testResult);
 
         // Then:
-        verify(logger).info("Finished test 'Bob': FAILED: msg\n" + Throwables.stackTrace(cause));
+        verify(logger)
+                .info(
+                        "Finished test 'Bob': FAILED: msg"
+                                + lineSeparator()
+                                + Throwables.stackTrace(cause));
     }
 
     @Test
@@ -163,6 +172,9 @@ class LoggingTestEnvironmentListenerTest {
 
         // Then:
         verify(logger)
-                .info("Start up failed for suite 'Bob': msg\n" + Throwables.stackTrace(cause));
+                .info(
+                        "Start up failed for suite 'Bob': msg"
+                                + lineSeparator()
+                                + Throwables.stackTrace(cause));
     }
 }

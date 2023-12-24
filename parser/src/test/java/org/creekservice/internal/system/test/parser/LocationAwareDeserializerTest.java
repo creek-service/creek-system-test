@@ -32,8 +32,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.creekservice.api.system.test.extension.test.model.LocationAware;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,30 +142,32 @@ class LocationAwareDeserializerTest {
     @Test
     void shouldReturnWithLocationIfParsingFile() throws Exception {
         // Given:
+        final Path path = Paths.get("/", "var", "some path");
         when(location.getLineNr()).thenReturn(-1);
         when(location.contentReference()).thenReturn(content);
-        when(content.getRawContent()).thenReturn(new File("/var/some path"));
+        when(content.getRawContent()).thenReturn(path.toFile());
 
         // When:
         final TestType result = deserializer.deserialize(jp, ctx);
 
         // Then:
-        verify(original).withLocation(URI.create("file:///var/some%20path"));
+        verify(original).withLocation(path.toUri());
         assertThat(result, is(sameInstance(withPath)));
     }
 
     @Test
     void shouldReturnWithLocationIfParsingFileAndKnownLineNumber() throws Exception {
         // Given:
+        final Path path = Paths.get("/", "var", "some path", "file.yml");
         when(location.getLineNr()).thenReturn(22);
         when(location.contentReference()).thenReturn(content);
-        when(content.getRawContent()).thenReturn(new File("/var/some path/file.yml"));
+        when(content.getRawContent()).thenReturn(path.toFile());
 
         // When:
         final TestType result = deserializer.deserialize(jp, ctx);
 
         // Then:
-        verify(original).withLocation(URI.create("file:///var/some%20path/file.yml:22"));
+        verify(original).withLocation(URI.create(path.toUri() + ":22"));
         assertThat(result, is(sameInstance(withPath)));
     }
 

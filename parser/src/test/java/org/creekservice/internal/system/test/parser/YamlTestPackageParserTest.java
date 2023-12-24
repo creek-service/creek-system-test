@@ -25,6 +25,7 @@ import static org.creekservice.api.test.util.TestPaths.ensureDirectories;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -142,6 +143,7 @@ class YamlTestPackageParserTest {
         assertThat(result, is(Optional.empty()));
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     void shouldLoadMinimalTestPackage() {
         // Given:
@@ -167,6 +169,10 @@ class YamlTestPackageParserTest {
                                                                         List.of(EXPECTATION),
                                                                         TEST_CASE_DEF)),
                                                         TEST_SUITE_DEF))))));
+
+        assertThat(
+                result.get().suites().get(0).tests().get(0).location().toString(),
+                endsWith("suite.yml:6"));
     }
 
     @Test
