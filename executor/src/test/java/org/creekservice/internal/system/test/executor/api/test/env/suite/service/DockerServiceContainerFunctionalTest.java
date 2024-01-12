@@ -97,14 +97,14 @@ class DockerServiceContainerFunctionalTest {
     @Mock private ServiceDebugInfo serviceDebugInfo;
     @Mock private ServiceDescriptor descriptor;
 
+    private ContainerFactory containerFactory;
     private DockerServiceContainer instances;
 
     @BeforeEach
     void setUp() {
         when(serviceDebugInfo.baseServicePort()).thenReturn(8000 + RNG.nextInt(20_000));
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(serviceDebugInfo, List.of(), Map.of()));
+        containerFactory = new ContainerFactory(serviceDebugInfo, List.of(), Map.of());
+        instances = new DockerServiceContainer(containerFactory);
 
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(SERVICE_IMAGE);
@@ -114,6 +114,7 @@ class DockerServiceContainerFunctionalTest {
     void tearDown() {
         instances.forEach(ServiceInstance::stop);
         instances.clear();
+        containerFactory.afterSuite(null, null);
     }
 
     @Test

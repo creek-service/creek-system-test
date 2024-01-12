@@ -159,14 +159,14 @@ class ContainerFactoryTest {
 
     @ValueSource(booleans = {true, false})
     @ParameterizedTest
-    void shouldResetDebugPortBeforeSuite(final boolean serviceUnderTest) {
+    void shouldResetDebugPortAfterSuite(final boolean serviceUnderTest) {
         // Given:
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
         clearInvocations(debugFactory);
 
         // When:
-        containerFactory.beforeSuite(null);
+        containerFactory.afterSuite(null, null);
 
         // Then:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
@@ -192,9 +192,10 @@ class ContainerFactoryTest {
     void shouldSetDifferentNetworkOnEachSuite(final boolean serviceUnderTest) {
         // Given:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        verify(container).withNetwork(network0);
 
         // When:
-        containerFactory.beforeSuite(null);
+        containerFactory.afterSuite(null, null);
 
         // Then:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
@@ -202,9 +203,12 @@ class ContainerFactoryTest {
     }
 
     @Test
-    void shouldCloseNetworkBeforeSuite() {
+    void shouldCloseNetworkAfterSuite() {
+        // Given:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
         // When:
-        containerFactory.beforeSuite(null);
+        containerFactory.afterSuite(null, null);
 
         // Then:
         verify(network0).close();

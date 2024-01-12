@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,6 +106,22 @@ class PrepareResourcesListenerTest {
         // Then:
         verify(handlerA).prepare(List.of(RES_A_0, RES_A_1));
         verify(handlerB).prepare(List.of(RES_B_0, RES_B_1));
+    }
+
+    @Test
+    void shouldSupportNested() {
+        // Given:
+        final ResourceDescriptor res = mock();
+        when(res.id()).thenReturn(URI.create("other"));
+        when(res.resources()).thenAnswer(inv -> Stream.of(RES_A_1));
+
+        when(desc0.resources()).thenAnswer(inv -> Stream.of(res));
+
+        // When:
+        listener.beforeSuite(null);
+
+        // Then:
+        verify(handlerA).prepare(List.of(RES_A_1));
     }
 
     @Test
