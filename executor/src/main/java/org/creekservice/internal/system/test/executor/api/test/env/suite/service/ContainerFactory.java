@@ -30,6 +30,7 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
         this.regularFactory = requireNonNull(regularFactory, "regularFactory");
         this.debugFactory = requireNonNull(debugFactory, "debugFactory");
         this.networkSupplier = requireNonNull(networkSupplier, "networkSupplier");
-        reset();
+        afterSuite(null, null);
     }
 
     /**
@@ -120,7 +121,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
         }
 
         container
-                .withNetwork(network.get())
+                .withNetwork(ensureNetwork())
                 .withNetworkAliases(instanceName)
                 .withLogConsumer(
                         new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName))
@@ -129,22 +130,23 @@ public final class ContainerFactory implements TestEnvironmentListener {
         return container;
     }
 
-    @Override
-    public void beforeSuite(final CreekTestSuite suite) {
-        reset();
-    }
-
     @SuppressWarnings("resource")
-    private void reset() {
+    @Override
+    public void afterSuite(final CreekTestSuite suite, final TestSuiteResult result) {
         network.updateAndGet(
                 existing -> {
                     if (existing != null) {
                         existing.close();
                     }
-                    return networkSupplier.get();
+                    return null;
                 });
 
         nextDebugServicePort.set(serviceDebugInfo.baseServicePort());
+    }
+
+    private Network ensureNetwork() {
+        return network.updateAndGet(
+                existing -> existing != null ? existing : networkSupplier.get());
     }
 
     private Optional<Integer> debugPort(final String instanceName, final String serviceName) {

@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
-import org.creekservice.api.platform.metadata.OwnedResource;
+import org.creekservice.api.platform.metadata.CreatableResource;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.platform.resource.ResourceInitializer;
@@ -69,7 +69,7 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
                             }
 
                             @Override
-                            public <T extends ResourceDescriptor & OwnedResource> void ensure(
+                            public <T extends CreatableResource> void ensure(
                                     final Class<T> type, final Collection<T> creatableResources) {
                                 api.extensions()
                                         .model()

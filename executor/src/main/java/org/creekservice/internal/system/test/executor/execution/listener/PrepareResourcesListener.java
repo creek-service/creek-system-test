@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.creekservice.api.platform.metadata.ComponentDescriptor;
+import org.creekservice.api.platform.metadata.ResourceCollection;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
@@ -51,7 +51,7 @@ public final class PrepareResourcesListener implements TestEnvironmentListener {
                 api.components().definitions().stream()
                         .map(ComponentDefinition::descriptor)
                         .flatMap(Optional::stream)
-                        .flatMap(ComponentDescriptor::resources)
+                        .flatMap(ResourceCollection::collectResources)
                         .collect(
                                 groupingBy(
                                         ResourceDescriptor::id,
