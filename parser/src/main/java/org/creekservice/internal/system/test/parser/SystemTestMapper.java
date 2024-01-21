@@ -16,7 +16,7 @@
 
 package org.creekservice.internal.system.test.parser;
 
-import static org.creekservice.api.base.schema.naming.SubTypeNaming.subTypeName;
+import static org.creekservice.internal.system.test.parser.SubTypeNaming.subTypeName;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;

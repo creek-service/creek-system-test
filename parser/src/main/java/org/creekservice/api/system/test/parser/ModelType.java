@@ -32,7 +32,7 @@ import org.creekservice.api.system.test.extension.test.model.Ref;
  *
  * <p>The methods below come in variants that accept a custom type name and those that don't. Those
  * that don't, will use that default naming strategy defined in {@code SubTypeNaming.subTypeName} to
- * determine the type name. {@code SubTypeNaming} can be found in the {@code creek-base-type} jar.
+ * determine the type name. {@code SubTypeNaming} can be found in the {@code parser} jar.
  *
  * @param <T> the model subtype.
  */
@@ -48,7 +48,7 @@ public final class ModelType<T> {
      * ExpectationRef}, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -76,7 +76,7 @@ public final class ModelType<T> {
      * Create metadata about a {@link InputRef} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -103,7 +103,7 @@ public final class ModelType<T> {
      * Create metadata about a {@link ExpectationRef} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -130,7 +130,7 @@ public final class ModelType<T> {
      * Create metadata about a {@link Input} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -156,7 +156,7 @@ public final class ModelType<T> {
      * Create metadata about a {@link Expectation} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -183,7 +183,7 @@ public final class ModelType<T> {
      * Create metadata about a {@link Option} subtype, with a standard type name.
      *
      * <p>The name of the subtype will be derived from the {@code type} name. See {@code
-     * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+     * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
      *
      * @param type the subtype
      * @param <T> the subtype
@@ -213,7 +213,7 @@ public final class ModelType<T> {
      * into {@link #type}.
      *
      * <p>Where no explicit name is provided, the system will use the default naming strategy
-     * defined by {@code SubTypeNaming.subTypeName()}.
+     * defined by {@code SubTypeNaming.subTypeName()}, in the {@code parser} module.
      *
      * @return any explicit model name.
      */

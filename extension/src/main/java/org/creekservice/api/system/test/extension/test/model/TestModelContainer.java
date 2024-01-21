@@ -88,7 +88,7 @@ public interface TestModelContainer extends TestModelCollection {
          * inform the deserializer to deserialize the object as your custom type.
          *
          * <p>The default name of the subtype will be derived from the {@code type} name. See {@code
-         * SubTypeNaming.subTypeName()} in {@code creek-base-schema} module for more info details.
+         * SubTypeNaming.subTypeName()} in {@code parser} module for more info details.
          *
          * @param name the custom name, as used in the YAML files.
          */
