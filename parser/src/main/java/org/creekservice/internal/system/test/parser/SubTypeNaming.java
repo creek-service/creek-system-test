@@ -76,4 +76,3 @@ final class SubTypeNaming {
         return name.startsWith("_") ? name.substring(1) : name;
     }
 }
-
