@@ -16,7 +16,7 @@
 
 package org.creekservice.internal.system.test.parser;
 
-import static org.creekservice.api.base.schema.naming.SubTypeNaming.subTypeName;
+import static org.creekservice.internal.system.test.parser.SubTypeNaming.subTypeName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
