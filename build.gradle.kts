@@ -50,9 +50,9 @@ subprojects {
         set("creekVersion", "0.4.2-SNAPSHOT")
         set("testContainersVersion", "1.19.1")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.8.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.16.1")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+        set("jacksonVersion", "2.17.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.7.5")          // https://mvnrepository.com/artifact/info.picocli/picocli
-        set("log4jVersion", "2.23.0")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+        set("log4jVersion", "2.23.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("slf4jVersion", "2.0.12")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
         set("guavaVersion", "33.1.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
