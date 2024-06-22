@@ -59,7 +59,7 @@ repositories {
 
 dependencies {
     spotbugsPlugins("com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0")
-    checkstyle("com.puppycrawl.tools:checkstyle:10.12.5")
+    checkstyle("com.puppycrawl.tools:checkstyle:10.17.0")
 }
 
 configurations.all {
