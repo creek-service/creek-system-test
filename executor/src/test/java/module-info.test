@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.services,creek.system.test.test.extension,creek.system.test.test.service.extension
+  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.services,creek.system.test.test.extension,creek.system.test.test.service.extension,com.google.errorprone.annotations
 
 --add-reads
-  creek.system.test.executor=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.services,creek.system.test.test.extension,creek.system.test.test.service.extension
+  creek.system.test.executor=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.services,creek.system.test.test.extension,creek.system.test.test.service.extension,com.google.errorprone.annotations
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
