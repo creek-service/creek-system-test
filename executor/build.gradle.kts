@@ -59,3 +59,9 @@ tasks.test {
     dependsOn(":test-services:jar")
     dependsOn(":test-service:buildAppImage")
 }
+
+tasks.compileTestJava {
+    // For some reason, since upgrading guava-testlib from 33.0.0-jre to 33.1.0-jre, without this, task fails with:
+    // ../com.google.guava/guava/33.2.1-jre/818e780da2c66c63bbb6480fef1f3855eeafa3e4/guava-33.2.1-jre.jar(/com/google/common/collect/Streams.class): warning: Cannot find annotation method 'replacement()' in type 'InlineMe': class file for com.google.errorprone.annotations.InlineMe not found
+    options.compilerArgs.add("-Xlint:-classfile")
+}
