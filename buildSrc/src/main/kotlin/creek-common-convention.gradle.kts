@@ -20,6 +20,7 @@
  * <p>Apply to all java modules, usually excluding the root project in multi-module sets.
  *
  * <p>Versions:
+ *  - 1.12: XML reporting for spotbugs
  *  - 1.11: Add explicit checkstyle tool version
  *  - 1.10: Add ability to exclude containerised tests
  *  - 1.9: Add `allDeps` task.
@@ -107,15 +108,27 @@ spotbugs {
     excludeFilter.set(rootProject.file("config/spotbugs/suppressions.xml"))
 
     tasks.spotbugsMain {
-        reports.create("html") {
-            required.set(true)
-            setStylesheet("fancy-hist.xsl")
+        reports {
+            create("html") {
+                required.set(true)
+                setStylesheet("fancy-hist.xsl")
+            }
+
+            create("xml") {
+                required.set(true)
+            }
         }
     }
     tasks.spotbugsTest {
-        reports.create("html") {
-            required.set(true)
-            setStylesheet("fancy-hist.xsl")
+        reports {
+            create("html") {
+                required.set(true)
+                setStylesheet("fancy-hist.xsl")
+            }
+
+            create("xml") {
+                required.set(true)
+            }
         }
     }
 }
