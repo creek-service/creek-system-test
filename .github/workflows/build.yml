@@ -39,7 +39,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@66535aaf56f831b35e3a8481c9c99b665b84dd45 # v3.4.2
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
         with:
           gradle-home-cache-cleanup: true
       - name: Build
@@ -48,14 +48,14 @@ jobs:
         run: ./gradlew build coveralls
       - name: Upload Reports
         if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: reports-linux
           path: '**/build/reports/**/*.xml'
           retention-days: 5
       - name: Upload Test Results
         if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: test-results-linux
           path: '**/build/test-results/**/*.xml'
@@ -93,21 +93,21 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@66535aaf56f831b35e3a8481c9c99b665b84dd45 # v3.4.2
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
         with:
           gradle-home-cache-cleanup: true
       - name: Build
         run: ./gradlew.bat build -PexcludeContainerised
       - name: Upload Reports
         if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: reports-win
           path: '**/build/reports/**/*.xml'
           retention-days: 5
       - name: Upload Test Results
         if: failure()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: test-results-win
           path: '**/build/test-results/**/*.xml'
