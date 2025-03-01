@@ -53,7 +53,7 @@ subprojects {
         set("jacksonVersion", "2.18.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.7.6")          // https://mvnrepository.com/artifact/info.picocli/picocli
         set("log4jVersion", "2.24.3")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-        set("slf4jVersion", "2.0.16")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+        set("slf4jVersion", "2.0.17")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
         set("guavaVersion", "33.4.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.11.4")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
