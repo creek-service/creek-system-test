@@ -51,7 +51,7 @@ subprojects {
         set("testContainersVersion", "1.19.1")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.9.3")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.19.0")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-        set("picocliVersion", "4.7.6")          // https://mvnrepository.com/artifact/info.picocli/picocli
+        set("picocliVersion", "4.7.7")          // https://mvnrepository.com/artifact/info.picocli/picocli
         set("log4jVersion", "2.24.3")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("slf4jVersion", "2.0.17")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
