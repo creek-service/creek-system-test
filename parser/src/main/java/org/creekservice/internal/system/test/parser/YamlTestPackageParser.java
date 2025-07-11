@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,9 +126,6 @@ public final class YamlTestPackageParser implements TestPackageParser {
                 .map(path -> new LazyFile<>(id(path), path, () -> parse(path, type)));
     }
 
-    @SuppressFBWarnings(
-            value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "false negative")
     private List<Path> ymlFilesInDir(final Path dir) {
         if (!Files.exists(dir)) {
             return List.of();
