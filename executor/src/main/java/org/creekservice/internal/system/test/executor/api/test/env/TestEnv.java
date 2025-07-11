@@ -44,7 +44,6 @@ public final class TestEnv implements TestEnvironment {
         this.suite = requireNonNull(suite, "suite");
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public TestSuiteEnv currentSuite() {
         return suite;

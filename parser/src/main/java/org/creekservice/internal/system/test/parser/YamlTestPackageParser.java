@@ -126,9 +126,6 @@ public final class YamlTestPackageParser implements TestPackageParser {
                 .map(path -> new LazyFile<>(id(path), path, () -> parse(path, type)));
     }
 
-    @SuppressFBWarnings(
-            value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            justification = "false negative")
     private List<Path> ymlFilesInDir(final Path dir) {
         if (!Files.exists(dir)) {
             return List.of();

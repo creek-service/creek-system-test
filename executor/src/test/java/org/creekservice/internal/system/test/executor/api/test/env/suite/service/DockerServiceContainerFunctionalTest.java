@@ -578,7 +578,6 @@ class DockerServiceContainerFunctionalTest {
         };
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     private void givenServiceUnderTest() {
         doReturn(Optional.of(descriptor)).when(serviceDef).descriptor();
     }
