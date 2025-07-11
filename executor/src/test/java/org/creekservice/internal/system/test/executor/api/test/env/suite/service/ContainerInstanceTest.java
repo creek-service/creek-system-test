@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Streams;
 import com.google.common.testing.NullPointerTester;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -619,7 +618,7 @@ class ContainerInstanceTest {
 
     @SuppressWarnings("deprecation")
     public static Stream<Arguments> methods() {
-        return Streams.concat(
+        return Stream.concat(
                 configureMethods(),
                 Stream.of(
                         Arguments.of("name", (Consumer<ContainerInstance>) ContainerInstance::name),
