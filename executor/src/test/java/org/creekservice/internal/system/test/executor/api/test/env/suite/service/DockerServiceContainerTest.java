@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static org.junit.jupiter.params.ParameterizedInvocationConstants.INDEX_PLACEHOLDER;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
