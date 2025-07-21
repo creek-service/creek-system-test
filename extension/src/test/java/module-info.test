@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,guava.testlib,org.mockito,org.mockito.junit.jupiter,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension,creek.base.type
+  org.junitpioneer,org.mockito.junit.jupiter,org.hamcrest,com.google.common.testlib,org.mockito,org.mockito.junit.jupiter,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension,creek.base.type
 
 --add-reads
-  creek.system.test.extension=org.junitpioneer,org.hamcrest,guava.testlib,org.mockito,org.mockito.junit.jupiter,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension,creek.base.type
+  creek.system.test.extension=org.junitpioneer,org.mockito.junit.jupiter,org.hamcrest,com.google.common.testlib,org.mockito,org.mockito.junit.jupiter,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension,creek.base.type
 
 --add-opens
   org.junitpioneer/org.junitpioneer.jupiter=org.junit.platform.commons
