@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,13 +74,11 @@ public final class SystemTest implements CreekSystemTest {
         this.extensions = new Extensions(api.apply(components));
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public Tests tests() {
         return tests;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
     @Override
     public Components components() {
         return components;
@@ -109,7 +107,6 @@ public final class SystemTest implements CreekSystemTest {
             return testModel;
         }
 
-        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         @Override
         public TestEnv env() {
             return testEnv;
@@ -127,7 +124,6 @@ public final class SystemTest implements CreekSystemTest {
             this.definitions = new Definitions(serviceDefinitions, aggregateDefinitions);
         }
 
-        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         @Override
         public Definitions definitions() {
             return definitions;
@@ -155,13 +151,11 @@ public final class SystemTest implements CreekSystemTest {
                     requireNonNull(aggregateDefinitions, "aggregateDefinitions");
         }
 
-        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         @Override
         public ComponentDefinitions<AggregateDefinition> aggregates() {
             return aggregateDefinitions;
         }
 
-        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         @Override
         public ComponentDefinitions<ServiceDefinition> services() {
             return serviceDefinitions;
@@ -191,7 +185,6 @@ public final class SystemTest implements CreekSystemTest {
         /**
          * @return the component model, e.g. supported resource descriptor types, etc.
          */
-        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
         public ComponentModelCollection model() {
             return api.components().model();
         }

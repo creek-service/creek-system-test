@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -578,7 +578,6 @@ class DockerServiceContainerFunctionalTest {
         };
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     private void givenServiceUnderTest() {
         doReturn(Optional.of(descriptor)).when(serviceDef).descriptor();
     }

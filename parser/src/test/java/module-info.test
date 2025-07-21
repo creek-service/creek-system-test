@@ -1,8 +1,8 @@
 --add-modules
-  org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension
+  org.junitpioneer,org.mockito.junit.jupiter,org.hamcrest,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension
 
 --add-reads
-  creek.system.test.parser=org.junitpioneer,org.hamcrest,guava.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension
+  creek.system.test.parser=org.junitpioneer,org.mockito.junit.jupiter,org.hamcrest,com.google.common.testlib,creek.test.util,creek.test.hamcrest,creek.test.conformity,creek.system.test.test.extension
 
 --add-exports
   creek.system.test.parser/org.creekservice.internal.system.test.parser=com.fasterxml.jackson.databind
