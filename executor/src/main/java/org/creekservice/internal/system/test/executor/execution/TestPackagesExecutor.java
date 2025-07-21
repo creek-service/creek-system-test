@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.creekservice.internal.system.test.executor.execution;
 
 import static java.util.Objects.requireNonNull;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +62,6 @@ public final class TestPackagesExecutor {
         return result;
     }
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     private TestExecutionResult executePackages() {
         try (Stream<TestPackage> packages = loader.stream()) {
             final List<SuiteResult> result =

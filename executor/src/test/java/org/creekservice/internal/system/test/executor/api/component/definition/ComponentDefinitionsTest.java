@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Creek Contributors (https://github.com/creek-service)
+ * Copyright 2022-2025 Creek Contributors (https://github.com/creek-service)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.params.ParameterizedTest.INDEX_PLACEHOLDER;
+import static org.junit.jupiter.params.ParameterizedInvocationConstants.INDEX_PLACEHOLDER;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
