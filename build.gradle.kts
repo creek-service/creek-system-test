@@ -22,7 +22,11 @@ plugins {
     `creek-coverage-convention`
     `creek-publishing-convention` apply false
     `creek-sonatype-publishing-convention`
-    id("pl.allegro.tech.build.axion-release") version "1.18.18" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
+    id("pl.allegro.tech.build.axion-release") version "1.19.0" // https://plugins.gradle.org/plugin/pl.allegro.tech.build.axion-release
+}
+
+scmVersion {
+  versionCreator("simple")
 }
 
 project.version = scmVersion.version
@@ -34,7 +38,7 @@ allprojects {
 }
 
 subprojects {
-    project.version = project.parent?.version!!
+    project.version = rootProject.version
 
     apply(plugin = "creek-common-convention")
     apply(plugin = "creek-module-convention")
