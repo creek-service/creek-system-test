@@ -24,7 +24,9 @@ import static org.creekservice.api.system.test.extension.test.env.suite.service.
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.creekservice.api.base.annotation.VisibleForTesting;
@@ -36,6 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -112,10 +116,17 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
         LOGGER.info("Starting {} ({})", name, imageName);
 
+        final List<Consumer<OutputFrame>> initialConsumers =
+                new ArrayList<>(container.getLogConsumers());
+        final ToStringConsumer startingLogConsumer = new ToStringConsumer();
+        container.withLogConsumer(startingLogConsumer);
+
         try {
             container.start();
 
             startedCallback.accept(this);
+
+            container.setLogConsumers(initialConsumers);
 
             LOGGER.info(
                     "Started {} ({}) with container-id {}",
@@ -123,7 +134,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                     imageName,
                     container.getContainerId());
         } catch (final Exception e) {
-            final String logs = container.getLogs();
+            final String logs = startingLogConsumer.toUtf8String();
             stop();
             throw new FailedToStartServiceException(name, imageName, logs, e);
         }

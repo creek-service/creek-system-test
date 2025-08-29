@@ -85,6 +85,7 @@ class DockerServiceContainerTest {
         when(serviceDef.dockerImage()).thenReturn(IMAGE_NAME.toString());
         when(containerFactory.create(any(), any(), any(), anyBoolean()))
                 .thenReturn((GenericContainer) container);
+        when(container.getLogConsumers()).thenReturn(List.of());
     }
 
     @Test

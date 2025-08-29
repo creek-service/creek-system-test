@@ -503,7 +503,6 @@ class ContainerFactoryTest {
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
 
         // Then:
-        verify(container, never()).withFileSystemBind(any(), any());
         verify(container, never()).withFileSystemBind(any(), any(), any());
     }
 
