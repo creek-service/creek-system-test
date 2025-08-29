@@ -64,6 +64,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
@@ -76,6 +77,9 @@ class ContainerInstanceTest {
     @Mock(answer = RETURNS_DEEP_STUBS, strictness = LENIENT)
     private GenericContainer<?> container;
 
+    private final List<Consumer<OutputFrame>> logConsumers = new ArrayList<>();
+    @Mock private Consumer<OutputFrame> initialConsumer;
+
     @Mock private ServiceDescriptor descriptor;
     @Mock private Consumer<ServiceInstance> startedCallback;
     @Mock private Container.ExecResult containerExecResult;
@@ -87,6 +91,15 @@ class ContainerInstanceTest {
         instance =
                 new ContainerInstance(
                         "a-0", IMAGE_NAME, container, Optional.empty(), startedCallback);
+
+        logConsumers.add(initialConsumer);
+        when(container.getLogConsumers()).thenReturn(logConsumers);
+        when(container.withLogConsumer(any()))
+                .thenAnswer(
+                        inv -> {
+                            logConsumers.add(inv.getArgument(0));
+                            return container;
+                        });
     }
 
     @Test
@@ -154,6 +167,21 @@ class ContainerInstanceTest {
 
         // Then:
         verify(container).start();
+    }
+
+    @Test
+    void shouldResetLogConsumers() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        instance.start();
+
+        // Then:
+        final InOrder inOrder = inOrder(container);
+        inOrder.verify(container).withLogConsumer(any());
+        inOrder.verify(container).start();
+        inOrder.verify(container).setLogConsumers(List.of(initialConsumer));
     }
 
     @Test
