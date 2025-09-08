@@ -51,7 +51,9 @@ public enum XmlResultMapper {
                 .addModules(xmlModule, new Jdk8Module())
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(
+                                JsonInclude.Include.NON_EMPTY, JsonInclude.Include.USE_DEFAULTS))
                 .build();
     }
 }
