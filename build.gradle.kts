@@ -55,16 +55,16 @@ subprojects {
         set("creekVersion", project.version)
         set("testContainersVersion", "1.19.1")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.9.8")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.20.1")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+        set("jacksonVersion", "2.21.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
         set("jacksonAnnotationsVersion", "2.20")// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
         set("picocliVersion", "4.7.7")          // https://mvnrepository.com/artifact/info.picocli/picocli
-        set("log4jVersion", "2.25.3")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+        set("log4jVersion", "2.25.4")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
         set("slf4jVersion", "2.0.17")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
         set("guavaVersion", "33.5.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
         set("junitVersion", "5.13.4")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.21.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
+        set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     }
 
     val creekVersion : String by extra
