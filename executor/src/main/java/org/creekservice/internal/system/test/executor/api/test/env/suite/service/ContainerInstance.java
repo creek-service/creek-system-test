@@ -23,19 +23,27 @@ import static org.creekservice.api.base.type.RuntimeIOException.runtimeIOExcepti
 import static org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance.ExecResult.execResult;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Preconditions;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
@@ -51,6 +59,8 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
     private final GenericContainer<?> container;
     private final Optional<? extends ServiceDescriptor> descriptor;
     private final Consumer<ServiceInstance> startedCallback;
+    private final List<DirectoryInfo> transferables;
+    private final ToStringConsumer logConsumer = new ToStringConsumer();
     private Duration startUpTimeOut = Duration.ofSeconds(30);
     private Duration shutDownTimeOut = Duration.ofSeconds(30);
 
@@ -60,19 +70,23 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
      * @param container the docker container.
      * @param descriptor the service's descriptor, if the service has one.
      * @param startedCallback a callback to be called when the instance has started.
+     * @param transferables list of transferables to transfer from the container back to the host
+     *     after the container stops.
      */
     public ContainerInstance(
             final String name,
             final DockerImageName imageName,
             final GenericContainer<?> container,
             final Optional<? extends ServiceDescriptor> descriptor,
-            final Consumer<ServiceInstance> startedCallback) {
+            final Consumer<ServiceInstance> startedCallback,
+            final List<DirectoryInfo> transferables) {
         this(
                 name,
                 imageName,
                 container,
                 descriptor,
                 startedCallback,
+                transferables,
                 Thread.currentThread().getId());
     }
 
@@ -83,6 +97,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
             final GenericContainer<?> container,
             final Optional<? extends ServiceDescriptor> descriptor,
             final Consumer<ServiceInstance> startedCallback,
+            final List<DirectoryInfo> transferables,
             final long threadId) {
         this.threadId = threadId;
         this.name = requireNonBlank(name, "name");
@@ -90,6 +105,8 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         this.container = requireNonNull(container, "container");
         this.descriptor = requireNonNull(descriptor, "descriptor");
         this.startedCallback = requireNonNull(startedCallback, "startedCallback");
+        this.transferables = List.copyOf(requireNonNull(transferables, "transferables"));
+        this.container.withLogConsumer(logConsumer);
     }
 
     @Override
@@ -123,7 +140,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                     imageName,
                     container.getContainerId());
         } catch (final Exception e) {
-            final String logs = container.getLogs();
+            final String logs = logConsumer.toUtf8String();
             stop();
             throw new FailedToStartServiceException(name, imageName, logs, e);
         }
@@ -173,7 +190,8 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
         // First, attempt a graceful shutdown:
         gracefulStop();
-        // Then, if still running, kill, and always remove container:
+        copyTransferablesToHost();
+        // Then, if still running, kill, and always remove the container:
         killAndRemove();
     }
 
@@ -287,6 +305,54 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         }
     }
 
+    private void copyTransferablesToHost() {
+        transferables.forEach(
+                transferable -> {
+                    LOGGER.info(
+                            "Copying from container to host. instance: {}, containerPath: {},"
+                                    + " hostPath: {}",
+                            name,
+                            transferable.containerPath(),
+                            transferable.hostPath());
+                    try {
+                        container.copyFileFromContainer(
+                                transferable.containerPath().toString(),
+                                inputStream ->
+                                        extractTarToDirectory(
+                                                (TarArchiveInputStream) inputStream,
+                                                transferable.hostPath()));
+                    } catch (final Exception e) {
+                        throw new FailedToCopyFileFromServiceException(
+                                name,
+                                imageName,
+                                transferable.containerPath(),
+                                transferable.hostPath(),
+                                e);
+                    }
+                });
+    }
+
+    private static Void extractTarToDirectory(final TarArchiveInputStream tar, final Path hostPath)
+            throws IOException {
+        for (TarArchiveEntry entry = tar.getCurrentEntry();
+                entry != null;
+                entry = tar.getNextTarEntry()) {
+            if (entry.isDirectory()) {
+                continue;
+            }
+
+            final String name = entry.getName();
+            final int pos = name.indexOf('/');
+            final Path target = hostPath.resolve(name.substring(pos + 1));
+            final Path parent = target.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.copy(tar, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return null;
+    }
+
     private void gracefulStop() {
         if (!container.isRunning()) {
             LOGGER.warn(
@@ -357,6 +423,28 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
                             + lineSeparator()
                             + "Logs: "
                             + logs,
+                    cause);
+        }
+    }
+
+    private static final class FailedToCopyFileFromServiceException extends RuntimeException {
+        FailedToCopyFileFromServiceException(
+                final String name,
+                final DockerImageName imageName,
+                final Path containerPath,
+                final Path hostPath,
+                final Throwable cause) {
+            super(
+                    "Failed to copy file from service: "
+                            + name
+                            + ", image: "
+                            + imageName
+                            + lineSeparator()
+                            + "Container path: "
+                            + containerPath
+                            + lineSeparator()
+                            + "Host path: "
+                            + hostPath,
                     cause);
         }
     }

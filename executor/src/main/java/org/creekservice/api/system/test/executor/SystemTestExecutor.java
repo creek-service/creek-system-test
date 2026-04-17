@@ -136,7 +136,7 @@ public final class SystemTestExecutor {
                                 options.serviceDebugInfo()
                                         .map(ServiceDebugInfo::copyOf)
                                         .orElse(ServiceDebugInfo.none()),
-                                options.mountInfo(),
+                                options.transferables(),
                                 options.env());
 
         final TestPackagesLoader loader =

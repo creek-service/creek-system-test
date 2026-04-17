@@ -13,6 +13,7 @@ module creek.system.test.executor {
     requires java.management;
     requires com.github.spotbugs.annotations;
     requires testcontainers;
+    requires org.apache.commons.compress;
     requires com.github.dockerjava.api;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.xml;

@@ -32,7 +32,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
@@ -274,7 +273,7 @@ class TestModelTest {
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private static final class TestRef implements InputRef, ExpectationRef {

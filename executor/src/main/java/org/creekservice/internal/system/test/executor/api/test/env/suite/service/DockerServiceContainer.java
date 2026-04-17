@@ -28,7 +28,7 @@ import org.creekservice.api.system.test.extension.component.definition.ServiceDe
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
-import org.testcontainers.containers.GenericContainer;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory.CreatedContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /** A local, docker based, implementation of {@link ServiceInstanceContainer}. */
@@ -63,7 +63,7 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         final String instanceName = naming.instanceName(def.name());
         final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
-        final GenericContainer<?> container =
+        final CreatedContainer created =
                 containerFactory.create(
                         imageName, instanceName, def.name(), def.descriptor().isPresent());
 
@@ -71,9 +71,10 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
                 new ContainerInstance(
                                 instanceName,
                                 imageName,
-                                container,
+                                created.container(),
                                 def.descriptor(),
-                                def::instanceStarted)
+                                def::instanceStarted,
+                                created.transferables())
                         .setStartupAttempts(CONTAINER_START_UP_ATTEMPTS)
                         .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
 

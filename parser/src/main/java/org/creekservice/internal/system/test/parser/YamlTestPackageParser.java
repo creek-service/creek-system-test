@@ -110,7 +110,7 @@ public final class YamlTestPackageParser implements TestPackageParser {
                 loadDir(path, TestSuiteDef.class)
                         .filter(f -> predicate.test(f.path()))
                         .map(f -> testSuiteBuilder(f.content(), inputs, expectations))
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
 
         if (suites.isEmpty()) {
             return Optional.empty();
@@ -132,9 +132,7 @@ public final class YamlTestPackageParser implements TestPackageParser {
         }
 
         try (Stream<Path> stream = Files.walk(dir, 1)) {
-            return stream.filter(Files::isRegularFile)
-                    .filter(YAML_MATCHER::matches)
-                    .collect(Collectors.toUnmodifiableList());
+            return stream.filter(Files::isRegularFile).filter(YAML_MATCHER::matches).toList();
         } catch (final IOException e) {
             throw new TestLoadFailedException("Error accessing directory " + dir, e);
         }
@@ -204,7 +202,7 @@ public final class YamlTestPackageParser implements TestPackageParser {
                         .filter(LazyFile::unused)
                         .map(LazyFile::path)
                         .map(Path::toAbsolutePath)
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
 
         if (!unused.isEmpty()) {
             observer.unusedDependencies(path, unused);

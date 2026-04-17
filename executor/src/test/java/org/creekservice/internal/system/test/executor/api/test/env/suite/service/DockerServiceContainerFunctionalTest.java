@@ -46,6 +46,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.InternetProtocol;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -57,7 +58,8 @@ import java.util.Random;
 import java.util.regex.Pattern;
 import org.creekservice.api.observability.lifecycle.BasicLifecycle;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
-import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
+import org.creekservice.api.system.test.executor.ExecutorOptions.CopyDirection;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
@@ -73,6 +75,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -341,12 +344,12 @@ class DockerServiceContainerFunctionalTest {
     void shouldSetEnvOnInstanceUnderTest(final boolean debug) {
         // Given:
         givenServiceUnderTest();
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(),
-                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("CREEK_TEST_ENV_KEY", "expected value"));
+        instances = new DockerServiceContainer(containerFactory);
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
         final ServiceInstance instance = instances.add(serviceDef);
 
@@ -363,12 +366,12 @@ class DockerServiceContainerFunctionalTest {
     @ParameterizedTest
     void shouldNotSetEnvOn3rdPartyInstance(final boolean debug) {
         // Given:
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(),
-                                Map.of("CREEK_TEST_ENV_KEY", "expected value")));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("CREEK_TEST_ENV_KEY", "expected value"));
+        instances = new DockerServiceContainer(containerFactory);
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
         final ServiceInstance instance = instances.add(serviceDef);
 
@@ -388,12 +391,12 @@ class DockerServiceContainerFunctionalTest {
         if (serviceUnderTest) {
             givenServiceUnderTest();
         }
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(),
-                                Map.of("CREEK_TEST_ENV_KEY", "original value")));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("CREEK_TEST_ENV_KEY", "original value"));
+        instances = new DockerServiceContainer(containerFactory);
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
         when(serviceDebugInfo.env()).thenReturn(Map.of("CREEK_TEST_ENV_KEY", "expected value"));
         final ServiceInstance instance = instances.add(serviceDef);
@@ -406,17 +409,20 @@ class DockerServiceContainerFunctionalTest {
                 hasItem("CREEK_TEST_ENV_KEY=expected value"));
     }
 
-    @Test
-    void shouldSetReadOnlyMountOnInstanceUnderTest() {
+    @ParameterizedTest
+    @EnumSource(
+            value = CopyDirection.class,
+            names = {"COPY_TO_CONTAINER", "COPY_TO_AND_FROM_CONTAINER"})
+    void shouldCopyDirectoryIntoInstanceUnderTest(final CopyDirection direction) {
         // Given:
         givenServiceUnderTest();
         TestPaths.write(tmpDir.resolve("some.file"), "data");
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), true)),
-                                Map.of()));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(directory(tmpDir, Paths.get("/opt/creek/test_mount"), direction)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
         final ServiceInstance instance = instances.add(serviceDef);
         final int start = (int) System.currentTimeMillis() / 1000;
 
@@ -426,45 +432,106 @@ class DockerServiceContainerFunctionalTest {
         // Then:
         final StringBuilder instanceLogs = trackContainerLogs(instance, start);
         assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
-
         assertThatEventually(
-                instanceLogs::toString, containsString("/opt/creek/test_mount : read-only"));
+                instanceLogs::toString, containsString("/opt/creek/test_mount : directory"));
     }
 
     @Test
-    void shouldSetWritableMountOnInstanceUnderTest() {
+    void shouldNotCopyDirectoryBackToHostWhenNotInstructedTo() {
         // Given:
         givenServiceUnderTest();
         TestPaths.write(tmpDir.resolve("some.file"), "data");
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
-                                Map.of()));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(
+                                directory(
+                                        tmpDir,
+                                        Paths.get("/opt/creek/test_mount"),
+                                        CopyDirection.COPY_TO_CONTAINER)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // When:
+        instance.start();
+        instance.stop();
+
+        // Then:
+        assertThat(tmpDir.resolve("some/dir/container.file").toFile().exists(), is(false));
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = CopyDirection.class,
+            names = {"COPY_FROM_CONTAINER", "COPY_TO_AND_FROM_CONTAINER"})
+    void shouldCopyDirectoryFromHostAfterStop(final CopyDirection direction) throws Exception {
+        // Given:
+        givenServiceUnderTest();
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(directory(tmpDir, Paths.get("/opt/creek/test_mount"), direction)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
         final ServiceInstance instance = instances.add(serviceDef);
         final int start = (int) System.currentTimeMillis() / 1000;
 
         // When:
         instance.start();
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
+        assertThatEventually(
+                instanceLogs::toString, containsString("some/dir/container.file : written"));
+        instance.stop();
 
         // Then:
-        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
-        assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
+        assertThat(Files.isRegularFile(tmpDir.resolve("some/dir/container.file")), is(true));
+        assertThat(
+                Files.readString(tmpDir.resolve("some/dir/container.file")),
+                is("written-by-container"));
+    }
 
+    @Test
+    void shouldNotCopyDirectoryFromHostAfterStopIfNotInstructedTo() {
+        // Given:
+        givenServiceUnderTest();
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(
+                                directory(
+                                        tmpDir,
+                                        Paths.get("/opt/creek/test_mount"),
+                                        CopyDirection.COPY_TO_CONTAINER)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
+        final ServiceInstance instance = instances.add(serviceDef);
+        final int start = (int) System.currentTimeMillis() / 1000;
+
+        // When:
+        instance.start();
+        final StringBuilder instanceLogs = trackContainerLogs(instance, start);
         assertThatEventually(
-                instanceLogs::toString, containsString("/opt/creek/test_mount : writable"));
+                instanceLogs::toString, containsString("some/dir/container.file : written"));
+        instance.stop();
+
+        // Then:
+        assertThat(Files.exists(tmpDir.resolve("some/dir/container.file")), is(false));
     }
 
     @Test
     void shouldNotSetMountsOn3rdPartyInstances() {
         // Given:
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
-                                Map.of()));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(
+                                directory(
+                                        tmpDir,
+                                        Paths.get("/opt/creek/test_mount"),
+                                        CopyDirection.COPY_TO_AND_FROM_CONTAINER)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
         final ServiceInstance instance = instances.add(serviceDef);
         final int start = (int) System.currentTimeMillis() / 1000;
 
@@ -480,12 +547,16 @@ class DockerServiceContainerFunctionalTest {
     @Test
     void shouldNotSetMountsOn3rdPartyInstancesUnlessDebuggingThem() {
         // Given:
-        instances =
-                new DockerServiceContainer(
-                        new ContainerFactory(
-                                serviceDebugInfo,
-                                List.of(mount(tmpDir, Paths.get("/opt/creek/test_mount"), false)),
-                                Map.of()));
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(
+                                directory(
+                                        tmpDir,
+                                        Paths.get("/opt/creek/test_mount"),
+                                        CopyDirection.COPY_TO_AND_FROM_CONTAINER)),
+                        Map.of());
+        instances = new DockerServiceContainer(containerFactory);
         TestPaths.write(tmpDir.resolve("some.file"), "data");
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
         final ServiceInstance instance = instances.add(serviceDef);
@@ -497,9 +568,8 @@ class DockerServiceContainerFunctionalTest {
         // Then:
         final StringBuilder instanceLogs = trackContainerLogs(instance, start);
         assertThatEventually(instanceLogs::toString, containsString("some.file : present"));
-
         assertThatEventually(
-                instanceLogs::toString, containsString("/opt/creek/test_mount : writable"));
+                instanceLogs::toString, containsString("/opt/creek/test_mount : directory"));
     }
 
     @Test
@@ -630,13 +700,13 @@ class DockerServiceContainerFunctionalTest {
         };
     }
 
-    private static MountInfo mount(
-            final Path hostPath, final Path containerPath, final boolean readOnly) {
-        final MountInfo mount =
-                mock(MountInfo.class, withSettings().strictness(Strictness.LENIENT));
+    private static DirectoryInfo directory(
+            final Path hostPath, final Path containerPath, final CopyDirection direction) {
+        final DirectoryInfo mount =
+                mock(DirectoryInfo.class, withSettings().strictness(Strictness.LENIENT));
         when(mount.hostPath()).thenReturn(hostPath);
         when(mount.containerPath()).thenReturn(containerPath);
-        when(mount.readOnly()).thenReturn(readOnly);
+        when(mount.direction()).thenReturn(direction);
         return mount;
     }
 

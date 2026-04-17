@@ -639,6 +639,9 @@ class SystemTestExecutorFunctionalTest {
             cmd.addAll(remoteDebugArguments());
         }
         codeCoverageCmdLineArg().ifPresent(cmd::add);
+        // Docker Desktop >= 4.58.0 requires API version >= 1.44 (MinAPIVersion: 1.44).
+        // This can be removed once TestContainers is updated to 2.x
+        cmd.add("-Dapi.version=1.44");
 
         cmd.addAll(List.of(javaArgs));
         cmd.addAll(List.of(cmdArgs));

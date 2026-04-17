@@ -17,7 +17,6 @@
 package org.creekservice.api.system.test.test.util;
 
 import static org.creekservice.api.system.test.executor.ExecutorOptions.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
-import static org.creekservice.api.system.test.test.util.CreekSystemTestExtensionTester.mount;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.serviceDebugInfo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.blankOrNullString;
@@ -42,7 +41,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
-import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
+import org.creekservice.api.system.test.executor.ExecutorOptions;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstanceContainer;
@@ -180,23 +180,33 @@ class CreekSystemTestExtensionTesterTest {
     }
 
     @Test
-    void shouldSupportMounts() {
+    void shouldSupportCopyingDirectories() {
         // Given:
         tester =
-                builder.withReadOnlyMount(Paths.get("r/host/path"), Paths.get("r/container/path"))
-                        .withWritableMount(Paths.get("w/host/path"), Paths.get("w/container/path"))
+                builder.withDirectoryCopy(
+                                new DirectoryInfo(
+                                        Paths.get("r/host/path"),
+                                        Paths.get("r/container/path"),
+                                        ExecutorOptions.CopyDirection.COPY_TO_CONTAINER))
+                        .withDirectoryCopy(
+                                new DirectoryInfo(
+                                        Paths.get("w/host/path"),
+                                        Paths.get("w/container/path"),
+                                        ExecutorOptions.CopyDirection.COPY_TO_AND_FROM_CONTAINER))
                         .build();
 
         // Then:
         assertThat(
-                tester.mountInfo(),
+                tester.transferables(),
                 contains(
-                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
-                        mount(Paths.get("w/host/path"), Paths.get("w/container/path"), false)));
-
-        assertThat(tester.mountInfo().get(0).hostPath(), is(Path.of("r/host/path")));
-        assertThat(tester.mountInfo().get(0).containerPath(), is(Path.of("r/container/path")));
-        assertThat(tester.mountInfo().get(0).readOnly(), is(true));
+                        new DirectoryInfo(
+                                Paths.get("r/host/path"),
+                                Paths.get("r/container/path"),
+                                ExecutorOptions.CopyDirection.COPY_TO_CONTAINER),
+                        new DirectoryInfo(
+                                Paths.get("w/host/path"),
+                                Paths.get("w/container/path"),
+                                ExecutorOptions.CopyDirection.COPY_TO_AND_FROM_CONTAINER)));
     }
 
     @Test
@@ -301,27 +311,42 @@ class CreekSystemTestExtensionTesterTest {
 
     @Test
     void shouldImplementHashCodeAndEqualsOnMount() {
+        final Path hostPath = Paths.get("r/host/path");
+        final Path containerPath = Paths.get("r/container/path");
+        final Path hostPath1 = Paths.get("r/host/path");
+        final Path containerPath1 = Paths.get("diff");
+        final Path hostPath2 = Paths.get("diff");
+        final Path containerPath2 = Paths.get("r/container/path");
+        final Path hostPath3 = Paths.get("r/host/path");
+        final Path containerPath3 = Paths.get("r/container/path");
+        final Path hostPath4 = Paths.get("r/host/path");
+        final Path containerPath4 = Paths.get("r/container/path");
         new EqualsTester()
                 .addEqualityGroup(
-                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true),
-                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true))
-                .addEqualityGroup(mount(Paths.get("diff"), Paths.get("r/container/path"), true))
-                .addEqualityGroup(mount(Paths.get("r/host/path"), Paths.get("diff"), true))
+                        new DirectoryInfo(
+                                hostPath4,
+                                containerPath4,
+                                ExecutorOptions.CopyDirection.COPY_TO_CONTAINER),
+                        new DirectoryInfo(
+                                hostPath3,
+                                containerPath3,
+                                ExecutorOptions.CopyDirection.COPY_TO_CONTAINER))
                 .addEqualityGroup(
-                        mount(Paths.get("r/host/path"), Paths.get("r/container/path"), false))
+                        new DirectoryInfo(
+                                hostPath2,
+                                containerPath2,
+                                ExecutorOptions.CopyDirection.COPY_TO_CONTAINER))
+                .addEqualityGroup(
+                        new DirectoryInfo(
+                                hostPath1,
+                                containerPath1,
+                                ExecutorOptions.CopyDirection.COPY_TO_CONTAINER))
+                .addEqualityGroup(
+                        new DirectoryInfo(
+                                hostPath,
+                                containerPath,
+                                ExecutorOptions.CopyDirection.COPY_TO_AND_FROM_CONTAINER))
                 .testEquals();
-    }
-
-    @Test
-    void shouldToStringOnMount() {
-        // Given:
-        final MountInfo mount =
-                mount(Paths.get("r/host/path"), Paths.get("r/container/path"), true);
-
-        // Then:
-        assertThat(
-                mount.toString(),
-                is("Mount{hostPath=r/host/path, containerPath=r/container/path, readOnly=true}"));
     }
 
     public static final class TestRef implements InputRef, ExpectationRef {

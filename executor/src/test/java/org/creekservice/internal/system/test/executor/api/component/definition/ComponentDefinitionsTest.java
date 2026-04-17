@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
@@ -216,7 +215,7 @@ class ComponentDefinitionsTest {
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     @ParameterizedTest(name = "[" + INDEX_PLACEHOLDER + "] {0}")
