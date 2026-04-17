@@ -24,18 +24,18 @@ jobs:
       BUNDLE_GEMFILE: ${{ github.workspace }}/docs/Gemfile
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v3.2.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v3.2.0
         with:
           fetch-depth: 0 # need full history to get page last modified times
       - name: Setup Ruby
-        uses: ruby/setup-ruby@0481980f17b760ef6bca5e8c55809102a0af1e5a # v1.263.0
+        uses: ruby/setup-ruby@7372622e62b60b3cb750dcd2b9e32c247ffec26a # v1.302.0
         with:
           ruby-version: '3.1'
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
           cache-version: 0 # Increment this number if you need to re-download cached gems
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build with Jekyll
         # Outputs to the './docs/_site' directory by default
         run: (cd docs && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}")
@@ -65,6 +65,6 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
       - name: Ping Google Search
         run: curl "https://www.google.com/ping?sitemap=https://www.creekservice.org/${{ github.event.repository.name }}/sitemap.xml"
