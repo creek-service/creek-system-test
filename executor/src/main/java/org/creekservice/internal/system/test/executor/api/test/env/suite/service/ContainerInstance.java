@@ -334,6 +334,8 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
     private static Void extractTarToDirectory(final TarArchiveInputStream tar, final Path hostPath)
             throws IOException {
+        final Path normalizedHostPath = hostPath.toAbsolutePath().normalize();
+
         for (TarArchiveEntry entry = tar.getCurrentEntry();
                 entry != null;
                 entry = tar.getNextTarEntry()) {
@@ -343,7 +345,12 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
             final String name = entry.getName();
             final int pos = name.indexOf('/');
-            final Path target = hostPath.resolve(name.substring(pos + 1));
+            final String entryRelativeName = name.substring(pos + 1);
+            final Path target = normalizedHostPath.resolve(entryRelativeName).normalize();
+            if (!target.startsWith(normalizedHostPath)) {
+                throw new IOException("Bad tar entry outside target dir: " + name);
+            }
+
             final Path parent = target.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
