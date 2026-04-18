@@ -16,6 +16,8 @@
 
 package org.creekservice.api.system.test.executor;
 
+import static java.util.Objects.requireNonNull;
+
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;
@@ -66,12 +68,13 @@ public interface ExecutorOptions {
     }
 
     /**
-     * Info about the which services should be debugged.
+     * Info about which services should be debugged.
      *
      * <p>In addition to providing this information, actually debugging a service requires the
      * caller to provide the actual debugging mechanism. This will generally involve providing a
-     * {@link #mountInfo() mount} containing a Java agent, and enabling the agent by setting {@code
-     * JAVA_TOOLS_OPTIONS} environment variable via {@link ServiceDebugInfo#env()}.
+     * {@link #transferables() directory} containing a Java agent to copy to the container, and
+     * enabling the agent by setting {@code JAVA_TOOLS_OPTIONS} environment variable via {@link
+     * ServiceDebugInfo#env()}.
      *
      * @return info about which services should be debugged.
      */
@@ -80,10 +83,10 @@ public interface ExecutorOptions {
     }
 
     /**
-     * @return info about any mounts to mount into the Docker containers running the
+     * @return info about what to copy to or from the Docker containers running the
      *     services-under-test or service-being-debugged.
      */
-    default Collection<MountInfo> mountInfo() {
+    default Collection<DirectoryInfo> transferables() {
         return List.of();
     }
 
@@ -166,21 +169,68 @@ public interface ExecutorOptions {
         }
     }
 
-    /** Information about a single mount. */
-    interface MountInfo {
-        /**
-         * @return the path on the host machine to mount.
-         */
-        Path hostPath();
+    /** Controls the direction of file transfer. */
+    enum CopyDirection {
+        /** Copy host → container only (before start). */
+        COPY_TO_CONTAINER(true, false),
+        /** Copy container → host only (after stop). */
+        COPY_FROM_CONTAINER(false, true),
+        /** Copy host → container before start, and container → host after stop. */
+        COPY_TO_AND_FROM_CONTAINER(true, true);
+
+        private final boolean copyTo;
+        private final boolean copyFrom;
+
+        CopyDirection(final boolean copyTo, final boolean copyFrom) {
+            this.copyTo = copyTo;
+            this.copyFrom = copyFrom;
+        }
 
         /**
-         * @return the path within the Docker container to mount.
+         * @return {@code true} if files should be copied from the host to the container.
          */
-        Path containerPath();
+        public boolean copyTo() {
+            return copyTo;
+        }
 
         /**
-         * @return {@code true} if the mount is read-only.
+         * @return {@code true} if files should be copied from the container to the host.
          */
-        boolean readOnly();
+        public boolean copyFrom() {
+            return copyFrom;
+        }
+    }
+
+    /**
+     * Information about a directory to copy to/from a container.
+     *
+     * @param hostPath the path on the host machine.
+     * @param containerPath the path within the Docker container.
+     * @param direction the direction of file transfer.
+     */
+    record DirectoryInfo(Path hostPath, Path containerPath, CopyDirection direction) {
+        /**
+         * Validates required parameters.
+         *
+         * @param hostPath the path on the host machine.
+         * @param containerPath the path within the Docker container.
+         * @param direction the direction of file transfer.
+         */
+        public DirectoryInfo {
+            requireNonNull(hostPath, "hostPath");
+            requireNonNull(containerPath, "containerPath");
+            requireNonNull(direction, "direction");
+        }
+
+        @Override
+        public String toString() {
+            return "DirectoryInfo[hostPath="
+                    + hostPath.toString().replace('\\', '/')
+                    + ", containerPath="
+                    + containerPath.toString().replace('\\', '/')
+                    + ", direction="
+                    + direction
+                    + "]";
+        }
     }
 }

@@ -18,7 +18,6 @@ package org.creekservice.api.system.test.extension;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 /** Factory class for loading system test extensions. */
 public final class CreekTestExtensions {
@@ -33,6 +32,6 @@ public final class CreekTestExtensions {
     public static List<CreekTestExtension> load() {
         return ServiceLoader.load(CreekTestExtension.class).stream()
                 .map(ServiceLoader.Provider::get)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

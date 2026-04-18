@@ -53,7 +53,7 @@ subprojects {
 
     extra.apply {
         set("creekVersion", project.version)
-        set("testContainersVersion", "1.19.1")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+        set("testContainersVersion", "1.21.4")  // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
         set("spotBugsVersion", "4.9.8")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
         set("jacksonVersion", "2.21.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
         set("jacksonAnnotationsVersion", "2.21")// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations

@@ -55,7 +55,7 @@ public final class TestSuite implements CreekTestSuite {
         this.tests =
                 requireNonNull(tests, "tests").stream()
                         .map(builder -> builder.build(this))
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
 
         requireEqual(tests.size(), def.tests().size(), "test case size mismatch");
     }

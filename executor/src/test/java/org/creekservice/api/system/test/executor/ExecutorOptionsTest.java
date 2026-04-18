@@ -89,8 +89,8 @@ class ExecutorOptionsTest {
     }
 
     @Test
-    void shouldDefaultToNoMounts() {
-        assertThat(options.mountInfo(), is(empty()));
+    void shouldDefaultToNoTransferables() {
+        assertThat(options.transferables(), is(empty()));
     }
 
     @Test
@@ -101,5 +101,22 @@ class ExecutorOptionsTest {
     @Test
     void shouldDefaultToNoDebugEnv() {
         assertThat(debugInfo.env(), is(Map.of()));
+    }
+
+    @Test
+    void shouldToStringOnDirectoryInfo() {
+        // Given:
+        final ExecutorOptions.DirectoryInfo copy =
+                new ExecutorOptions.DirectoryInfo(
+                        Paths.get("r/host/path"),
+                        Paths.get("r/container/path"),
+                        ExecutorOptions.CopyDirection.COPY_TO_CONTAINER);
+
+        // Then:
+        assertThat(
+                copy.toString(),
+                is(
+                        "DirectoryInfo[hostPath=r/host/path, containerPath=r/container/path,"
+                                + " direction=COPY_TO_CONTAINER]"));
     }
 }

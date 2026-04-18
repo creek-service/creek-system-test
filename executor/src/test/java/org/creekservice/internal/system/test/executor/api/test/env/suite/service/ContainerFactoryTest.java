@@ -18,9 +18,14 @@ package org.creekservice.internal.system.test.executor.api.test.env.suite.servic
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
@@ -37,43 +42,50 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.creekservice.api.system.test.executor.ExecutorOptions;
+import org.creekservice.api.system.test.executor.ExecutorOptions.CopyDirection;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory.CreatedContainer;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("resource")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = LENIENT)
 class ContainerFactoryTest {
 
-    private static final Path HOST_PATH = Paths.get("host/path");
     private static final Path CONTAINER_PATH = Paths.get("container/path");
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
     private static final int BASE_SERVICE_DEBUG_PORT = 9000;
     private static final String SERVICE_NAME = "bob";
     private static final String INSTANCE_NAME = "bob:1";
+    @TempDir Path hostDir;
     @Mock private ServiceDebugInfo serviceDebugInfo;
     @Mock private RegularContainerFactory regularFactory;
     @Mock private Supplier<Network> networkSupplier;
     @Mock private DebugContainerFactory debugFactory;
     @Mock private GenericContainer<?> container;
-    @Mock private ExecutorOptions.MountInfo mount;
+    @Mock private ExecutorOptions.DirectoryInfo mount;
     @Mock private Network network0;
     @Mock private Network network1;
+    @Captor private ArgumentCaptor<MountableFile> mountableCaptor;
 
     private ContainerFactory containerFactory;
 
@@ -96,10 +108,11 @@ class ContainerFactoryTest {
         doReturn(container).when(container).withNetwork(any());
         doReturn(container).when(container).withNetworkAliases(any());
         doReturn(container).when(container).withLogConsumer(any());
+        doReturn(container).when(container).withCopyFileToContainer(any(), any());
 
-        when(mount.hostPath()).thenReturn(HOST_PATH);
+        when(mount.hostPath()).thenReturn(hostDir);
         when(mount.containerPath()).thenReturn(CONTAINER_PATH);
-        when(mount.readOnly()).thenReturn(true);
+        when(mount.direction()).thenReturn(CopyDirection.COPY_TO_CONTAINER);
     }
 
     @Test
@@ -117,13 +130,14 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
 
         // When:
-        final GenericContainer<?> result =
+        final CreatedContainer result =
                 containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
 
         // Then:
         verify(regularFactory).create(IMAGE_NAME);
         verify(debugFactory, never()).create(any(), anyInt());
-        assertThat(result, is(container));
+        assertThat(result.container(), is(container));
+        assertThat(result.transferables(), is(empty()));
     }
 
     @ValueSource(booleans = {true, false})
@@ -133,13 +147,13 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        final GenericContainer<?> result =
+        final CreatedContainer result =
                 containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
 
         // Then:
         verify(debugFactory).create(IMAGE_NAME, BASE_SERVICE_DEBUG_PORT);
         verify(regularFactory, never()).create(any());
-        assertThat(result, is(container));
+        assertThat(result.container(), is(container));
     }
 
     @ValueSource(booleans = {true, false})
@@ -442,7 +456,7 @@ class ContainerFactoryTest {
 
     @ValueSource(booleans = {true, false})
     @ParameterizedTest
-    void shouldSetMountsOnServicesUnderTest(final boolean debug) {
+    void shouldCopyDirectoriesIntoServicesUnderTest(final boolean debug) {
         // Given:
         containerFactory =
                 new ContainerFactory(
@@ -459,12 +473,13 @@ class ContainerFactoryTest {
 
         // Then:
         verify(container)
-                .withFileSystemBind(
-                        HOST_PATH.toString(), CONTAINER_PATH.toString(), BindMode.READ_ONLY);
+                .withCopyFileToContainer(mountableCaptor.capture(), eq(CONTAINER_PATH + "/"));
+        final MountableFile hostFile = mountableCaptor.getValue();
+        assertThat(hostFile.getResolvedPath(), is(hostDir.toAbsolutePath().toString()));
     }
 
     @Test
-    void shouldSetMountsOn3rdPartyServiceIfDebugging() {
+    void shouldCopyDirectoriesInto3rdPartyServiceIfDebugging() {
         // Given:
         containerFactory =
                 new ContainerFactory(
@@ -482,12 +497,13 @@ class ContainerFactoryTest {
 
         // Then:
         verify(container)
-                .withFileSystemBind(
-                        HOST_PATH.toString(), CONTAINER_PATH.toString(), BindMode.READ_ONLY);
+                .withCopyFileToContainer(mountableCaptor.capture(), eq(CONTAINER_PATH + "/"));
+        final MountableFile hostFile = mountableCaptor.getValue();
+        assertThat(hostFile.getResolvedPath(), is(hostDir.toAbsolutePath().toString()));
     }
 
     @Test
-    void shouldNotSetMountsOn3rdPartyServiceIfNotDebugging() {
+    void shouldNotCopyMountsInto3rdPartyServiceIfNotDebugging() {
         // Given:
         containerFactory =
                 new ContainerFactory(
@@ -500,15 +516,36 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        final CreatedContainer result =
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
 
         // Then:
-        verify(container, never()).withFileSystemBind(any(), any());
-        verify(container, never()).withFileSystemBind(any(), any(), any());
+        verify(container, never()).withCopyFileToContainer(any(), any());
+        assertThat(result.transferables(), is(empty()));
     }
 
     @Test
-    void shouldSetWritableMountsToo() {
+    void shouldThrowIfTransferableDoesNotExist() {
+        // Given:
+        final Path nonExistentPath = hostDir.resolve("does-not-exist");
+        when(mount.hostPath()).thenReturn(nonExistentPath);
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(mount),
+                        Map.of(),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+
+        // When / Then:
+        assertThrows(
+                Exception.class,
+                () -> containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true));
+    }
+
+    @Test
+    void shouldNotReturnTransferablesThatAreFullyActioned() {
         // Given:
         containerFactory =
                 new ContainerFactory(
@@ -518,14 +555,78 @@ class ContainerFactoryTest {
                         regularFactory,
                         debugFactory,
                         networkSupplier);
-        when(mount.readOnly()).thenReturn(false);
+        when(mount.direction()).thenReturn(CopyDirection.COPY_TO_CONTAINER);
+
+        // When:
+        final CreatedContainer result =
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
+        // Then:
+        assertThat(result.transferables(), not(hasItem(mount)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = CopyDirection.class,
+            names = {"COPY_FROM_CONTAINER", "COPY_TO_AND_FROM_CONTAINER"})
+    void shouldReturnTransferablesThatNeedActioning(final CopyDirection direction) {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(mount),
+                        Map.of(),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(mount.direction()).thenReturn(direction);
+
+        // When:
+        final CreatedContainer result =
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
+        // Then:
+        assertThat(result.transferables(), hasItem(mount));
+    }
+
+    @Test
+    void shouldNotCopyToContainerWhenDirectionIsCopyFromContainer() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(mount),
+                        Map.of(),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(mount.direction()).thenReturn(CopyDirection.COPY_FROM_CONTAINER);
 
         // When:
         containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
 
         // Then:
-        verify(container)
-                .withFileSystemBind(
-                        HOST_PATH.toString(), CONTAINER_PATH.toString(), BindMode.READ_WRITE);
+        verify(container, never()).withCopyFileToContainer(any(), any());
+    }
+
+    @Test
+    void shouldReturnCopyFromContainerInWritableCopies() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(mount),
+                        Map.of(),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(mount.direction()).thenReturn(CopyDirection.COPY_FROM_CONTAINER);
+
+        // When:
+        final CreatedContainer result =
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+
+        // Then:
+        assertThat(result.transferables(), hasItem(mount));
     }
 }

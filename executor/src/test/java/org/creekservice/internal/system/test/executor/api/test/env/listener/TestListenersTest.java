@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -148,6 +147,6 @@ class TestListenersTest {
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

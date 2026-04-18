@@ -22,7 +22,7 @@ import java.util.Map;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.ComponentDescriptors;
-import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
 import org.creekservice.api.system.test.extension.CreekTestExtensions;
 import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory;
@@ -47,17 +47,17 @@ public final class Api {
      * Initialise the test api
      *
      * @param serviceDebugInfo info about which services should be debugged.
-     * @param mountInfo info about container mounts.
+     * @param transferables info about things to transfer to/from containers.
      * @param env environment vars to set on services under test.
      * @return the initialised test api.
      */
     public static SystemTest initializeApi(
             final ServiceDebugInfo serviceDebugInfo,
-            final Collection<MountInfo> mountInfo,
+            final Collection<DirectoryInfo> transferables,
             final Map<String, String> env) {
 
         final ContainerFactory containerFactory =
-                new ContainerFactory(serviceDebugInfo, mountInfo, env);
+                new ContainerFactory(serviceDebugInfo, transferables, env);
 
         return initializeApi(
                 new SystemTest(loadComponents(), containerFactory),

@@ -351,12 +351,13 @@ class PicoCliParserTest {
 
         // Then:
         assertThat(
-                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(1)));
+                result.map(ExecutorOptions::transferables).map(Collection::size),
+                is(Optional.of(1)));
 
-        final ExecutorOptions.MountInfo mount = result.get().mountInfo().iterator().next();
+        final ExecutorOptions.DirectoryInfo mount = result.get().transferables().iterator().next();
         assertThat(mount.hostPath(), is(mountSource));
         assertThat(mount.containerPath(), is(mountDestination));
-        assertThat(mount.readOnly(), is(true));
+        assertThat(mount.direction(), is(ExecutorOptions.CopyDirection.COPY_TO_CONTAINER));
     }
 
     @Test
@@ -369,12 +370,13 @@ class PicoCliParserTest {
 
         // Then:
         assertThat(
-                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(1)));
+                result.map(ExecutorOptions::transferables).map(Collection::size),
+                is(Optional.of(1)));
 
-        final ExecutorOptions.MountInfo mount = result.get().mountInfo().iterator().next();
+        final ExecutorOptions.DirectoryInfo mount = result.get().transferables().iterator().next();
         assertThat(mount.hostPath(), is(Path.of("host/path")));
         assertThat(mount.containerPath(), is(Path.of("container/path")));
-        assertThat(mount.readOnly(), is(false));
+        assertThat(mount.direction(), is(ExecutorOptions.CopyDirection.COPY_TO_AND_FROM_CONTAINER));
     }
 
     @Test
@@ -392,7 +394,8 @@ class PicoCliParserTest {
 
         // Then:
         assertThat(
-                result.map(ExecutorOptions::mountInfo).map(Collection::size), is(Optional.of(4)));
+                result.map(ExecutorOptions::transferables).map(Collection::size),
+                is(Optional.of(4)));
     }
 
     @Test
@@ -574,8 +577,8 @@ class PicoCliParserTest {
                         "-dsi=a-0,b-1",
                         "-de=E=F",
                         "-e=A=B,C=D",
-                        "-mr=" + mrS0 + "=" + mrD0 + "," + mrS1 + "=" + mrD1,
-                        "-mw=" + mwS0 + "=" + mwD0 + "," + mwS1 + "=" + mwD1);
+                        "--dir-copy-read-only=" + mrS0 + "=" + mrD0 + "," + mrS1 + "=" + mrD1,
+                        "--dir-copy-read-write=" + mwS0 + "=" + mwD0 + "," + mwS1 + "=" + mwD1);
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);

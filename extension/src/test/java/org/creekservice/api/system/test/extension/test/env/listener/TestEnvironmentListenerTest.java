@@ -27,7 +27,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.system.test.extension.test.model.CreekTestCase;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
@@ -98,6 +97,6 @@ class TestEnvironmentListenerTest {
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

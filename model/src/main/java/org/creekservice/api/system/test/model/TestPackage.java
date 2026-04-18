@@ -22,7 +22,6 @@ import static org.creekservice.api.base.type.Preconditions.requireNonEmpty;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.Input;
 
 /** A package to seed data and test suites. */
@@ -49,7 +48,7 @@ public final class TestPackage {
         this.suites =
                 requireNonEmpty(suites, "suites").stream()
                         .map(builder -> builder.build(this))
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
     }
 
     /**

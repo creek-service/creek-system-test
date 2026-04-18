@@ -54,21 +54,30 @@ public final class ServiceMain {
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static void logMount() {
         final Path mount = Paths.get("/opt/creek/test_mount");
-        if (!Files.isDirectory(mount)) {
-            LOGGER.info("/opt/creek/test_mount : not-present");
-            return;
-        }
-
-        if (Files.isWritable(mount)) {
-            LOGGER.info("/opt/creek/test_mount : writable");
+        if (Files.isDirectory(mount)) {
+            LOGGER.info("/opt/creek/test_mount : directory");
+        } else if (Files.isRegularFile(mount)) {
+            LOGGER.info("/opt/creek/test_mount : file");
         } else {
-            LOGGER.info("/opt/creek/test_mount : read-only");
+            LOGGER.info("/opt/creek/test_mount : not-present");
         }
 
         if (Files.isRegularFile(mount.resolve("some.file"))) {
             LOGGER.info("some.file : present");
         } else {
             LOGGER.info("some.file : not-present");
+        }
+
+        try {
+            final Path path = mount.resolve("some/dir/container.file");
+            final Path parent = path.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.writeString(path, "written-by-container");
+            LOGGER.info("some/dir/container.file : written");
+        } catch (final Exception e) {
+            LOGGER.info("some/dir/container.file : write-failed", e);
         }
     }
 

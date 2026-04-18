@@ -17,7 +17,6 @@
 package org.creekservice.internal.system.test.executor.cli;
 
 import static java.lang.System.lineSeparator;
-import static org.creekservice.api.base.type.Preconditions.requireNonEmpty;
 import static org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo.DEFAULT_BASE_DEBUG_PORT;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -209,46 +208,58 @@ public final class PicoCliParser {
                                 + " service-under-test.")
         private Map<String, String> env = Map.of();
 
-        private List<MountInfo> readOnlyMounts = new ArrayList<>(2);
+        private List<DirectoryInfo> readOnlyMounts = new ArrayList<>(2);
 
         /**
-         * Method for adding read-only mount points.
+         * Method for adding read-only directories to copy to services under test or being debugged.
          *
-         * @param mounts the map of host to container paths to mount.
+         * @param readOnly the map of host to container paths to copy.
          */
         @Option(
-                names = {"-mr", "--mount-read-only"},
+                names = {"--mount-read-only", "--dir-copy-read-only"},
                 split = ",",
                 description =
-                        "Comma seperated list of hostPath=containerPath read-only mount points to"
-                                + " set on each service-under-test.")
-        public void setReadOnlyMount(final Map<String, String> mounts) {
-            validateMounts(mounts);
+                        "Comma seperated list of hostPath=containerPath read-only directories to"
+                                + " copy to each service-under-test.")
+        public void setReadOnlyMount(final Map<String, String> readOnly) {
+            validateTransferables(readOnly);
             readOnlyMounts =
-                    mounts.entrySet().stream()
-                            .map(e -> new Mount(e.getKey(), e.getValue(), true))
-                            .collect(Collectors.toUnmodifiableList());
+                    readOnly.entrySet().stream()
+                            .map(
+                                    e ->
+                                            new DirectoryInfo(
+                                                    toPath(e.getKey()),
+                                                    toPath(e.getValue()),
+                                                    CopyDirection.COPY_TO_CONTAINER))
+                            .toList();
         }
 
-        private List<MountInfo> writeableMounts = new ArrayList<>(1);
+        private List<DirectoryInfo> writeableMounts = new ArrayList<>(2);
 
         /**
-         * Method for adding writable mount points.
+         * Method for adding writable directories to copy to services under test or being debugged,
+         * and to copy back when the service stops.
          *
-         * @param mounts the map of host to container paths to mount.
+         * @param writable the map of host to container paths to copy.
          */
         @Option(
-                names = {"-mw", "--mount-writable"},
+                names = {"--mount-writable", "--dir-copy-read-write"},
                 split = ",",
                 description =
-                        "Comma seperated list of hostPath=containerPath writable mount points to"
+                        "Comma seperated list of hostPath=containerPath writable file copies to"
                                 + " set on each service-under-test.")
-        public void setWritableMount(final Map<String, String> mounts) {
-            validateMounts(mounts);
+        public void setWritableMount(final Map<String, String> writable) {
+            validateTransferables(writable);
+
             writeableMounts =
-                    mounts.entrySet().stream()
-                            .map(e -> new Mount(e.getKey(), e.getValue(), false))
-                            .collect(Collectors.toUnmodifiableList());
+                    writable.entrySet().stream()
+                            .map(
+                                    e ->
+                                            new DirectoryInfo(
+                                                    toPath(e.getKey()),
+                                                    toPath(e.getValue()),
+                                                    CopyDirection.COPY_TO_AND_FROM_CONTAINER))
+                            .toList();
         }
 
         @Override
@@ -294,7 +305,7 @@ public final class PicoCliParser {
         }
 
         @Override
-        public Collection<MountInfo> mountInfo() {
+        public Collection<DirectoryInfo> transferables() {
             return Lists.combineList(readOnlyMounts, writeableMounts);
         }
 
@@ -333,10 +344,10 @@ public final class PicoCliParser {
                     + formatMap(env)
                     + lineSeparator()
                     + "--mount-read-only="
-                    + formatMounts(readOnlyMounts)
+                    + formatTransferables(readOnlyMounts)
                     + lineSeparator()
                     + "--mount-writable="
-                    + formatMounts(writeableMounts);
+                    + formatTransferables(writeableMounts);
         }
 
         private String formatList(final Set<String> list) {
@@ -354,16 +365,16 @@ public final class PicoCliParser {
                             .collect(Collectors.joining(","));
         }
 
-        private static String formatMounts(final List<MountInfo> mounts) {
-            return mounts.isEmpty()
+        private static String formatTransferables(final List<DirectoryInfo> transferables) {
+            return transferables.isEmpty()
                     ? NOT_SET
-                    : mounts.stream()
-                            .map(m -> m.hostPath() + "=" + m.containerPath())
+                    : transferables.stream()
+                            .map(info -> info.hostPath() + "=" + info.containerPath())
                             .collect(Collectors.joining(","));
         }
 
-        private static void validateMounts(final Map<String, String> mounts) {
-            mounts.forEach(
+        private static void validateTransferables(final Map<String, String> transferables) {
+            transferables.forEach(
                     (hostPath, containerPath) -> {
                         if (hostPath.trim().isEmpty()) {
                             throw new IllegalArgumentException("Host path can not be empty");
@@ -374,32 +385,11 @@ public final class PicoCliParser {
                     });
         }
 
-        private static final class Mount implements MountInfo {
-            private final Path hostPath;
-            private final Path containerPath;
-            private final boolean readOnly;
-
-            @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Trusted user input")
-            Mount(final String hostPath, final String containerPath, final boolean readOnly) {
-                this.hostPath = Paths.get(requireNonEmpty(hostPath, "hostPath"));
-                this.containerPath = Paths.get(requireNonEmpty(containerPath, "containerPath"));
-                this.readOnly = readOnly;
-            }
-
-            @Override
-            public Path hostPath() {
-                return hostPath;
-            }
-
-            @Override
-            public Path containerPath() {
-                return containerPath;
-            }
-
-            @Override
-            public boolean readOnly() {
-                return readOnly;
-            }
+        @SuppressFBWarnings(
+                value = "PATH_TRAVERSAL_IN",
+                justification = "API needs to allow any file to be mounted")
+        private static Path toPath(final String path) {
+            return Paths.get(path);
         }
     }
 

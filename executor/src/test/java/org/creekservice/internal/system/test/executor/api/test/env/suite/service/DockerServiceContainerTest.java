@@ -42,12 +42,12 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
+import org.creekservice.internal.system.test.executor.api.test.env.suite.service.ContainerFactory.CreatedContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,7 +76,6 @@ class DockerServiceContainerTest {
 
     private DockerServiceContainer instances;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @BeforeEach
     void setUp() {
         instances = new DockerServiceContainer(containerFactory);
@@ -84,7 +83,7 @@ class DockerServiceContainerTest {
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(IMAGE_NAME.toString());
         when(containerFactory.create(any(), any(), any(), anyBoolean()))
-                .thenReturn((GenericContainer) container);
+                .thenReturn(new CreatedContainer(container, List.of()));
     }
 
     @Test
@@ -258,9 +257,7 @@ class DockerServiceContainerTest {
     }
 
     private static List<String> testedMethodNames() {
-        return publicMethods()
-                .map(a -> (String) a.get()[0])
-                .collect(Collectors.toUnmodifiableList());
+        return publicMethods().map(a -> (String) a.get()[0]).toList();
     }
 
     private List<String> publicMethodNames() {
@@ -268,6 +265,6 @@ class DockerServiceContainerTest {
                 .filter(m -> !m.getDeclaringClass().equals(Object.class))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::toGenericString)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

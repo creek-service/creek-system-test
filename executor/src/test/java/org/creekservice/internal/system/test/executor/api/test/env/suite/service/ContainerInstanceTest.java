@@ -26,6 +26,8 @@ import static org.junit.jupiter.params.ParameterizedInvocationConstants.INDEX_PL
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.clearInvocations;
@@ -39,6 +41,7 @@ import com.google.common.testing.NullPointerTester;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,10 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.creekservice.api.base.type.RuntimeIOException;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,15 +69,21 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.ThrowingFunction;
 
 @ExtendWith(MockitoExtension.class)
 class ContainerInstanceTest {
 
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
+    private static final Path CONTAINER_PATH = Path.of("/opt/container/path");
+    private static final Path HOST_PATH = Path.of("/tmp/host/path");
 
     @Mock(answer = RETURNS_DEEP_STUBS, strictness = LENIENT)
     private GenericContainer<?> container;
+
+    @Mock(strictness = LENIENT)
+    private DirectoryInfo transferables;
 
     @Mock private ServiceDescriptor descriptor;
     @Mock private Consumer<ServiceInstance> startedCallback;
@@ -84,9 +93,17 @@ class ContainerInstanceTest {
 
     @BeforeEach
     void setUp() {
+        when(transferables.containerPath()).thenReturn(CONTAINER_PATH);
+        when(transferables.hostPath()).thenReturn(HOST_PATH);
+
         instance =
                 new ContainerInstance(
-                        "a-0", IMAGE_NAME, container, Optional.empty(), startedCallback);
+                        "a-0",
+                        IMAGE_NAME,
+                        container,
+                        Optional.empty(),
+                        startedCallback,
+                        List.of(transferables));
     }
 
     @Test
@@ -121,7 +138,8 @@ class ContainerInstanceTest {
                                 IMAGE_NAME,
                                 container,
                                 Optional.of(descriptor),
-                                startedCallback)
+                                startedCallback,
+                                List.of())
                         .descriptor(),
                 is(Optional.of(descriptor)));
     }
@@ -545,6 +563,7 @@ class ContainerInstanceTest {
                         container,
                         Optional.empty(),
                         startedCallback,
+                        List.of(),
                         Thread.currentThread().getId() + 1);
 
         // Then:
@@ -604,6 +623,33 @@ class ContainerInstanceTest {
                 hasSize(methodNames.size()));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldCopyTransferablesFromContainerOnStop() {
+        // Given:
+        givenRunning();
+
+        // When:
+        instance.stop();
+
+        // Then:
+        verify(container)
+                .copyFileFromContainer(eq(CONTAINER_PATH.toString()), any(ThrowingFunction.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldThrowIfCopyFromContainerFails() {
+        // Given:
+        givenRunning();
+        doThrow(new RuntimeException("copy failed"))
+                .when(container)
+                .copyFileFromContainer(anyString(), any(ThrowingFunction.class));
+
+        // When / Then:
+        assertThrows(RuntimeException.class, instance::stop);
+    }
+
     private void givenRunning() {
         when(container.isRunning()).thenReturn(true);
         when(container.getContainerId()).thenReturn("bob");
@@ -649,7 +695,7 @@ class ContainerInstanceTest {
     }
 
     private static List<String> testedMethodNames() {
-        return methods().map(a -> (String) a.get()[0]).collect(Collectors.toUnmodifiableList());
+        return methods().map(a -> (String) a.get()[0]).toList();
     }
 
     private List<String> methodNames() {
@@ -658,7 +704,7 @@ class ContainerInstanceTest {
                 .filter(m -> !m.isSynthetic())
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .map(Method::getName)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     public static Stream<Arguments> configureMethods() {
@@ -693,16 +739,14 @@ class ContainerInstanceTest {
     }
 
     private static List<String> testedConfigureMethodNames() {
-        return configureMethods()
-                .map(a -> (String) a.get()[0])
-                .collect(Collectors.toUnmodifiableList());
+        return configureMethods().map(a -> (String) a.get()[0]).toList();
     }
 
     private List<String> configureMethodNames() {
         return Arrays.stream(ConfigurableServiceInstance.class.getDeclaredMethods())
                 .filter(m -> !m.isSynthetic())
                 .map(Method::getName)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private static List<String> notTested(final List<String> all, final List<String> tested) {

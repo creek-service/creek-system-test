@@ -18,6 +18,8 @@ package org.creekservice.internal.system.test.executor.api.test.env.suite.servic
 
 import static java.util.Objects.requireNonNull;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -27,18 +29,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.creekservice.api.base.annotation.VisibleForTesting;
-import org.creekservice.api.system.test.executor.ExecutorOptions.MountInfo;
+import org.creekservice.api.system.test.executor.ExecutorOptions.DirectoryInfo;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.TestSuiteResult;
 import org.creekservice.internal.system.test.executor.execution.debug.ServiceDebugInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /** Factory that creates the Docker containers used to run services */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -47,7 +49,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerFactory.class);
 
     private final ServiceDebugInfo serviceDebugInfo;
-    private final List<MountInfo> mountInfo;
+    private final List<DirectoryInfo> transferables;
     private final Map<String, String> env;
     private final RegularContainerFactory regularFactory;
     private final DebugContainerFactory debugFactory;
@@ -56,19 +58,19 @@ public final class ContainerFactory implements TestEnvironmentListener {
     private final AtomicReference<Network> network = new AtomicReference<>();
 
     /**
-     * Create factory instance.
+     * Create a factory instance.
      *
      * @param serviceDebugInfo info on what services to debug.
-     * @param mountInfo info on what mounts to add to containers.
+     * @param transferables info on what to copy to/from containers.
      * @param env environment vars to set on services-under-test.
      */
     public ContainerFactory(
             final ServiceDebugInfo serviceDebugInfo,
-            final Collection<MountInfo> mountInfo,
+            final Collection<DirectoryInfo> transferables,
             final Map<String, String> env) {
         this(
                 serviceDebugInfo,
-                mountInfo,
+                transferables,
                 env,
                 new RegularContainerFactory(),
                 new DebugContainerFactory(),
@@ -78,13 +80,13 @@ public final class ContainerFactory implements TestEnvironmentListener {
     @VisibleForTesting
     ContainerFactory(
             final ServiceDebugInfo serviceDebugInfo,
-            final Collection<MountInfo> mountInfo,
+            final Collection<DirectoryInfo> transferables,
             final Map<String, String> env,
             final RegularContainerFactory regularFactory,
             final DebugContainerFactory debugFactory,
             final Supplier<Network> networkSupplier) {
         this.serviceDebugInfo = requireNonNull(serviceDebugInfo, "serviceDebugInfo");
-        this.mountInfo = List.copyOf(requireNonNull(mountInfo, "mountInfo"));
+        this.transferables = List.copyOf(requireNonNull(transferables, "transferables"));
         this.env = Map.copyOf(requireNonNull(env, "env"));
         this.regularFactory = requireNonNull(regularFactory, "regularFactory");
         this.debugFactory = requireNonNull(debugFactory, "debugFactory");
@@ -99,9 +101,10 @@ public final class ContainerFactory implements TestEnvironmentListener {
      * @param instanceName the name of instance being created
      * @param serviceName the name of the service the instance will run
      * @param serviceUnderTest {@code true} if the service is under test.
-     * @return the created container.
+     * @return the created container along with any transferables to copy from the container after
+     *     it stops.
      */
-    public GenericContainer<?> create(
+    public CreatedContainer create(
             final DockerImageName imageName,
             final String instanceName,
             final String serviceName,
@@ -116,8 +119,9 @@ public final class ContainerFactory implements TestEnvironmentListener {
 
         setEnv(instanceName, container, serviceUnderTest, serviceDebugPort);
 
-        if (serviceUnderTest || serviceDebugPort.isPresent()) {
-            setMounts(instanceName, container);
+        final boolean transfer = serviceUnderTest || serviceDebugPort.isPresent();
+        if (transfer) {
+            copyTransferablesToContainer(instanceName, container);
         }
 
         container
@@ -127,7 +131,44 @@ public final class ContainerFactory implements TestEnvironmentListener {
                         new Slf4jLogConsumer(LoggerFactory.getLogger(instanceName))
                                 .withPrefix(instanceName));
 
-        return container;
+        final List<DirectoryInfo> writableCopies =
+                transfer
+                        ? transferables.stream().filter(t -> t.direction().copyFrom()).toList()
+                        : List.of();
+
+        return new CreatedContainer(container, writableCopies);
+    }
+
+    /**
+     * Holds the result of {@link #create}, bundling the container with any transferables to copy
+     * when the container closes.
+     *
+     * @param container the created container.
+     * @param transferables transferables to transfer when the container closes.
+     */
+    public record CreatedContainer(
+            GenericContainer<?> container, List<DirectoryInfo> transferables) {
+
+        /**
+         * Create an instance
+         *
+         * @param container the created container.
+         * @param transferables any transferables to copy from the container when it stops.
+         */
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intentional exposure")
+        public CreatedContainer {
+            requireNonNull(container, "container");
+            transferables = List.copyOf(requireNonNull(transferables, "writableCopies"));
+        }
+
+        /**
+         * @return the created container.
+         */
+        @Override
+        @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intentional exposure")
+        public GenericContainer<?> container() {
+            return container;
+        }
     }
 
     @SuppressWarnings("resource")
@@ -185,23 +226,28 @@ public final class ContainerFactory implements TestEnvironmentListener {
         }
     }
 
-    private void setMounts(final String instanceName, final GenericContainer<?> container) {
-        mountInfo.forEach(
-                mount -> {
-                    LOGGER.info(
-                            "Adding container mount. instance: "
-                                    + instanceName
-                                    + ". hostPath "
-                                    + mount.hostPath()
-                                    + ", containerPath: "
-                                    + mount.containerPath()
-                                    + ", read-only: "
-                                    + mount.readOnly());
+    private void copyTransferablesToContainer(
+            final String instanceName, final GenericContainer<?> container) {
+        transferables.stream()
+                .filter(t -> t.direction().copyTo())
+                .forEach(
+                        transferable -> {
+                            LOGGER.info(
+                                    "Copying to container. instance: {}, hostPath: {},"
+                                            + " containerPath: {}",
+                                    instanceName,
+                                    transferable.hostPath(),
+                                    transferable.containerPath());
 
-                    container.withFileSystemBind(
-                            mount.hostPath().toString(),
-                            mount.containerPath().toString(),
-                            mount.readOnly() ? BindMode.READ_ONLY : BindMode.READ_WRITE);
-                });
+                            if (!Files.exists(transferable.hostPath())) {
+                                throw new IllegalArgumentException(
+                                        "Host path does not exist for transferable: "
+                                                + transferable);
+                            }
+
+                            container.withCopyFileToContainer(
+                                    MountableFile.forHostPath(transferable.hostPath()),
+                                    transferable.containerPath().toString() + "/");
+                        });
     }
 }

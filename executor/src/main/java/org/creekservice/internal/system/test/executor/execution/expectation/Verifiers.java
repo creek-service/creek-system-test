@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.Expectation;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
@@ -67,7 +66,7 @@ public final class Verifiers {
         final List<Verifier> verifiers =
                 byHandler.entrySet().stream()
                         .map(e -> prepare(e.getKey(), e.getValue(), test))
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
 
         return () -> verifiers.forEach(Verifier::verify);
     }
