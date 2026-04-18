@@ -338,7 +338,7 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
 
         for (TarArchiveEntry entry = tar.getCurrentEntry();
                 entry != null;
-                entry = tar.getNextTarEntry()) {
+                entry = tar.getNextEntry()) {
             if (entry.isDirectory()) {
                 continue;
             }
