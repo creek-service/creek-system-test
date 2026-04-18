@@ -221,5 +221,16 @@ public interface ExecutorOptions {
             requireNonNull(containerPath, "containerPath");
             requireNonNull(direction, "direction");
         }
+
+        @Override
+        public String toString() {
+            return "DirectoryInfo[hostPath="
+                    + hostPath.toString().replace('\\', '/')
+                    + ", containerPath="
+                    + containerPath.toString().replace('\\', '/')
+                    + ", direction="
+                    + direction
+                    + "]";
+        }
     }
 }

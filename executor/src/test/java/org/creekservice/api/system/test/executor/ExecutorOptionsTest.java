@@ -116,8 +116,7 @@ class ExecutorOptionsTest {
         assertThat(
                 copy.toString(),
                 is(
-                        "DirectoryInfo[hostPath=%s, containerPath=%s, direction=COPY_TO_CONTAINER]"
-                                .formatted(
-                                        Paths.get("r/host/path"), Paths.get("r/container/path"))));
+                        "DirectoryInfo[hostPath=r/host/path, containerPath=r/container/path,"
+                                + " direction=COPY_TO_CONTAINER]"));
     }
 }
