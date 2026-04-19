@@ -77,6 +77,7 @@ class ContainerInstanceTest {
 
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
+
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static final Path CONTAINER_PATH = Path.of("/opt/container/path");
     private static final Path HOST_PATH = Path.of("/tmp/host/path");
