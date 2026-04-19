@@ -620,7 +620,7 @@ class PicoCliParserTest {
                                         + "--mount-writable="
                                         + mwS0
                                         + "="
-                                        + mwD0
+                                        + mwD0.toString().replace(File.separatorChar, '/')
                                         + ","
                                         + mwS1
                                         + "="
