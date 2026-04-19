@@ -41,6 +41,7 @@ import com.google.common.testing.NullPointerTester;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ class ContainerInstanceTest {
 
     private static final DockerImageName IMAGE_NAME =
             DockerImageName.parse("ghcr.io/creek-service/creek-system-test-test-service:latest");
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static final Path CONTAINER_PATH = Path.of("/opt/container/path");
     private static final Path HOST_PATH = Path.of("/tmp/host/path");
 
