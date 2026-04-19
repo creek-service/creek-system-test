@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -338,6 +339,7 @@ class PicoCliParserTest {
                 is(Optional.of(Map.of("NAME", "VALUE", "NAME2", "V2"))));
     }
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Test
     void shouldParseReadOnlyMount() {
         // Given:
