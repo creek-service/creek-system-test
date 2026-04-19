@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.TestCaseResult;
@@ -58,7 +57,6 @@ class ResultLogFormatterTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private TestCaseResult testResult2;
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @BeforeEach
     void setUp() {
         doReturn(List.of(suiteResult0, suiteResult1)).when(result).results();
