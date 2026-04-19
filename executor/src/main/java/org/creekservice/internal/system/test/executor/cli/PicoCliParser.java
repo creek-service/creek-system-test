@@ -194,17 +194,17 @@ public final class PicoCliParser {
 
         @Option(
                 names = {"-de", "--debug-env"},
-                split = ",",
+                split = "@@",
                 description =
-                        "Comma seperated list of key=value environment variables to set on each"
+                        "@@-separated list of key=value environment variables to set on each"
                                 + " service being debugged.")
         private Map<String, String> debugEnv = Map.of();
 
         @Option(
                 names = {"-e", "--env"},
-                split = ",",
+                split = "@@",
                 description =
-                        "Comma seperated list of key=value environment variables to set on each"
+                        "@@-separated list of key=value environment variables to set on each"
                                 + " service-under-test.")
         private Map<String, String> env = Map.of();
 
@@ -362,14 +362,20 @@ public final class PicoCliParser {
                     : map.entrySet().stream()
                             .map(e -> e.getKey() + "=" + e.getValue())
                             .sorted()
-                            .collect(Collectors.joining(","));
+                            .collect(Collectors.joining("@@"));
         }
 
         private static String formatTransferables(final List<DirectoryInfo> transferables) {
             return transferables.isEmpty()
                     ? NOT_SET
                     : transferables.stream()
-                            .map(info -> info.hostPath() + "=" + info.containerPath())
+                            .map(
+                                    info ->
+                                            info.hostPath()
+                                                    + "="
+                                                    + info.containerPath()
+                                                            .toString()
+                                                            .replace('\\', '/'))
                             .collect(Collectors.joining(","));
         }
 

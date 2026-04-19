@@ -240,7 +240,7 @@ class PicoCliParserTest {
     @Test
     void shouldParseSingleMultipleEnvInSingleParam() {
         // Given:
-        final String[] args = minimalArgs("--env=NAME=VALUE,NAME2=V2");
+        final String[] args = minimalArgs("--env=NAME=VALUE@@NAME2=V2");
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -295,7 +295,7 @@ class PicoCliParserTest {
     @Test
     void shouldParseSingleMultipleDebugEnvInSingleParam() {
         // Given:
-        final String[] args = minimalArgs("--debug-env=NAME=VALUE,NAME2=V2", "--debug-service=a");
+        final String[] args = minimalArgs("--debug-env=NAME=VALUE@@NAME2=V2", "--debug-service=a");
 
         // When:
         final Optional<ExecutorOptions> result = parse(args);
@@ -576,7 +576,7 @@ class PicoCliParserTest {
                         "-ds=a,b",
                         "-dsi=a-0,b-1",
                         "-de=E=F",
-                        "-e=A=B,C=D",
+                        "-e=A=B@@C=D",
                         "--dir-copy-read-only=" + mrS0 + "=" + mrD0 + "," + mrS1 + "=" + mrD1,
                         "--dir-copy-read-write=" + mwS0 + "=" + mwD0 + "," + mwS1 + "=" + mwD1);
 
@@ -606,7 +606,7 @@ class PicoCliParserTest {
                                         + lineSeparator()
                                         + "--debug-env=E=F"
                                         + lineSeparator()
-                                        + "--env=A=B,C=D"
+                                        + "--env=A=B@@C=D"
                                         + lineSeparator()
                                         + "--mount-read-only="
                                         + mrS0
