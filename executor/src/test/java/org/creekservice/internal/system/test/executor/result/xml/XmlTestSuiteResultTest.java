@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -52,7 +51,6 @@ class XmlTestSuiteResultTest {
     @Mock private CreekTestSuite testSuite;
     private XmlTestSuiteResult xmlResult;
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     @BeforeEach
     void setUp() {
         when(suiteResult.testSuite()).thenReturn(testSuite);
