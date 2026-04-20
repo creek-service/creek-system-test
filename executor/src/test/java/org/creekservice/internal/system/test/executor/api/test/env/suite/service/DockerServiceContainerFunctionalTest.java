@@ -573,6 +573,66 @@ class DockerServiceContainerFunctionalTest {
     }
 
     @Test
+    void shouldCopyFileToContainerViaInstanceStartingHook() {
+        // Given:
+        doAnswer(
+                        inv -> {
+                            final ServiceInstance instance = inv.getArgument(0);
+                            instance.copyFileToContainer(
+                                    "hello creek", "/tmp/creek-test.txt", false);
+                            return null;
+                        })
+                .when(serviceDef)
+                .instanceStarting(any());
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // When:
+        instance.start();
+
+        // Then: file content is accessible inside the running container
+        final ServiceInstance.ExecResult cat =
+                instance.execOnInstance("cat", "/tmp/creek-test.txt");
+        assertThat(cat.exitCode(), is(0));
+        assertThat(cat.stdout(), is("hello creek"));
+
+        // And: file has executable permissions (readOnly=false → 0755)
+        final ServiceInstance.ExecResult stat =
+                instance.execOnInstance("stat", "-c", "%a", "/tmp/creek-test.txt");
+        assertThat(stat.exitCode(), is(0));
+        assertThat(stat.stdout().trim(), is("755"));
+    }
+
+    @Test
+    void shouldCopyReadOnlyFileToContainerViaInstanceStartingHook() {
+        // Given:
+        doAnswer(
+                        inv -> {
+                            final ServiceInstance instance = inv.getArgument(0);
+                            instance.copyFileToContainer(
+                                    "read only content", "/tmp/creek-readonly.txt", true);
+                            return null;
+                        })
+                .when(serviceDef)
+                .instanceStarting(any());
+        final ServiceInstance instance = instances.add(serviceDef);
+
+        // When:
+        instance.start();
+
+        // Then: file content is accessible inside the running container
+        final ServiceInstance.ExecResult cat =
+                instance.execOnInstance("cat", "/tmp/creek-readonly.txt");
+        assertThat(cat.exitCode(), is(0));
+        assertThat(cat.stdout(), is("read only content"));
+
+        // And: file has read-only permissions (readOnly=true → 0444)
+        final ServiceInstance.ExecResult stat =
+                instance.execOnInstance("stat", "-c", "%a", "/tmp/creek-readonly.txt");
+        assertThat(stat.exitCode(), is(0));
+        assertThat(stat.stdout().trim(), is("444"));
+    }
+
+    @Test
     void shouldSetExposedPortOnInstance() {
         // Given:
         final ConfigurableServiceInstance instance = instances.add(serviceDef);

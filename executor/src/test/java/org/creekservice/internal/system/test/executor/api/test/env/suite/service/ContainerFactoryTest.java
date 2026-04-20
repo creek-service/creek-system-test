@@ -103,8 +103,8 @@ class ContainerFactoryTest {
                         debugFactory,
                         networkSupplier);
 
-        doReturn(container).when(regularFactory).create(any());
-        doReturn(container).when(debugFactory).create(any(), anyInt());
+        doReturn(container).when(regularFactory).create(any(), any());
+        doReturn(container).when(debugFactory).create(any(), anyInt(), any());
         doReturn(container).when(container).withNetwork(any());
         doReturn(container).when(container).withNetworkAliases(any());
         doReturn(container).when(container).withLogConsumer(any());
@@ -131,11 +131,12 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+                containerFactory.create(
+                        IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
-        verify(regularFactory).create(IMAGE_NAME);
-        verify(debugFactory, never()).create(any(), anyInt());
+        verify(regularFactory).create(eq(IMAGE_NAME), any());
+        verify(debugFactory, never()).create(any(), anyInt(), any());
         assertThat(result.container(), is(container));
         assertThat(result.transferables(), is(empty()));
     }
@@ -148,11 +149,12 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+                containerFactory.create(
+                        IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
-        verify(debugFactory).create(IMAGE_NAME, BASE_SERVICE_DEBUG_PORT);
-        verify(regularFactory, never()).create(any());
+        verify(debugFactory).create(eq(IMAGE_NAME), eq(BASE_SERVICE_DEBUG_PORT), any());
+        verify(regularFactory, never()).create(any(), any());
         assertThat(result.container(), is(container));
     }
 
@@ -161,14 +163,16 @@ class ContainerFactoryTest {
     void shouldCreateDockerContainerWithUniqueDebugPort(final boolean serviceUnderTest) {
         // Given:
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
         clearInvocations(debugFactory);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
-        verify(debugFactory).create(IMAGE_NAME, BASE_SERVICE_DEBUG_PORT + 1);
+        verify(debugFactory).create(eq(IMAGE_NAME), eq(BASE_SERVICE_DEBUG_PORT + 1), any());
     }
 
     @ValueSource(booleans = {true, false})
@@ -176,15 +180,17 @@ class ContainerFactoryTest {
     void shouldResetDebugPortAfterSuite(final boolean serviceUnderTest) {
         // Given:
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
         clearInvocations(debugFactory);
 
         // When:
         containerFactory.afterSuite(null, null);
 
         // Then:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
-        verify(debugFactory).create(IMAGE_NAME, BASE_SERVICE_DEBUG_PORT);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
+        verify(debugFactory).create(eq(IMAGE_NAME), eq(BASE_SERVICE_DEBUG_PORT), any());
     }
 
     @CartesianTest
@@ -195,7 +201,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         verify(container).withNetwork(network0);
@@ -205,21 +212,23 @@ class ContainerFactoryTest {
     @ParameterizedTest
     void shouldSetDifferentNetworkOnEachSuite(final boolean serviceUnderTest) {
         // Given:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
         verify(container).withNetwork(network0);
 
         // When:
         containerFactory.afterSuite(null, null);
 
         // Then:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
         verify(container).withNetwork(network1);
     }
 
     @Test
     void shouldCloseNetworkAfterSuite() {
         // Given:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // When:
         containerFactory.afterSuite(null, null);
@@ -236,7 +245,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         verify(container).withNetworkAliases(INSTANCE_NAME);
@@ -250,7 +260,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         verify(container).withLogConsumer(isA(Slf4jLogConsumer.class));
@@ -264,7 +275,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         verify(container, never()).withEnv(any());
@@ -285,7 +297,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container).withEnv(Map.of("a", "b"));
@@ -298,7 +310,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container).withEnv(Map.of("a", "b"));
@@ -320,7 +332,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container)
@@ -342,7 +354,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container).withEnv(Map.of("a", "orig"));
@@ -363,7 +375,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
 
         // Then:
         verify(container, never()).withEnv(any());
@@ -384,7 +396,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
 
         // Then:
         verify(container).withEnv(Map.of("a", "debug"));
@@ -405,7 +417,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
 
         // Then:
         verify(container, never()).withEnv(any());
@@ -423,7 +435,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         verify(container).withEnv(Map.of("JAVA_TOOL_OPTIONS", "a9000b9000c"));
@@ -445,7 +458,8 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest);
+        containerFactory.create(
+                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, serviceUnderTest, () -> {});
 
         // Then:
         final Map<String, String> expectedA = Map.of("b", "${SERVICE_DEBUG_PORT}");
@@ -469,7 +483,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container)
@@ -493,7 +507,7 @@ class ContainerFactoryTest {
         when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
 
         // Then:
         verify(container)
@@ -517,7 +531,7 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false);
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
 
         // Then:
         verify(container, never()).withCopyFileToContainer(any(), any());
@@ -541,7 +555,9 @@ class ContainerFactoryTest {
         // When / Then:
         assertThrows(
                 Exception.class,
-                () -> containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true));
+                () ->
+                        containerFactory.create(
+                                IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {}));
     }
 
     @Test
@@ -559,7 +575,7 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         assertThat(result.transferables(), not(hasItem(mount)));
@@ -583,7 +599,7 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         assertThat(result.transferables(), hasItem(mount));
@@ -603,7 +619,7 @@ class ContainerFactoryTest {
         when(mount.direction()).thenReturn(CopyDirection.COPY_FROM_CONTAINER);
 
         // When:
-        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         verify(container, never()).withCopyFileToContainer(any(), any());
@@ -624,7 +640,7 @@ class ContainerFactoryTest {
 
         // When:
         final CreatedContainer result =
-                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true);
+                containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
 
         // Then:
         assertThat(result.transferables(), hasItem(mount));

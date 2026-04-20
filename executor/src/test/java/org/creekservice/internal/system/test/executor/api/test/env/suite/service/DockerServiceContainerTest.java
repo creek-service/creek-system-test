@@ -26,6 +26,7 @@ import static org.junit.jupiter.params.ParameterizedInvocationConstants.INDEX_PL
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -54,6 +55,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -82,7 +84,7 @@ class DockerServiceContainerTest {
 
         when(serviceDef.name()).thenReturn(SERVICE_NAME);
         when(serviceDef.dockerImage()).thenReturn(IMAGE_NAME.toString());
-        when(containerFactory.create(any(), any(), any(), anyBoolean()))
+        when(containerFactory.create(any(), any(), any(), anyBoolean(), any()))
                 .thenReturn(new CreatedContainer(container, List.of()));
     }
 
@@ -137,6 +139,29 @@ class DockerServiceContainerTest {
     }
 
     @Test
+    void shouldNotInvokeStartingCallbackOnAdd() {
+        // When:
+        instances.add(serviceDef);
+
+        // Then:
+        verify(serviceDef, never()).instanceStarting(any());
+    }
+
+    @Test
+    void shouldPassStartingHookThatInvokesDefinitionWithInstance() {
+        // Given:
+        final ArgumentCaptor<Runnable> hookCaptor = ArgumentCaptor.forClass(Runnable.class);
+        final ServiceInstance instance = instances.add(serviceDef);
+        verify(containerFactory).create(any(), any(), any(), anyBoolean(), hookCaptor.capture());
+
+        // When:
+        hookCaptor.getValue().run();
+
+        // Then:
+        verify(serviceDef).instanceStarting(instance);
+    }
+
+    @Test
     void shouldCallStartedCallbackOnInstanceStart() {
         // Given:
         final ServiceInstance instance = instances.add(serviceDef);
@@ -179,7 +204,13 @@ class DockerServiceContainerTest {
         instances.add(serviceDef);
 
         // Then:
-        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-0", SERVICE_NAME, false);
+        verify(containerFactory)
+                .create(
+                        eq(IMAGE_NAME),
+                        eq(SERVICE_NAME + "-0"),
+                        eq(SERVICE_NAME),
+                        eq(false),
+                        any());
     }
 
     @Test
@@ -191,7 +222,8 @@ class DockerServiceContainerTest {
         instances.add(serviceDef);
 
         // Then:
-        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-0", SERVICE_NAME, true);
+        verify(containerFactory)
+                .create(eq(IMAGE_NAME), eq(SERVICE_NAME + "-0"), eq(SERVICE_NAME), eq(true), any());
     }
 
     @Test
@@ -204,7 +236,13 @@ class DockerServiceContainerTest {
         instances.add(serviceDef);
 
         // Then:
-        verify(containerFactory).create(IMAGE_NAME, SERVICE_NAME + "-1", SERVICE_NAME, false);
+        verify(containerFactory)
+                .create(
+                        eq(IMAGE_NAME),
+                        eq(SERVICE_NAME + "-1"),
+                        eq(SERVICE_NAME),
+                        eq(false),
+                        any());
     }
 
     @SuppressWarnings("unused")

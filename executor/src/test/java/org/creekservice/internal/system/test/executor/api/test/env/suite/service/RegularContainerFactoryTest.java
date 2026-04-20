@@ -53,7 +53,7 @@ class RegularContainerFactoryTest {
     @Test
     void shouldReturnGenericContainer() {
         // When:
-        final GenericContainer<?> result = containerFactory.create(imageName);
+        final GenericContainer<?> result = containerFactory.create(imageName, () -> {});
 
         // Then:
         assertThat(result, is(not(instanceOf(FixedHostPortGenericContainer.class))));

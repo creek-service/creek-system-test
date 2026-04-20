@@ -101,6 +101,8 @@ public final class ContainerFactory implements TestEnvironmentListener {
      * @param instanceName the name of instance being created
      * @param serviceName the name of the service the instance will run
      * @param serviceUnderTest {@code true} if the service is under test.
+     * @param startingHook a hook invoked from {@code containerIsStarting} — after the container
+     *     process starts but before the wait strategy completes, so mapped ports are available.
      * @return the created container along with any transferables to copy from the container after
      *     it stops.
      */
@@ -108,14 +110,15 @@ public final class ContainerFactory implements TestEnvironmentListener {
             final DockerImageName imageName,
             final String instanceName,
             final String serviceName,
-            final boolean serviceUnderTest) {
+            final boolean serviceUnderTest,
+            final Runnable startingHook) {
 
         final Optional<Integer> serviceDebugPort = debugPort(instanceName, serviceName);
 
         final GenericContainer<?> container =
                 serviceDebugPort.isPresent()
-                        ? debugFactory.create(imageName, serviceDebugPort.get())
-                        : regularFactory.create(imageName);
+                        ? debugFactory.create(imageName, serviceDebugPort.get(), startingHook)
+                        : regularFactory.create(imageName, startingHook);
 
         setEnv(instanceName, container, serviceUnderTest, serviceDebugPort);
 
