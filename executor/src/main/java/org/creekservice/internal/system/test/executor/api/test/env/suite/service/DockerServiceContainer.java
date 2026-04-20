@@ -23,6 +23,7 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.env.suite.service.ConfigurableServiceInstance;
@@ -63,9 +64,21 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
         final String instanceName = naming.instanceName(def.name());
         final DockerImageName imageName = DockerImageName.parse(def.dockerImage());
 
+        final AtomicReference<ServiceInstance> instanceRef = new AtomicReference<>();
+
         final CreatedContainer created =
                 containerFactory.create(
-                        imageName, instanceName, def.name(), def.descriptor().isPresent());
+                        imageName,
+                        instanceName,
+                        def.name(),
+                        def.descriptor().isPresent(),
+                        () ->
+                                def.instanceStarting(
+                                        requireNonNull(
+                                                instanceRef.get(),
+                                                "instanceRef not set: hook fired before"
+                                                        + " ContainerInstance was"
+                                                        + " constructed")));
 
         final ConfigurableServiceInstance instance =
                 new ContainerInstance(
@@ -79,6 +92,8 @@ public final class DockerServiceContainer implements ServiceInstanceContainer {
                         .setStartupTimeout(CONTAINER_START_UP_TIMEOUT);
 
         def.configureInstance(instance);
+
+        instanceRef.set(instance);
 
         instances.put(instance.name(), instance);
         return instance;

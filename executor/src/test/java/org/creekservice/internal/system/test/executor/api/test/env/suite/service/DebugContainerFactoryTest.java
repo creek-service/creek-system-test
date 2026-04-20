@@ -53,7 +53,7 @@ class DebugContainerFactoryTest {
     @Test
     void shouldReturnFixedPortContainer() {
         // When:
-        final GenericContainer<?> result = containerFactory.create(imageName, 1234);
+        final GenericContainer<?> result = containerFactory.create(imageName, 1234, () -> {});
 
         // Then:
         assertThat(result, is(instanceOf(FixedHostPortGenericContainer.class)));
@@ -62,7 +62,7 @@ class DebugContainerFactoryTest {
     @Test
     void shouldExposePort() {
         // When:
-        final GenericContainer<?> result = containerFactory.create(imageName, 1234);
+        final GenericContainer<?> result = containerFactory.create(imageName, 1234, () -> {});
 
         // Then:
         assertThat(result.getPortBindings(), contains("1234:1234/tcp"));

@@ -22,6 +22,9 @@ import static org.creekservice.api.base.type.Preconditions.requireNonBlank;
 import static org.creekservice.api.base.type.RuntimeIOException.runtimeIOException;
 import static org.creekservice.api.system.test.extension.test.env.suite.service.ServiceInstance.ExecResult.execResult;
 
+import com.github.dockerjava.api.command.CopyArchiveToContainerCmd;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +36,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.base.type.Preconditions;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
@@ -45,6 +49,7 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 /** An instance of a service running in a local docker container. */
@@ -179,6 +184,39 @@ public final class ContainerInstance implements ConfigurableServiceInstance {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void copyFileToContainer(
+            final String content, final String path, final boolean readOnly) {
+        requireNonNull(content, "content");
+        requireNonNull(path, "path");
+        throwIfNotOnCorrectThread();
+        throwIfNotRunning();
+        final int lastSlash = path.lastIndexOf('/');
+        if (lastSlash <= 0 || lastSlash == path.length() - 1) {
+            throw new IllegalArgumentException(
+                    "path must be an absolute path with a parent directory: " + path);
+        }
+        final String fileName = path.substring(lastSlash + 1);
+        final String parentDir = path.substring(0, lastSlash);
+        final int fileMode = readOnly ? 0444 : 0755;
+        final Transferable transferable = Transferable.of(content, fileMode);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                TarArchiveOutputStream tar = new TarArchiveOutputStream(baos)) {
+            transferable.transferTo(tar, fileName);
+            tar.finish();
+            try (CopyArchiveToContainerCmd cmd =
+                    container
+                            .getDockerClient()
+                            .copyArchiveToContainerCmd(container.getContainerId())
+                            .withTarInputStream(new ByteArrayInputStream(baos.toByteArray()))
+                            .withRemotePath(parentDir)) {
+                cmd.exec();
+            }
+        } catch (IOException e) {
+            throw runtimeIOException(e);
         }
     }
 

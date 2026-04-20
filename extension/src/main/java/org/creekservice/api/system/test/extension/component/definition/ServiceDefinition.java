@@ -84,6 +84,24 @@ public interface ServiceDefinition extends ComponentDefinition {
     default void configureInstance(final ConfigurableServiceInstance instance) {}
 
     /**
+     * An optional callback invoked after the container process has started and port bindings are
+     * assigned, but <em>before</em> the wait strategy completes.
+     *
+     * <p>This is the correct place to inject configuration that depends on the container's mapped
+     * ports — for example, writing a start script that embeds the host-mapped port so that Kafka's
+     * {@code advertised.listeners} can be set before the broker boots.
+     *
+     * <p>The hook fires at the equivalent of testcontainers' {@code containerIsStarting()} — after
+     * the container is running and all mapped ports are resolvable via {@link
+     * ServiceInstance#testNetworkPort}, but before the wait strategy's log-message check or HTTP
+     * probe passes. Any files written or commands executed here will therefore be visible to the
+     * process before it signals readiness.
+     *
+     * @param instance the starting service instance; mapped ports are already available.
+     */
+    default void instanceStarting(final ServiceInstance instance) {}
+
+    /**
      * An optional callback that is invoked after a service instance is started.
      *
      * <p>Overriding this method allows the definition class itself to define what to do with an

@@ -101,6 +101,23 @@ public interface ServiceInstance {
     String serviceNetworkHostname();
 
     /**
+     * Copy content to a file on the running instance.
+     *
+     * <p>The file is written atomically. If the instance is running in a Docker container, this
+     * uses Docker's native copy mechanism (equivalent to {@code docker cp}).
+     *
+     * <p>When {@code readOnly} is {@code false} the file is created with mode {@code 0755}
+     * (readable, writable, and executable by the owner). When {@code true}, mode {@code 0444}
+     * (read-only for all).
+     *
+     * @param content the text content to write.
+     * @param path the absolute path of the file to create inside the container.
+     * @param readOnly {@code true} to create a read-only file; {@code false} for a
+     *     readable/writable/executable file.
+     */
+    void copyFileToContainer(String content, String path, boolean readOnly);
+
+    /**
      * Run a command on the instance host.
      *
      * <p>**Note**: this method can not be called while the instance is running.

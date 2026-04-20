@@ -408,6 +408,37 @@ class ContainerInstanceTest {
     }
 
     @Test
+    void shouldThrowOnCopyFileToContainerIfNotRunning() {
+        // Given:
+        givenNotRunning();
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> instance.copyFileToContainer("content", "/some/path", false));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is(
+                        "Container not running. service: a-0"
+                            + " (ghcr.io/creek-service/creek-system-test-test-service:latest)"));
+    }
+
+    @Test
+    void shouldCopyFileToContainer() {
+        // Given:
+        givenRunning();
+
+        // When:
+        instance.copyFileToContainer("content", "/some/path", false);
+
+        // Then:
+        verify(container.getDockerClient()).copyArchiveToContainerCmd(container.getContainerId());
+    }
+
+    @Test
     void shouldAddEnv() {
         // Given:
         givenNotRunning();
@@ -693,7 +724,13 @@ class ContainerInstanceTest {
                                 (Consumer<ContainerInstance>) i -> i.testNetworkPort(9)),
                         Arguments.of(
                                 "execOnInstance",
-                                (Consumer<ContainerInstance>) ContainerInstance::execOnInstance)));
+                                (Consumer<ContainerInstance>) ContainerInstance::execOnInstance),
+                        Arguments.of(
+                                "copyFileToContainer",
+                                (Consumer<ContainerInstance>)
+                                        i ->
+                                                i.copyFileToContainer(
+                                                        "content", "/some/path", false))));
     }
 
     private static List<String> testedMethodNames() {

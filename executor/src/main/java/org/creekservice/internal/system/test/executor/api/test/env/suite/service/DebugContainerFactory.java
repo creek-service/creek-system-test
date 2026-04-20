@@ -16,6 +16,9 @@
 
 package org.creekservice.internal.system.test.executor.api.test.env.suite.service;
 
+import static java.util.Objects.requireNonNull;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -26,8 +29,10 @@ final class DebugContainerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DebugContainerFactory.class);
 
-    @SuppressWarnings("deprecation") // Deprecated as uncommon, but this is valid use case.
-    GenericContainer<?> create(final DockerImageName imageName, final int serviceDebugPort) {
+    GenericContainer<?> create(
+            final DockerImageName imageName,
+            final int serviceDebugPort,
+            final Runnable startingHook) {
 
         LOGGER.info(
                 "Creating debuggable container. image-name: "
@@ -35,7 +40,33 @@ final class DebugContainerFactory {
                         + ", service-debug-port: "
                         + serviceDebugPort);
 
-        return new FixedHostPortGenericContainer<>(imageName.toString())
+        return new HookableFixedHostPortContainer(imageName, startingHook)
                 .withFixedExposedPort(serviceDebugPort, serviceDebugPort);
+    }
+
+    /**
+     * A {@link FixedHostPortGenericContainer} that fires a starting hook from {@link
+     * #containerIsStarting} — after the container process has started and mapped ports are
+     * assigned, but before the wait strategy completes.
+     */
+    @SuppressWarnings("deprecation") // Deprecated as uncommon, but this is a valid use case.
+    @SuppressFBWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
+    private static final class HookableFixedHostPortContainer
+            extends FixedHostPortGenericContainer<HookableFixedHostPortContainer> {
+
+        private final Runnable startingHook;
+
+        HookableFixedHostPortContainer(
+                final DockerImageName imageName, final Runnable startingHook) {
+            super(imageName.toString());
+            this.startingHook = requireNonNull(startingHook, "startingHook");
+        }
+
+        @Override
+        protected void containerIsStarting(
+                final com.github.dockerjava.api.command.InspectContainerResponse containerInfo) {
+            super.containerIsStarting(containerInfo);
+            startingHook.run();
+        }
     }
 }
