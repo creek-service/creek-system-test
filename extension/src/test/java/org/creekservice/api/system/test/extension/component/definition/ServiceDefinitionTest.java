@@ -66,6 +66,18 @@ class ServiceDefinitionTest {
     }
 
     @Test
+    void shouldDoNothingInInstanceStarting() {
+        // Given:
+        final ServiceInstance nonConfigurableInstance = instance;
+
+        // When:
+        def.instanceStarting(nonConfigurableInstance);
+
+        // Then:
+        verifyNoInteractions(nonConfigurableInstance);
+    }
+
+    @Test
     void shouldNoNothingInInstanceStarted() {
         // Given:
         final ServiceInstance nonConfigurableInstance = instance;

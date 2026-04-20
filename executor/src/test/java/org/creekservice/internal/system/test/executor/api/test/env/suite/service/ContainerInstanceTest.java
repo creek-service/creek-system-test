@@ -439,6 +439,52 @@ class ContainerInstanceTest {
     }
 
     @Test
+    void shouldCopyReadOnlyFileToContainer() {
+        // Given:
+        givenRunning();
+
+        // When:
+        instance.copyFileToContainer("content", "/some/path", true);
+
+        // Then:
+        verify(container.getDockerClient()).copyArchiveToContainerCmd(container.getContainerId());
+    }
+
+    @Test
+    void shouldThrowOnCopyFileToContainerIfPathHasNoParentDirectory() {
+        // Given:
+        givenRunning();
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> instance.copyFileToContainer("content", "/file.txt", false));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("path must be an absolute path with a parent directory: /file.txt"));
+    }
+
+    @Test
+    void shouldThrowOnCopyFileToContainerIfPathHasTrailingSlash() {
+        // Given:
+        givenRunning();
+
+        // When:
+        final Exception e =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> instance.copyFileToContainer("content", "/some/dir/", false));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("path must be an absolute path with a parent directory: /some/dir/"));
+    }
+
+    @Test
     void shouldAddEnv() {
         // Given:
         givenNotRunning();
