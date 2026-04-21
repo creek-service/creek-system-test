@@ -35,3 +35,4 @@ updates:
     directory: /test-service
     schedule:
       interval: monthly
+# triggered: 2026-04-21
