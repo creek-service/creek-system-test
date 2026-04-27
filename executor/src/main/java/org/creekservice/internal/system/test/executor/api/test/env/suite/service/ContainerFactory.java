@@ -200,20 +200,21 @@ public final class ContainerFactory implements TestEnvironmentListener {
     }
 
     private Map<String, String> buildEnv(
-            final boolean serviceUnderTest, final Optional<Integer> serviceDebugPort) {
-        final Map<String, String> baseEnv = serviceUnderTest ? env : Map.of();
-        if (serviceDebugPort.isEmpty()) {
-            return baseEnv;
+            final String instanceName,
+            final boolean serviceUnderTest,
+            final Optional<Integer> serviceDebugPort) {
+        final Map<String, String> configured = new HashMap<>(serviceUnderTest ? env : Map.of());
+        if (serviceDebugPort.isPresent()) {
+            configured.putAll(serviceDebugInfo.env());
+            configured.computeIfPresent(
+                    "JAVA_TOOL_OPTIONS",
+                    (k, v) ->
+                            v.replaceAll(
+                                    "\\$\\{SERVICE_DEBUG_PORT}",
+                                    String.valueOf(serviceDebugPort.get())));
         }
 
-        final Map<String, String> configured = new HashMap<>(baseEnv);
-        configured.putAll(serviceDebugInfo.env());
-        configured.computeIfPresent(
-                "JAVA_TOOL_OPTIONS",
-                (k, v) ->
-                        v.replaceAll(
-                                "\\$\\{SERVICE_DEBUG_PORT}",
-                                String.valueOf(serviceDebugPort.get())));
+        configured.replaceAll((k, v) -> v.replace("${SERVICE_INSTANCE_NAME}", instanceName));
         return Map.copyOf(configured);
     }
 
@@ -222,7 +223,7 @@ public final class ContainerFactory implements TestEnvironmentListener {
             final GenericContainer<?> container,
             final boolean serviceUnderTest,
             final Optional<Integer> serviceDebugPort) {
-        final Map<String, String> env = buildEnv(serviceUnderTest, serviceDebugPort);
+        final Map<String, String> env = buildEnv(instanceName, serviceUnderTest, serviceDebugPort);
         if (!env.isEmpty()) {
             LOGGER.info("Setting container env. instance: " + instanceName + ", env : " + env);
             container.withEnv(env);

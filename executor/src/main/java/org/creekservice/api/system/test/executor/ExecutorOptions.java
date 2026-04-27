@@ -97,6 +97,10 @@ public interface ExecutorOptions {
      * <p>For example, this can be used to set the {@code JAVA_TOOLS_OPTIONS} required to enable
      * coverage metrics capture.
      *
+     * <p>Environment variable values may contain the placeholder {@code ${SERVICE_INSTANCE_NAME}},
+     * which will be replaced with the name of the service instance before the variable is set on
+     * the container. This allows per-instance configuration.
+     *
      * @return map of environment variables to set on each service-under-test.
      */
     default Map<String, String> env() {
