@@ -470,6 +470,90 @@ class ContainerFactoryTest {
 
     @ValueSource(booleans = {true, false})
     @ParameterizedTest
+    void shouldReplaceServiceInstanceNameInEnvVarsOfServicesUnderTest(final boolean debug) {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("JAVA_TOOL_OPTIONS", "destfile=/${SERVICE_INSTANCE_NAME}.exec"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
+
+        // Then:
+        verify(container)
+                .withEnv(Map.of("JAVA_TOOL_OPTIONS", "destfile=/" + INSTANCE_NAME + ".exec"));
+    }
+
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
+    void shouldReplaceServiceInstanceNameInAllEnvVars(final boolean debug) {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of(
+                                "VAR_A", "a-${SERVICE_INSTANCE_NAME}",
+                                "VAR_B", "b-${SERVICE_INSTANCE_NAME}"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(debug);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, true, () -> {});
+
+        // Then:
+        verify(container)
+                .withEnv(
+                        Map.of(
+                                "VAR_A", "a-" + INSTANCE_NAME,
+                                "VAR_B", "b-" + INSTANCE_NAME));
+    }
+
+    @Test
+    void shouldReplaceServiceInstanceNameInDebugEnvVars() {
+        // Given:
+        when(serviceDebugInfo.env())
+                .thenReturn(Map.of("JAVA_TOOL_OPTIONS", "destfile=/${SERVICE_INSTANCE_NAME}.exec"));
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(true);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
+
+        // Then:
+        verify(container)
+                .withEnv(Map.of("JAVA_TOOL_OPTIONS", "destfile=/" + INSTANCE_NAME + ".exec"));
+    }
+
+    @Test
+    void shouldNotReplaceServiceInstanceNameInEnvVarsOf3rdPartyServices() {
+        // Given:
+        containerFactory =
+                new ContainerFactory(
+                        serviceDebugInfo,
+                        List.of(),
+                        Map.of("JAVA_TOOL_OPTIONS", "destfile=/${SERVICE_INSTANCE_NAME}.exec"),
+                        regularFactory,
+                        debugFactory,
+                        networkSupplier);
+        when(serviceDebugInfo.shouldDebug(any(), any())).thenReturn(false);
+
+        // When:
+        containerFactory.create(IMAGE_NAME, INSTANCE_NAME, SERVICE_NAME, false, () -> {});
+
+        // Then: no env set at all (3rd party service with no debug env)
+        verify(container, never()).withEnv(any());
+    }
+
+    @ValueSource(booleans = {true, false})
+    @ParameterizedTest
     void shouldCopyDirectoriesIntoServicesUnderTest(final boolean debug) {
         // Given:
         containerFactory =
