@@ -116,9 +116,9 @@ class ApiTest {
         // Then:
         final InOrder inOrder = inOrder(api.tests().env().listeners(), ext0);
         inOrder.verify(ext0).initialize(api);
-        inOrder.verify(api.tests().env().listeners()).append(isA(PrepareResourcesListener.class));
         inOrder.verify(api.tests().env().listeners())
                 .append(isA(StartServicesUnderTestListener.class));
+        inOrder.verify(api.tests().env().listeners()).append(isA(PrepareResourcesListener.class));
     }
 
     @Test

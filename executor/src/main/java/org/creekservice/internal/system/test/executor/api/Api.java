@@ -78,11 +78,13 @@ public final class Api {
         api.tests().env().listeners().append(addServicesListener);
         creekTestExtensions.forEach(ext -> ext.initialize(api));
         api.tests().env().listeners().append(new InitializeResourcesListener(api));
-        api.tests().env().listeners().append(new PrepareResourcesListener(api));
         api.tests()
                 .env()
                 .listeners()
                 .append(new StartServicesUnderTestListener(addServicesListener::added));
+        // Todo: moved here to ensure services-under-test started (and hence schemas registered)
+        //    before calling prepare on it, which required the schema.
+        api.tests().env().listeners().append(new PrepareResourcesListener(api));
         return api;
     }
 
