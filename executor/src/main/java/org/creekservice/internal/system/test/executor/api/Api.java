@@ -78,11 +78,11 @@ public final class Api {
         api.tests().env().listeners().append(addServicesListener);
         creekTestExtensions.forEach(ext -> ext.initialize(api));
         api.tests().env().listeners().append(new InitializeResourcesListener(api));
-        api.tests().env().listeners().append(new PrepareResourcesListener(api));
         api.tests()
                 .env()
                 .listeners()
                 .append(new StartServicesUnderTestListener(addServicesListener::added));
+        api.tests().env().listeners().append(new PrepareResourcesListener(api));
         return api;
     }
 
