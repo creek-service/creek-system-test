@@ -82,8 +82,6 @@ public final class Api {
                 .env()
                 .listeners()
                 .append(new StartServicesUnderTestListener(addServicesListener::added));
-        // Todo: moved here to ensure services-under-test started (and hence schemas registered)
-        //    before calling prepare on it, which required the schema.
         api.tests().env().listeners().append(new PrepareResourcesListener(api));
         return api;
     }
