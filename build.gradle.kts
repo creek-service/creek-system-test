@@ -62,7 +62,7 @@ subprojects {
         set("slf4jVersion", "2.0.18")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
         set("guavaVersion", "33.6.0-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
-        set("junitVersion", "6.1.0")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+        set("junitVersion", "6.1.1")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
         set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
         set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     }
