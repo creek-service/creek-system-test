@@ -39,6 +39,11 @@ public interface CreekTestSuite extends Locatable {
     <T extends Option> List<T> options(Class<T> type);
 
     /**
+     * @return any seed data that is injected before the suite's services-under-test are started.
+     */
+    List<? extends Input> seedData();
+
+    /**
      * @return the test cases in the suite.
      */
     List<? extends CreekTestCase> tests();

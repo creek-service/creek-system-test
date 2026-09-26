@@ -16,7 +16,9 @@
 
 package org.creekservice.api.system.test.extension.test.model;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handler of {@link Input}'s.
@@ -26,6 +28,15 @@ import java.util.List;
  * @param <T> the input type.
  */
 public interface InputHandler<T extends Input> {
+
+    /**
+     * The ids of any resources the supplied {@code input} targets, so they can be created ahead of
+     * seed data being injected, even if owned by a service-under-test.
+     *
+     * @param input the input instance.
+     * @return the ids of resources the input targets, or {@code Set.of()} if none.
+     */
+    Set<URI> resourceIds(T input);
 
     /**
      * Process the supplied {@code input}.
@@ -51,7 +62,7 @@ public interface InputHandler<T extends Input> {
     interface InputOptions {
 
         /**
-         * Get user supplied options.
+         * Get user-supplied options.
          *
          * <p>Test extensions can register custom {@link Option} subtypes when initializing. Users
          * can then define options within the test suite files.

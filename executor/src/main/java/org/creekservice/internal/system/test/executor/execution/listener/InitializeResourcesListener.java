@@ -17,16 +17,24 @@
 package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.platform.metadata.ComponentDescriptor;
 import org.creekservice.api.platform.metadata.CreatableResource;
+import org.creekservice.api.platform.metadata.ResourceCollection;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.platform.resource.ResourceInitializer;
@@ -36,10 +44,11 @@ import org.creekservice.api.system.test.extension.component.definition.ServiceDe
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
+import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 
 /**
  * Test listener that initialises any shared or unowned resources required by the services under
- * test.
+ * test, plus any resources targeted by seed data regardless of ownership.
  *
  * <p>Shared resources are not owned by any one service. In production, they would be initialised
  * before services were deployed. Hence, the test framework needs to also ensure shared resources
@@ -48,11 +57,16 @@ import org.creekservice.internal.system.test.executor.api.SystemTest;
  * <p>Unowned resources are resources from services not under test, which the services under test
  * are interacting with. For example, consuming an output topic that another service owns. The test
  * framework needs to ensure such edge resources are initialised, before it runs any tests.
+ *
+ * <p>Also prepares exactly the resources it ensures, so seed data can be injected before
+ * services-under-test start. See {@link PrepareResourcesListener} for the latter, full preparation
+ * of all known resources, once services-under-test have started.
  */
 public final class InitializeResourcesListener implements TestEnvironmentListener {
 
     private final SystemTest api;
     private final ResourceInitializer initializer;
+    private final Inputters inputters;
 
     /**
      * @param api system test api.
@@ -76,13 +90,18 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
                                         .resourceHandler(type)
                                         .ensure(creatableResources);
                             }
-                        }));
+                        }),
+                new Inputters(api.tests().model()));
     }
 
     @VisibleForTesting
-    InitializeResourcesListener(final SystemTest api, final ResourceInitializer initializer) {
+    InitializeResourcesListener(
+            final SystemTest api,
+            final ResourceInitializer initializer,
+            final Inputters inputters) {
         this.api = requireNonNull(api, "api");
         this.initializer = requireNonNull(initializer, "initializer");
+        this.inputters = requireNonNull(inputters, "inputters");
     }
 
     @Override
@@ -91,8 +110,32 @@ public final class InitializeResourcesListener implements TestEnvironmentListene
         final List<ServiceDescriptor> underTest = servicesUnderTest(serviceNames);
         final List<ComponentDescriptor> other = otherComponents(serviceNames);
 
-        initializer.init(underTest);
-        initializer.test(underTest, other);
+        final Set<URI> ensuredIds = new HashSet<>(initializer.init(underTest));
+        ensuredIds.addAll(
+                initializer.test(underTest, other, inputters.resourceIds(suite.seedData())));
+
+        prepareEnsuredResources(underTest, other, ensuredIds);
+    }
+
+    private void prepareEnsuredResources(
+            final List<ServiceDescriptor> underTest,
+            final List<ComponentDescriptor> other,
+            final Set<URI> ensuredIds) {
+        if (ensuredIds.isEmpty()) {
+            return;
+        }
+
+        final Map<URI, ResourceDescriptor> byId =
+                Stream.of(underTest, other)
+                        .flatMap(Collection::stream)
+                        .flatMap(ResourceCollection::collectResources)
+                        .filter(r -> ensuredIds.contains(r.id()))
+                        .collect(
+                                groupingBy(
+                                        ResourceDescriptor::id,
+                                        collectingAndThen(toList(), l -> l.get(0))));
+
+        ResourcePreparer.prepare(api, byId.values());
     }
 
     private List<ServiceDescriptor> servicesUnderTest(final Set<String> servicesUnderTest) {

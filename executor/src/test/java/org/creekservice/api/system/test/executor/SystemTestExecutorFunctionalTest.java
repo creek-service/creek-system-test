@@ -18,6 +18,7 @@ package org.creekservice.api.system.test.executor;
 
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.creekservice.api.system.test.test.services.SharedResources.SHARED;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.OwnedOutput;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.UnmanagedInternal;
 import static org.creekservice.api.system.test.test.services.TestServiceDescriptor.UnownedInput1;
@@ -26,7 +27,9 @@ import static org.creekservice.api.test.util.coverage.CodeCoverage.codeCoverageC
 import static org.creekservice.api.test.util.debug.RemoteDebug.remoteDebugArguments;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
@@ -43,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.creekservice.api.base.type.Suppliers;
@@ -115,6 +119,51 @@ class SystemTestExecutorFunctionalTest {
                     + "      - input-1\n"
                     + "    expectations:\n"
                     + "      - expectation-1\n";
+
+    private static final String OWNED_SEED = "---\n" +
+            "!creek/test\n" +
+            "value: owned seed\n" +
+            "resource: output";
+
+    private static final String SHARED_SEED = "---\n" +
+            "!creek/test\n" +
+            "value: shared seed\n" +
+            "resource: shared";
+
+    private static final String UNOWNED_SEED = "---\n" +
+            "!creek/test\n" +
+            "value: unowned seed\n" +
+            "resource: upstream";
+
+    private static final String OWNED_INPUT = "---\n" +
+            "!creek/test\n" +
+            "value: owned input\n" +
+            "resource: output";
+
+    private static final String UNOWNED_INPUT = "---\n" +
+            "!creek/test\n" +
+            "value: unowned input\n" +
+            "resource: upstream";
+
+    private static final String SHARED_INPUT = "---\n" +
+            "!creek/test\n" +
+            "value: shared input\n" +
+            "resource: shared";
+
+    private static final String SUITE_WITH_INPUTS_ON_EACH_OWNERSHIP_KIND = "---\n"
+                    + "name: suite name\n"
+                    + "services:\n"
+                    + "  - test-service\n"
+                    + "tests:\n"
+                    + "  - name: test 0\n"
+                    + "    inputs:\n"
+                    + "      - input-owned\n"
+                    + "      - input-unowned\n"
+                    + "      - input-shared\n"
+                    + "    expectations:\n"
+                    + "      - expectation-owned\n"
+                    + "      - expectation-unowned\n"
+                    + "      - expectation-shared\n";
     // formatting:on
 
     @TempDir private Path root;
@@ -477,6 +526,78 @@ class SystemTestExecutorFunctionalTest {
     }
 
     @Test
+    void shouldPrepareOwnedSeedResourceBeforeSeedingIt() {
+        // Given:
+        TestPaths.write(testDir.resolve("seed/seed-1.yml"), OWNED_SEED);
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(exitCode, is(0));
+        assertEnsuredThenPreparedThenSeeded(OwnedOutput.id(), "owned seed");
+    }
+
+    @Test
+    void shouldPrepareSharedSeedResourceBeforeSeedingIt() {
+        // Given:
+        TestPaths.write(testDir.resolve("seed/seed-1.yml"), SHARED_SEED);
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(exitCode, is(0));
+        assertEnsuredThenPreparedThenSeeded(SHARED.id(), "shared seed");
+    }
+
+    @Test
+    void shouldPrepareUnownedSeedResourceBeforeSeedingIt() {
+        // Given:
+        TestPaths.write(testDir.resolve("seed/seed-1.yml"), UNOWNED_SEED);
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(exitCode, is(0));
+        assertEnsuredThenPreparedThenSeeded(UnownedInput1.id(), "unowned seed");
+    }
+
+    @Test
+    void shouldProcessInputsForEachOwnershipKind() {
+        // Given:
+        TestPaths.write(testDir.resolve("inputs/input-owned.yml"), OWNED_INPUT);
+        TestPaths.write(testDir.resolve("inputs/input-unowned.yml"), UNOWNED_INPUT);
+        TestPaths.write(testDir.resolve("inputs/input-shared.yml"), SHARED_INPUT);
+        TestPaths.write(
+                testDir.resolve("expectations/expectation-owned.yml"),
+                "---\n!creek/test\nvalue: owned expectation");
+        TestPaths.write(
+                testDir.resolve("expectations/expectation-unowned.yml"),
+                "---\n!creek/test\nvalue: unowned expectation");
+        TestPaths.write(
+                testDir.resolve("expectations/expectation-shared.yml"),
+                "---\n!creek/test\nvalue: shared expectation");
+        TestPaths.write(testDir.resolve("suite.yml"), SUITE_WITH_INPUTS_ON_EACH_OWNERSHIP_KIND);
+
+        // When:
+        final int exitCode = runExecutor(minimalArgs());
+
+        // Then:
+        assertThat(stdOut.get(), containsString("Piping input: owned input"));
+        assertThat(stdOut.get(), containsString("Piping input: unowned input"));
+        assertThat(stdOut.get(), containsString("Piping input: shared input"));
+        assertThat(
+                stdOut.get(),
+                containsString(
+                        "Verifying expectations: owned expectation,unowned expectation,shared"
+                                + " expectation"));
+        assertThat(stdOut.get(), containsString("Finished test 'test 0': SUCCESS"));
+        assertThat(exitCode, is(0));
+    }
+
+    @Test
     void shouldCloseExtensions() {
         // When:
         runExecutor(minimalArgs());
@@ -583,6 +704,31 @@ class SystemTestExecutorFunctionalTest {
     @Test
     void shouldNotCheckInWithDebuggingEnabled() {
         assertThat("Do not check in with debugging enabled", !DEBUG);
+    }
+
+    private void assertEnsuredThenPreparedThenSeeded(final URI resourceId, final String seedValue) {
+        final int ensuredIdx = indexOfLogLine("Ensuring resources", resourceId);
+        final int preparedIdx = indexOfLogLine("Preparing resources", resourceId);
+        final int seededIdx = stdOut.get().indexOf("Piping input: " + seedValue);
+
+        assertThat("seed data was piped", seededIdx, is(greaterThanOrEqualTo(0)));
+        assertThat("resource ensured before prepared", ensuredIdx, is(lessThan(preparedIdx)));
+        assertThat("resource prepared before it was seeded", preparedIdx, is(lessThan(seededIdx)));
+    }
+
+    private int indexOfLogLine(final String label, final URI resourceId) {
+        final Matcher matcher =
+                Pattern.compile(
+                                label
+                                        + ": \\[[^]]*"
+                                        + Pattern.quote(resourceId.toString())
+                                        + "[^]]*]")
+                        .matcher(stdOut.get());
+        if (!matcher.find()) {
+            throw new AssertionError(
+                    "No '" + label + "' line found for " + resourceId + " in:\n" + stdOut.get());
+        }
+        return matcher.start();
     }
 
     private int runExecutor(final String[] cmdArgs) {

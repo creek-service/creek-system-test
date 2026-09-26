@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.Option;
 
 /** A suite of test cases */
@@ -97,6 +98,11 @@ public final class TestSuite implements CreekTestSuite {
                 .filter(o -> type.isAssignableFrom(o.getClass()))
                 .map(type::cast)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Input> seedData() {
+        return pkg.seedData();
     }
 
     @Override

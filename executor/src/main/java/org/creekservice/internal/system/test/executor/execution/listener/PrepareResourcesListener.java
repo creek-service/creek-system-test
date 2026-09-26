@@ -18,23 +18,27 @@ package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.creekservice.api.platform.metadata.ResourceCollection;
 import org.creekservice.api.platform.metadata.ResourceDescriptor;
-import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.api.system.test.extension.component.definition.ComponentDefinition;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 
 /**
- * Test listener that calls back into each client extension to allow it to any initialise internal
+ * Test listener that calls back into each client extension to allow it to initialise any internal
  * state required to service requests on the resources it handles.
+ *
+ * <p>Runs after services-under-test have started, ensuring owned resources' schemas etc., which
+ * only the owning service registers on start-up, already exist. See {@link
+ * InitializeResourcesListener} for the earlier, narrower preparation of resources needed to seed
+ * data.
  */
 public final class PrepareResourcesListener implements TestEnvironmentListener {
 
@@ -47,7 +51,6 @@ public final class PrepareResourcesListener implements TestEnvironmentListener {
         this.api = requireNonNull(api, "api");
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         final Map<URI, ResourceDescriptor> byId =
@@ -58,16 +61,8 @@ public final class PrepareResourcesListener implements TestEnvironmentListener {
                         .collect(
                                 groupingBy(
                                         ResourceDescriptor::id,
-                                        Collectors.collectingAndThen(
-                                                Collectors.toList(), l -> l.get(0))));
+                                        Collectors.collectingAndThen(toList(), l -> l.get(0))));
 
-        final Map<Class<? extends ResourceDescriptor>, List<ResourceDescriptor>> byType =
-                byId.values().stream().collect(groupingBy(ResourceDescriptor::getClass));
-
-        byType.forEach(
-                (type, resources) -> {
-                    final ResourceHandler handler = api.extensions().model().resourceHandler(type);
-                    handler.prepare(resources);
-                });
+        ResourcePreparer.prepare(api, byId.values());
     }
 }

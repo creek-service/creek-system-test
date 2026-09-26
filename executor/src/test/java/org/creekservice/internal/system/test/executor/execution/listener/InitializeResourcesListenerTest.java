@@ -17,26 +17,42 @@
 package org.creekservice.internal.system.test.executor.execution.listener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.creekservice.api.platform.metadata.AggregateDescriptor;
+import org.creekservice.api.platform.metadata.ResourceDescriptor;
 import org.creekservice.api.platform.metadata.ServiceDescriptor;
 import org.creekservice.api.platform.resource.ResourceInitializer;
+import org.creekservice.api.service.extension.component.model.ResourceHandler;
 import org.creekservice.api.system.test.extension.component.definition.AggregateDefinition;
 import org.creekservice.api.system.test.extension.component.definition.ServiceDefinition;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
+import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
+import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -50,6 +66,7 @@ class InitializeResourcesListenerTest {
     private SystemTest api;
 
     @Mock private ResourceInitializer initializer;
+    @Mock private Inputters inputters;
     @Mock private CreekTestSuite suite;
     @Mock private ServiceDefinition def0;
     @Mock private ServiceDefinition def1;
@@ -63,9 +80,11 @@ class InitializeResourcesListenerTest {
 
     @BeforeEach
     void setUp() {
-        listener = new InitializeResourcesListener(api, initializer);
+        listener = new InitializeResourcesListener(api, initializer, inputters);
 
         when(suite.services()).thenReturn(List.of("duplicate", "service-1", "duplicate"));
+        doReturn(List.of()).when(suite).seedData();
+        when(inputters.resourceIds(any())).thenReturn(Set.of());
 
         when(api.components().definitions().services().get("duplicate")).thenReturn(def0);
         when(api.components().definitions().services().get("service-1")).thenReturn(def1);
@@ -87,7 +106,7 @@ class InitializeResourcesListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        initializer.init(List.of(desc0, desc1));
+        verify(initializer).init(argThat(inAnyOrder(desc0, desc1)));
     }
 
     @Test
@@ -96,7 +115,7 @@ class InitializeResourcesListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        initializer.test(List.of(desc0, desc1), List.of());
+        verify(initializer).test(argThat(inAnyOrder(desc0, desc1)), eq(List.of()), eq(Set.of()));
     }
 
     @Test
@@ -108,8 +127,8 @@ class InitializeResourcesListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        initializer.init(List.of(desc1));
-        initializer.test(List.of(desc1), List.of());
+        verify(initializer).init(List.of(desc1));
+        verify(initializer).test(List.of(desc1), List.of(), Set.of());
     }
 
     @Test
@@ -135,7 +154,8 @@ class InitializeResourcesListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        initializer.test(List.of(desc0, desc1), List.of(desc3, desc2));
+        verify(initializer)
+                .test(argThat(inAnyOrder(desc0, desc1)), eq(List.of(desc2, desc3)), eq(Set.of()));
     }
 
     @Test
@@ -149,6 +169,114 @@ class InitializeResourcesListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        initializer.test(List.of(desc0, desc1), List.of(desc3));
+        verify(initializer)
+                .test(argThat(inAnyOrder(desc0, desc1)), eq(List.of(desc3)), eq(Set.of()));
+    }
+
+    @Test
+    void shouldPassSeedResourceIdsFromSeedDataToTest() {
+        // Given:
+        final List<Input> seedData = List.of();
+        final Set<URI> seedResourceIds = Set.of(URI.create("kafka-topic://default/foo"));
+        doReturn(seedData).when(suite).seedData();
+        when(inputters.resourceIds(seedData)).thenReturn(seedResourceIds);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(initializer)
+                .test(argThat(inAnyOrder(desc0, desc1)), eq(List.of()), eq(seedResourceIds));
+    }
+
+    @Test
+    void shouldNotPrepareAnythingIfNothingEnsured() {
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(api.extensions().model(), never()).resourceHandler(any());
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldPrepareResourceEnsuredByInit() {
+        // Given:
+        final TestResource resource = new TestResource(URI.create("test://shared"));
+        when(desc0.resources()).thenAnswer(inv -> Stream.of(resource));
+        when(initializer.init(any())).thenReturn(Set.of(resource.id()));
+
+        final ResourceHandler handler = mock(ResourceHandler.class);
+        when(api.extensions().model().resourceHandler(TestResource.class)).thenReturn(handler);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(handler).prepare(List.of(resource));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldPrepareResourceEnsuredByTest() {
+        // Given:
+        final TestResource resource = new TestResource(URI.create("test://seed-target"));
+        when(desc0.resources()).thenAnswer(inv -> Stream.of(resource));
+        when(initializer.test(any(), any(), any())).thenReturn(Set.of(resource.id()));
+
+        final ResourceHandler handler = mock(ResourceHandler.class);
+        when(api.extensions().model().resourceHandler(TestResource.class)).thenReturn(handler);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(handler).prepare(List.of(resource));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Test
+    void shouldPrepareUnionOfResourcesEnsuredByInitAndTest() {
+        // Given:
+        final TestResource sharedResource = new TestResource(URI.create("test://shared"));
+        final TestResource seedResource = new TestResource(URI.create("test://seed-target"));
+        when(desc0.resources()).thenAnswer(inv -> Stream.of(sharedResource, seedResource));
+        when(initializer.init(any())).thenReturn(Set.of(sharedResource.id()));
+        when(initializer.test(any(), any(), any())).thenReturn(Set.of(seedResource.id()));
+
+        final ResourceHandler handler = mock(ResourceHandler.class);
+        when(api.extensions().model().resourceHandler(TestResource.class)).thenReturn(handler);
+
+        final ArgumentCaptor<Collection<TestResource>> captor =
+                ArgumentCaptor.forClass(Collection.class);
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        verify(handler).prepare(captor.capture());
+        assertThat(captor.getValue(), containsInAnyOrder(sharedResource, seedResource));
+    }
+
+    private static ArgumentMatcher<List<ServiceDescriptor>> inAnyOrder(
+            final ServiceDescriptor... expected) {
+        final List<ServiceDescriptor> expectedList = List.of(expected);
+        return actual ->
+                actual != null
+                        && actual.size() == expectedList.size()
+                        && actual.containsAll(expectedList);
+    }
+
+    private static final class TestResource implements ResourceDescriptor {
+        private final URI id;
+
+        private TestResource(final URI id) {
+            this.id = id;
+        }
+
+        @Override
+        public URI id() {
+            return id;
+        }
     }
 }

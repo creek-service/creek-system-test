@@ -24,7 +24,6 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,10 +32,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
-import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.model.TestCase;
 import org.creekservice.api.system.test.model.TestSuite;
-import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.CaseResult;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +52,6 @@ import org.mockito.quality.Strictness;
 class TestSuiteExecutorTest {
 
     @Mock private TestListenerCollection listeners;
-    @Mock private Inputters inputters;
     @Mock private TestCaseExecutor testExecutor;
 
     @Mock(answer = RETURNS_DEEP_STUBS)
@@ -70,7 +66,7 @@ class TestSuiteExecutorTest {
 
     @BeforeEach
     void setUp() {
-        suiteExecutor = new TestSuiteExecutor.Executor(listeners, inputters, testExecutor);
+        suiteExecutor = new TestSuiteExecutor.Executor(listeners, testExecutor);
 
         when(testCase0.name()).thenReturn("test0");
         when(testCase0.suite()).thenReturn(testSuite);
@@ -110,24 +106,10 @@ class TestSuiteExecutorTest {
         suiteExecutor.executeSuite(testSuite);
 
         // Then:
-        final InOrder inOrder = inOrder(listeners, inputters, testExecutor);
+        final InOrder inOrder = inOrder(listeners, testExecutor);
         inOrder.verify(listeners).forEach(any());
-        inOrder.verify(inputters).input(any(), any());
         inOrder.verify(testExecutor).executeTest(testCase0);
         inOrder.verify(listeners).forEachReverse(any());
-    }
-
-    @Test
-    void shouldSeed() {
-        // Given:
-        final Input seed = mock(Input.class);
-        when(testSuite.pkg().seedData()).thenReturn(List.of(seed));
-
-        // When:
-        suiteExecutor.executeSuite(testSuite);
-
-        // Then:
-        verify(inputters).input(List.of(seed), testSuite);
     }
 
     @Test
@@ -163,28 +145,6 @@ class TestSuiteExecutorTest {
         assertThat(
                 result.error().map(Exception::getMessage),
                 is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
-
-        assertAfterSuiteCalled(result);
-    }
-
-    @Test
-    void shouldHandleSeedingThrowing() {
-        // Given:
-        final RuntimeException cause = new RuntimeException("boom");
-        doThrow(cause).when(inputters).input(any(), any());
-
-        givenTestCase(testCase0);
-
-        // When:
-        final SuiteResult result = suiteExecutor.executeSuite(testSuite);
-
-        // Then:
-        assertThat(result.errors(), is(1L));
-        assertThat(result.testResults(), is(empty()));
-        assertThat(
-                result.error().map(Exception::getMessage),
-                is(Optional.of("Suite setup failed for test suite: Fred, cause: boom")));
-        assertThat(result.error().map(Exception::getCause), is(Optional.of(cause)));
 
         assertAfterSuiteCalled(result);
     }
