@@ -25,7 +25,6 @@ import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.model.TestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
-import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.creekservice.internal.system.test.executor.result.SuiteResult;
 
 /** Executor of test suites. */
@@ -59,22 +58,14 @@ public final class TestSuiteExecutor {
     @VisibleForTesting
     static final class Executor {
         private final TestListenerCollection listeners;
-        private final Inputters inputters;
         private final TestCaseExecutor testExecutor;
 
         Executor(final SystemTest api, final Duration verifierTimeout) {
-            this(
-                    api.tests().env().listeners(),
-                    new Inputters(api.tests().model()),
-                    new TestCaseExecutor(api, verifierTimeout));
+            this(api.tests().env().listeners(), new TestCaseExecutor(api, verifierTimeout));
         }
 
-        Executor(
-                final TestListenerCollection listeners,
-                final Inputters inputters,
-                final TestCaseExecutor testExecutor) {
+        Executor(final TestListenerCollection listeners, final TestCaseExecutor testExecutor) {
             this.listeners = requireNonNull(listeners, "listeners");
-            this.inputters = requireNonNull(inputters, "inputter");
             this.testExecutor = requireNonNull(testExecutor, "testExecutor");
         }
 
@@ -112,7 +103,6 @@ public final class TestSuiteExecutor {
 
         private void beforeSuite(final TestSuite testSuite) {
             listeners.forEach(listener -> listener.beforeSuite(testSuite));
-            inputters.input(testSuite.pkg().seedData(), testSuite);
         }
 
         private void runSuite(final TestSuite testSuite, final SuiteResult.Builder builder) {

@@ -18,17 +18,20 @@ package org.creekservice.internal.system.test.executor.execution.input;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toUnmodifiableSet;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.api.system.test.extension.test.model.Option;
 import org.creekservice.api.system.test.extension.test.model.TestModelContainer;
-import org.creekservice.api.system.test.model.TestSuite;
 
 /** Handles delegation of input resources to the extension that handles them. */
 public final class Inputters {
@@ -48,7 +51,7 @@ public final class Inputters {
      * @param inputs the inputs to handle.
      * @param suite the current suite being executed.
      */
-    public void input(final Collection<? extends Input> inputs, final TestSuite suite) {
+    public void input(final Collection<? extends Input> inputs, final CreekTestSuite suite) {
         final Set<InputHandler<?>> usedHandlers =
                 inputs.stream()
                         .map(i -> input(i, suite))
@@ -59,21 +62,38 @@ public final class Inputters {
         usedHandlers.forEach(InputHandler::flush);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends Input> InputHandler<T> input(final T input, final TestSuite suite) {
-        final InputHandler<T> handler =
-                model.inputHandler((Class<T>) input.getClass())
-                        .orElseThrow(() -> new HandlerNotRegisteredException(input.getClass()));
+    /**
+     * Determine the ids of any resources the supplied {@code inputs} target.
+     *
+     * @param inputs the inputs to inspect.
+     * @return the ids of resources the inputs target.
+     */
+    public Set<URI> resourceIds(final Collection<? extends Input> inputs) {
+        return inputs.stream().flatMap(this::resourceIds).collect(toUnmodifiableSet());
+    }
 
+    private <T extends Input> InputHandler<T> input(final T input, final CreekTestSuite suite) {
+        final InputHandler<T> handler = handlerFor(input);
         handler.process(input, new Options(suite));
         return handler;
     }
 
+    private <T extends Input> Stream<URI> resourceIds(final T input) {
+        final InputHandler<T> handler = handlerFor(input);
+        return handler.resourceIds(input).stream();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Input> InputHandler<T> handlerFor(final T input) {
+        return model.inputHandler((Class<T>) input.getClass())
+                .orElseThrow(() -> new HandlerNotRegisteredException(input.getClass()));
+    }
+
     private static final class Options implements InputHandler.InputOptions {
 
-        private final TestSuite suite;
+        private final CreekTestSuite suite;
 
-        Options(final TestSuite suite) {
+        Options(final CreekTestSuite suite) {
             this.suite = requireNonNull(suite, "suite");
         }
 

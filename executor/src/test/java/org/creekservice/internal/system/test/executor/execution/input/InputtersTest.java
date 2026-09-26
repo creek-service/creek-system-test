@@ -27,8 +27,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
@@ -116,6 +118,56 @@ class InputtersTest {
         // Then:
         verify(inputHandler0, times(1)).flush();
         verify(inputHandler1, times(1)).flush();
+    }
+
+    @Test
+    void shouldThrowFromResourceIdsIfNoHandlerRegistered() {
+        // Given:
+        when(model.inputHandler(any())).thenReturn(Optional.empty());
+
+        // When:
+        final Exception e =
+                assertThrows(RuntimeException.class, () -> inputters.resourceIds(List.of(input0)));
+
+        // Then:
+        assertThat(
+                e.getMessage(),
+                is("No handler registered for input type: " + input0.getClass().getName()));
+    }
+
+    @Test
+    void shouldAggregateResourceIdsAcrossInputs() {
+        // Given:
+        when(inputHandler0.resourceIds(input0)).thenReturn(Set.of(URI.create("a://1")));
+        when(inputHandler1.resourceIds(input1)).thenReturn(Set.of(URI.create("b://1")));
+
+        // When:
+        final Set<URI> ids = inputters.resourceIds(List.of(input0, input1));
+
+        // Then:
+        assertThat(ids, is(Set.of(URI.create("a://1"), URI.create("b://1"))));
+    }
+
+    @Test
+    void shouldDedupeResourceIds() {
+        // Given:
+        when(inputHandler0.resourceIds(input0)).thenReturn(Set.of(URI.create("a://1")));
+
+        // When:
+        final Set<URI> ids = inputters.resourceIds(List.of(input0, input0));
+
+        // Then:
+        assertThat(ids, is(Set.of(URI.create("a://1"))));
+    }
+
+    @Test
+    void shouldUseCorrectHandlerPerInputTypeForResourceIds() {
+        // When:
+        inputters.resourceIds(List.of(input0, input1));
+
+        // Then:
+        verify(inputHandler0).resourceIds(input0);
+        verify(inputHandler1).resourceIds(input1);
     }
 
     private interface Input0 extends Input {}

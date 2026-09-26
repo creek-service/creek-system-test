@@ -16,13 +16,14 @@
 
 package org.creekservice.api.system.test.test.extension;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
-import org.creekservice.api.system.test.extension.test.model.InputHandler.InputOptions;
+import org.creekservice.api.system.test.extension.test.model.InputHandler;
 
 /** Extension used for testing */
 public final class TestCreekTestExtension implements CreekTestExtension {
@@ -38,25 +39,36 @@ public final class TestCreekTestExtension implements CreekTestExtension {
     public void initialize(final CreekSystemTest api) {
         api.extensions().ensureExtension(TestCreekExtensionProvider.class);
 
-        api.tests().model().addInput(TestInput.class, this::pipeInput).withName("creek/test");
+        api.tests()
+                .model()
+                .addInput(TestInput.class, new TestInputHandler())
+                .withName("creek/test");
 
         api.tests()
                 .model()
-                .addExpectation(TestExpectation.class, (e, o) -> prepareExpectation(e, o))
+                .addExpectation(TestExpectation.class, (e, o) -> prepareExpectation(e))
                 .withName("creek/test");
     }
 
-    private void pipeInput(final TestInput input, final InputOptions options) {
-        System.out.println("Piping input: " + input.value);
+    private static final class TestInputHandler implements InputHandler<TestInput> {
+        @Override
+        public void process(final TestInput input, final InputOptions options) {
+            System.out.println("Piping input: " + input.value);
 
-        if (input.value.equals("should throw")) {
-            throw new RuntimeException("Failed to process input");
+            if (input.value.equals("should throw")) {
+                throw new RuntimeException("Failed to process input");
+            }
+        }
+
+        @Override
+        public Set<URI> resourceIds(final TestInput input) {
+            return input.resource
+                    .map(name -> Set.of(URI.create("test://" + name)))
+                    .orElse(Set.of());
         }
     }
 
-    private Verifier prepareExpectation(
-            final Collection<? extends TestExpectation> expectations,
-            final ExpectationOptions options) {
+    private Verifier prepareExpectation(final Collection<? extends TestExpectation> expectations) {
         final String outputs =
                 expectations.stream().map(e -> e.value).collect(Collectors.joining(","));
 

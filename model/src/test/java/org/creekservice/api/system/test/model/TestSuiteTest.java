@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.api.system.test.extension.test.model.Option;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,7 @@ class TestSuiteTest {
     @Mock private TestSuiteDef def;
     @Mock private TestCaseDef testDef;
     @Mock private TestPackage pkg;
+    @Mock private Input seed;
 
     @BeforeEach
     void setUp() {
@@ -148,6 +150,32 @@ class TestSuiteTest {
 
         // Then:
         assertThat(suite.options(Option.class), is(List.of(option)));
+    }
+
+    @Test
+    void shouldReturnSeedData() {
+        // Given:
+        final TestSuite suite = TestSuite.testSuite(List.of(), def).build(pkg);
+        when(pkg.seedData()).thenReturn(List.of(seed));
+
+        // When:
+        final List<Input> seedData = suite.seedData();
+
+        // Then:
+        assertThat(seedData, is(List.of(seed)));
+    }
+
+    @Test
+    void shouldReturnTests() {
+        // Given:
+        givenDefTestCases(1);
+        final TestSuite suite = TestSuite.testSuite(List.of(testBuilder), def).build(pkg);
+
+        // When:
+        final List<TestCase> tests = suite.tests();
+
+        // Then:
+        assertThat(tests, is(List.of(testCase)));
     }
 
     private TestSuiteDef def(final Collection<TestCase.Builder> testCases) {

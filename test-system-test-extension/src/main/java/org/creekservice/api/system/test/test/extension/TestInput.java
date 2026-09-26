@@ -17,13 +17,19 @@
 package org.creekservice.api.system.test.test.extension;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Optional;
 import org.creekservice.api.system.test.extension.test.model.Input;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class TestInput implements Input {
 
     final String value;
+    final Optional<String> resource;
 
-    public TestInput(@JsonProperty("value") final String value) {
+    public TestInput(
+            @JsonProperty("value") final String value,
+            @JsonProperty("resource") final Optional<String> resource) {
         this.value = value;
+        this.resource = resource;
     }
 }
