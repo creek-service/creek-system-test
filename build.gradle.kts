@@ -51,28 +51,14 @@ subprojects {
         apply(plugin = "jacoco")
     }
 
-    extra.apply {
-        set("creekVersion", project.version)
-        set("testContainersVersion", "2.0.5")   // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-        set("spotBugsVersion", "4.10.4")         // https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-annotations
-        set("jacksonVersion", "2.22.2")         // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-        set("jacksonAnnotationsVersion", "2.22")// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-        set("picocliVersion", "4.7.7")          // https://mvnrepository.com/artifact/info.picocli/picocli
-        set("log4jVersion", "2.26.1")           // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
-        set("slf4jVersion", "2.0.18")           // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-
-        set("guavaVersion", "33.7.1-jre")         // https://mvnrepository.com/artifact/com.google.guava/guava
-        set("junitVersion", "6.1.3")            // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-        set("junitPioneerVersion", "2.3.0")     // https://mvnrepository.com/artifact/org.junit-pioneer/junit-pioneer
-        set("mockitoVersion", "5.23.0")          // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    }
+    extra.apply { set("creekVersion", project.version) }
 
     val creekVersion : String by extra
-    val guavaVersion : String by extra
-    val log4jVersion : String by extra
-    val junitVersion: String by extra
-    val junitPioneerVersion: String by extra
-    val mockitoVersion: String by extra
+    val guavaVersion : String by project
+    val log4jVersion : String by project
+    val junitVersion: String by project
+    val junitPioneerVersion: String by project
+    val mockitoVersion: String by project
 
     dependencies {
         testImplementation("org.creekservice:creek-test-hamcrest:$creekVersion")

@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val jacksonAnnotationsVersion : String by extra
+val jacksonAnnotationsVersion : String by project
 val creekVersion : String by extra
 
 dependencies {

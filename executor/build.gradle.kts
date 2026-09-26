@@ -20,11 +20,11 @@ plugins {
 }
 
 val creekVersion : String by extra
-val testContainersVersion : String by extra
-val picocliVersion : String by extra
-val log4jVersion : String by extra
-val spotBugsVersion : String by extra
-val jacksonVersion : String by extra
+val testContainersVersion : String by project
+val picocliVersion : String by project
+val log4jVersion : String by project
+val spotBugsVersion : String by project
+val jacksonVersion : String by project
 
 dependencies {
     implementation(project(":extension"))

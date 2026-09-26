@@ -19,8 +19,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonVersion : String by extra
-val jacksonAnnotationsVersion : String by extra
+val jacksonVersion : String by project
+val jacksonAnnotationsVersion : String by project
 
 dependencies {
     api(project(":extension"))
