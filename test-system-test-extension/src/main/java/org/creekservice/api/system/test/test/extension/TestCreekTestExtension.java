@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.creekservice.api.system.test.extension.CreekSystemTest;
 import org.creekservice.api.system.test.extension.CreekTestExtension;
-import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.ExpectationOptions;
 import org.creekservice.api.system.test.extension.test.model.ExpectationHandler.Verifier;
 import org.creekservice.api.system.test.extension.test.model.InputHandler;
 
@@ -47,7 +46,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
 
         api.tests()
                 .model()
-                .addExpectation(TestExpectation.class, (e, o) -> prepareExpectation(e, o))
+                .addExpectation(TestExpectation.class, (e, o) -> prepareExpectation(e))
                 .withName("creek/test");
     }
 
@@ -69,9 +68,7 @@ public final class TestCreekTestExtension implements CreekTestExtension {
         }
     }
 
-    private Verifier prepareExpectation(
-            final Collection<? extends TestExpectation> expectations,
-            final ExpectationOptions options) {
+    private Verifier prepareExpectation(final Collection<? extends TestExpectation> expectations) {
         final String outputs =
                 expectations.stream().map(e -> e.value).collect(Collectors.joining(","));
 

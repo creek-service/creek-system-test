@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.startsWith;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -79,92 +80,132 @@ class SystemTestExecutorFunctionalTest {
     private static final Path TEST_SERVICES_LIB_DIR =
             TestPaths.moduleRoot("test-services").resolve("build/libs").toAbsolutePath();
 
-    private static final String SEPARATOR = System.getProperty("path.separator");
+    private static final String SEPARATOR = File.pathSeparator;
 
     private static final Pattern VERSION_PATTERN =
             Pattern.compile(".*SystemTestExecutor: \\d+\\.\\d+\\.\\d+.*", Pattern.DOTALL);
 
-    // formatting:off
-    private static final String VALID_SEED = "---\n" +
-            "!creek/test\n" +
-            "value: seed value";
+    private static final String VALID_SEED =
+            """
+            ---
+            !creek/test
+            value: seed value\
+            """;
 
-    private static final String VALID_INPUT = "---\n" +
-            "!creek/test\n" +
-            "value: input value";
+    private static final String VALID_INPUT =
+            """
+            ---
+            !creek/test
+            value: input value\
+            """;
 
-    private static final String THROWING_INPUT = "---\n" +
-            "!creek/test\n" +
-            "value: should throw";
+    private static final String THROWING_INPUT =
+            """
+            ---
+            !creek/test
+            value: should throw\
+            """;
 
-    private static final String PASSING_EXPECTATION = "---\n" +
-            "!creek/test\n" +
-            "value: output value";
+    private static final String PASSING_EXPECTATION =
+            """
+            ---
+            !creek/test
+            value: output value\
+            """;
 
-    private static final String FAILING_EXPECTATION = "---\n" +
-            "!creek/test\n" +
-            "value: should fail";
+    private static final String FAILING_EXPECTATION =
+            """
+            ---
+            !creek/test
+            value: should fail\
+            """;
 
-    private static final String THROWING_EXPECTATION = "---\n" +
-            "!creek/test\n" +
-            "value: should throw";
+    private static final String THROWING_EXPECTATION =
+            """
+            ---
+            !creek/test
+            value: should throw\
+            """;
 
-    private static final String VALID_SUITE = "---\n"
-                    + "name: suite name\n"
-                    + "services:\n"
-                    + "  - test-service\n"
-                    + "tests:\n"
-                    + "  - name: test 0\n"
-                    + "    inputs:\n"
-                    + "      - input-1\n"
-                    + "    expectations:\n"
-                    + "      - expectation-1\n";
+    private static final String VALID_SUITE =
+            """
+            ---
+            name: suite name
+            services:
+              - test-service
+            tests:
+              - name: test 0
+                inputs:
+                  - input-1
+                expectations:
+                  - expectation-1
+            """;
 
-    private static final String OWNED_SEED = "---\n" +
-            "!creek/test\n" +
-            "value: owned seed\n" +
-            "resource: output";
+    private static final String OWNED_SEED =
+            """
+            ---
+            !creek/test
+            value: owned seed
+            resource: output\
+            """;
 
-    private static final String SHARED_SEED = "---\n" +
-            "!creek/test\n" +
-            "value: shared seed\n" +
-            "resource: shared";
+    private static final String SHARED_SEED =
+            """
+            ---
+            !creek/test
+            value: shared seed
+            resource: shared\
+            """;
 
-    private static final String UNOWNED_SEED = "---\n" +
-            "!creek/test\n" +
-            "value: unowned seed\n" +
-            "resource: upstream";
+    private static final String UNOWNED_SEED =
+            """
+            ---
+            !creek/test
+            value: unowned seed
+            resource: upstream\
+            """;
 
-    private static final String OWNED_INPUT = "---\n" +
-            "!creek/test\n" +
-            "value: owned input\n" +
-            "resource: output";
+    private static final String OWNED_INPUT =
+            """
+            ---
+            !creek/test
+            value: owned input
+            resource: output\
+            """;
 
-    private static final String UNOWNED_INPUT = "---\n" +
-            "!creek/test\n" +
-            "value: unowned input\n" +
-            "resource: upstream";
+    private static final String UNOWNED_INPUT =
+            """
+            ---
+            !creek/test
+            value: unowned input
+            resource: upstream\
+            """;
 
-    private static final String SHARED_INPUT = "---\n" +
-            "!creek/test\n" +
-            "value: shared input\n" +
-            "resource: shared";
+    private static final String SHARED_INPUT =
+            """
+            ---
+            !creek/test
+            value: shared input
+            resource: shared\
+            """;
 
-    private static final String SUITE_WITH_INPUTS_ON_EACH_OWNERSHIP_KIND = "---\n"
-                    + "name: suite name\n"
-                    + "services:\n"
-                    + "  - test-service\n"
-                    + "tests:\n"
-                    + "  - name: test 0\n"
-                    + "    inputs:\n"
-                    + "      - input-owned\n"
-                    + "      - input-unowned\n"
-                    + "      - input-shared\n"
-                    + "    expectations:\n"
-                    + "      - expectation-owned\n"
-                    + "      - expectation-unowned\n"
-                    + "      - expectation-shared\n";
-    // formatting:on
+    private static final String SUITE_WITH_INPUTS_ON_EACH_OWNERSHIP_KIND =
+            """
+            ---
+            name: suite name
+            services:
+              - test-service
+            tests:
+              - name: test 0
+                inputs:
+                  - input-owned
+                  - input-unowned
+                  - input-shared
+                expectations:
+                  - expectation-owned
+                  - expectation-unowned
+                  - expectation-shared
+            """;
 
     @TempDir private Path root;
     private Path testDir;
@@ -421,18 +462,20 @@ class SystemTestExecutorFunctionalTest {
     void shouldSkipDisabledTest() {
         // Given:
         final String disabled =
-                "---\n"
-                        + "name: suite name\n"
-                        + "services:\n"
-                        + "  - test-service\n"
-                        + "tests:\n"
-                        + "  - name: test 0\n"
-                        + "    disabled:\n"
-                        + "      reason: for testing\n"
-                        + "    inputs:\n"
-                        + "      - input-1\n"
-                        + "    expectations:\n"
-                        + "      - expectation-1\n";
+                """
+                ---
+                name: suite name
+                services:
+                  - test-service
+                tests:
+                  - name: test 0
+                    disabled:
+                      reason: for testing
+                    inputs:
+                      - input-1
+                    expectations:
+                      - expectation-1
+                """;
 
         final String[] args = minimalArgs();
         TestPaths.write(testDir.resolve("suite.yml"), disabled);
