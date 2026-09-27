@@ -18,7 +18,7 @@ plugins {
     `java-library`
 }
 
-val jacksonAnnotationsVersion : String by project
+val jacksonAnnotationsVersion = project.property("jacksonAnnotationsVersion") as String
 val creekVersion : String by extra
 
 dependencies {

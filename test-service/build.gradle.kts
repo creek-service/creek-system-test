@@ -22,9 +22,9 @@ plugins {
 }
 
 val creekVersion : String by extra
-val slf4jVersion : String by project
-val log4jVersion : String by project
-val spotBugsVersion : String by project
+val slf4jVersion = project.property("slf4jVersion") as String
+val log4jVersion = project.property("log4jVersion") as String
+val spotBugsVersion = project.property("spotBugsVersion") as String
 
 dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")

@@ -19,8 +19,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonVersion : String by project
-val spotBugsVersion : String by project
+val jacksonVersion = project.property("jacksonVersion") as String
+val spotBugsVersion = project.property("spotBugsVersion") as String
 
 dependencies {
     api(project(":model"))
