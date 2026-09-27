@@ -20,11 +20,10 @@ plugins {
 
 val creekVersion : String by extra
 val jacksonVersion = project.property("jacksonVersion") as String
-val jacksonAnnotationsVersion = project.property("jacksonAnnotationsVersion") as String
 
 dependencies {
     api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
+    api("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
 
     implementation("org.creekservice:creek-base-type:$creekVersion")
     implementation("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")

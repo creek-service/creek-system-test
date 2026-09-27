@@ -22,15 +22,13 @@ plugins {
 }
 
 val creekVersion : String by extra
-val slf4jVersion = project.property("slf4jVersion") as String
 val log4jVersion = project.property("log4jVersion") as String
-val spotBugsVersion = project.property("spotBugsVersion") as String
 
 dependencies {
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-api:${property("slf4jVersion")}")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 
