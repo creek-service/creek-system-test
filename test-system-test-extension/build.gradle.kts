@@ -18,12 +18,11 @@ plugins {
     `java-library`
 }
 
-val jacksonAnnotationsVersion : String by extra
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 
 dependencies {
     api(project(":extension"))
-    api("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationsVersion")
+    api("com.fasterxml.jackson.core:jackson-annotations:${property("jacksonAnnotationsVersion")}")
 
     implementation(project(":test-service-extension-metadata"))
     implementation("org.creekservice:creek-service-api:$creekVersion")

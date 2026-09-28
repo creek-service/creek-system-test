@@ -19,12 +19,9 @@ plugins {
     application
 }
 
-val creekVersion : String by extra
-val testContainersVersion : String by extra
-val picocliVersion : String by extra
-val log4jVersion : String by extra
-val spotBugsVersion : String by extra
-val jacksonVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val log4jVersion = property("log4jVersion") as String
+val jacksonVersion = property("jacksonVersion") as String
 
 dependencies {
     implementation(project(":extension"))
@@ -34,12 +31,12 @@ dependencies {
     implementation("org.creekservice:creek-platform-resource:$creekVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
     implementation("org.creekservice:creek-service-api:$creekVersion")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion")
-    implementation("org.testcontainers:testcontainers:$testContainersVersion")
-    implementation("info.picocli:picocli:$picocliVersion")
+    implementation("org.testcontainers:testcontainers:${property("testContainersVersion")}")
+    implementation("info.picocli:picocli:${property("picocliVersion")}")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 

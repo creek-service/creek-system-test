@@ -18,17 +18,15 @@ plugins {
     `java-library`
 }
 
-val creekVersion : String by extra
-val spotBugsVersion : String by extra
-val jacksonVersion : String by extra
+val creekVersion = property("creekVersion") as String
 
 dependencies {
     api(project(":executor"))
-    api("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    api("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
 
     implementation(project(":extension"))
     implementation(project(":parser"))
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:${property("jacksonVersion")}")
 
     testImplementation(project(":test-services"))
 }

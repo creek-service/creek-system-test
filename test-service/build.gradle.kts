@@ -21,16 +21,14 @@ plugins {
     id("com.bmuschko.docker-remote-api") version "10.0.0"
 }
 
-val creekVersion : String by extra
-val slf4jVersion : String by extra
-val log4jVersion : String by extra
-val spotBugsVersion : String by extra
+val creekVersion = property("creekVersion") as String
+val log4jVersion = property("log4jVersion") as String
 
 dependencies {
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-api:${property("slf4jVersion")}")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
     implementation("org.creekservice:creek-observability-lifecycle:$creekVersion")
-    implementation("com.github.spotbugs:spotbugs-annotations:$spotBugsVersion")
+    implementation("com.github.spotbugs:spotbugs-annotations:${property("spotBugsVersion")}")
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 }
 
