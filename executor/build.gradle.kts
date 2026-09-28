@@ -20,8 +20,8 @@ plugins {
 }
 
 val creekVersion : String by extra
-val log4jVersion = project.property("log4jVersion") as String
-val jacksonVersion = project.property("jacksonVersion") as String
+val log4jVersion = property("log4jVersion") as String
+val jacksonVersion = property("jacksonVersion") as String
 
 dependencies {
     implementation(project(":extension"))

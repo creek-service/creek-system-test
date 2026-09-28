@@ -19,7 +19,7 @@ plugins {
 }
 
 val creekVersion : String by extra
-val jacksonVersion = project.property("jacksonVersion") as String
+val jacksonVersion = property("jacksonVersion") as String
 
 dependencies {
     api(project(":extension"))
