@@ -19,7 +19,7 @@ plugins {
     application
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 val log4jVersion = property("log4jVersion") as String
 val jacksonVersion = property("jacksonVersion") as String
 

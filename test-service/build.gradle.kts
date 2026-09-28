@@ -21,7 +21,7 @@ plugins {
     id("com.bmuschko.docker-remote-api") version "10.0.0"
 }
 
-val creekVersion : String by extra
+val creekVersion = property("creekVersion") as String
 val log4jVersion = property("log4jVersion") as String
 
 dependencies {
