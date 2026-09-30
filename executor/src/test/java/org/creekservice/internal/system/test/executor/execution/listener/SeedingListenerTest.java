@@ -93,7 +93,7 @@ class SeedingListenerTest {
         listener.beforeSuite(suite);
 
         // Then:
-        final InOrder order = inOrder(inputters, observer);
+        final InOrder order = inOrder(inputters, observer, observer2);
         order.verify(inputters).input(any(), any());
         order.verify(observer).afterSeeding(suite);
         order.verify(observer2).afterSeeding(suite);
