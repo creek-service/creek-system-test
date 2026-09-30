@@ -22,15 +22,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
+import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.api.system.test.extension.test.model.Input;
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,12 +44,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SeedingListenerTest {
 
     @Mock private Inputters inputters;
+    @Mock private TestListenerCollection listeners;
+    @Mock private TestEnvironmentListener observer;
+    @Mock private TestEnvironmentListener observer2;
     @Mock private CreekTestSuite suite;
     private SeedingListener listener;
 
     @BeforeEach
     void setUp() {
-        listener = new SeedingListener(inputters);
+        listener = new SeedingListener(inputters, listeners);
+        org.mockito.Mockito.lenient()
+                .when(listeners.iterator())
+                .thenReturn(Collections.emptyIterator());
     }
 
     @Test
@@ -70,5 +82,20 @@ class SeedingListenerTest {
 
         // Then:
         assertThat(e, is(expected));
+    }
+
+    @Test
+    void shouldNotifyListenersAfterSeeding() {
+        // Given:
+        when(listeners.iterator()).thenReturn(List.of(observer, observer2).iterator());
+
+        // When:
+        listener.beforeSuite(suite);
+
+        // Then:
+        final InOrder order = inOrder(inputters, observer, observer2);
+        order.verify(inputters).input(any(), any());
+        order.verify(observer).afterSeeding(suite);
+        order.verify(observer2).afterSeeding(suite);
     }
 }

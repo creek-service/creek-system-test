@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import org.creekservice.api.base.annotation.VisibleForTesting;
 import org.creekservice.api.system.test.extension.test.env.listener.TestEnvironmentListener;
+import org.creekservice.api.system.test.extension.test.env.listener.TestListenerCollection;
 import org.creekservice.api.system.test.extension.test.model.CreekTestSuite;
 import org.creekservice.internal.system.test.executor.api.SystemTest;
 import org.creekservice.internal.system.test.executor.execution.input.Inputters;
@@ -33,21 +34,26 @@ import org.creekservice.internal.system.test.executor.execution.input.Inputters;
 public final class SeedingListener implements TestEnvironmentListener {
 
     private final Inputters inputters;
+    private final TestListenerCollection listeners;
 
     /**
      * @param api the system test api.
      */
     public SeedingListener(final SystemTest api) {
-        this(new Inputters(api.tests().model()));
+        this(new Inputters(api.tests().model()), api.tests().env().listeners());
     }
 
     @VisibleForTesting
-    SeedingListener(final Inputters inputters) {
+    SeedingListener(final Inputters inputters, final TestListenerCollection listeners) {
         this.inputters = requireNonNull(inputters, "inputters");
+        this.listeners = requireNonNull(listeners, "listeners");
     }
 
     @Override
     public void beforeSuite(final CreekTestSuite suite) {
         inputters.input(suite.seedData(), suite);
+        for (TestEnvironmentListener listener : listeners) {
+            listener.afterSeeding(suite);
+        }
     }
 }

@@ -79,6 +79,10 @@ class TestEnvironmentListenerTest {
                         (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
                                 (l, t) -> l.beforeSuite(t.suite)),
                 Arguments.of(
+                        "afterSeeding",
+                        (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
+                                (l, t) -> l.afterSeeding(t.suite)),
+                Arguments.of(
                         "afterSuite",
                         (BiConsumer<TestEnvironmentListener, TestEnvironmentListenerTest>)
                                 (l, t) -> l.afterSuite(t.suite, mock(TestSuiteResult.class))),

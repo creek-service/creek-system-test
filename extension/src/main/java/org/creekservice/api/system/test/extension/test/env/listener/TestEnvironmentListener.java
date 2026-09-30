@@ -40,6 +40,14 @@ public interface TestEnvironmentListener {
     default void beforeSuite(CreekTestSuite suite) {}
 
     /**
+     * Called after suite seed data has been injected, but before any services under test start.
+     * This allows extensions to establish a baseline for outputs before services start.
+     *
+     * @param suite the suite being prepared.
+     */
+    default void afterSeeding(CreekTestSuite suite) {}
+
+    /**
      * Called after the supplied {@code suite} has executed.
      *
      * <p>Implementations should <i>not</i> throw exceptions. Any exception thrown will terminate
